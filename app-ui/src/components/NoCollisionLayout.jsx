@@ -1,5 +1,6 @@
 import React from "react";
 import RGL, { WidthProvider } from "react-grid-layout";
+import _ from "lodash";
 const ReactGridLayout = WidthProvider(RGL);
 const originalLayout = getFromLS("layout") || [];
 /**
@@ -22,12 +23,28 @@ export default class LocalStorageLayout extends React.PureComponent {
     super(props);
 
     this.state = {
-      layout: JSON.parse(JSON.stringify(originalLayout))
+      items: ["MATH", "ENGLISH", "STATS", "HISTORY", "PHYSICS"].map(function(i, key, list) {
+        console.log(i + key);
+        return {
+          text: i,
+          data: {
+            i: key,
+            x: key * 2,
+            y: 0,
+            w: 2,
+            h: 1,
+          }
+        };
+      }),
+      //layout: JSON.parse(JSON.stringify(originalLayout)),
+      newCounter: 0
     };
 
     this.onLayoutChange = this.onLayoutChange.bind(this);
     this.resetLayout = this.resetLayout.bind(this);
     this.socket = socket;
+
+    this.onAddItem = this.onAddItem.bind(this);
 
     this.socket.on("itemChanged", (item) => {
       console.log("Item Received: " + JSON.stringify(item));
@@ -53,7 +70,8 @@ export default class LocalStorageLayout extends React.PureComponent {
 
   resetLayout() {
     this.setState({
-      layout: []
+      layout: [],
+      newCounter: 0
     });
   }
 
@@ -77,6 +95,54 @@ export default class LocalStorageLayout extends React.PureComponent {
     this.socket.emit('itemChanged', newItem);
   }
 
+  onAddItem() {
+    /*eslint no-console: 0*/
+    console.log("adding", "n" + this.state.newCounter);
+    this.setState({
+      // Add a new item. It must have a unique key!
+      layout: this.state.layout.concat({
+        i: "n" + this.state.newCounter,
+        x: 0,
+        y: 0, // puts it at the bottom
+        w: 2,
+        h: 1,
+      }),
+      // Increment the counter to ensure key is always unique.
+      newCounter: this.state.newCounter + 1
+    });
+  }
+
+  onRemoveItem(i) {
+    console.log("removing", i);
+    console.log(JSON.stringify(this.state.layout));
+    //this.setState({ layout: this.state.layout.filter((element) => element.i != i) });
+    this.setState({ items: _.reject(this.state.items, (element) => {return element.data.i == i}) });
+    console.log(JSON.stringify(this.state.layout));
+    
+  }
+
+  createElement(el) {
+    const removeStyle = {
+      position: "absolute",
+      right: "2px",
+      top: 0,
+      cursor: "pointer"
+    };
+    const i = el.i;
+    return (
+      <div key={el.data.i} data-grid={el.data}>
+        <span className="text">{el.text}</span>
+        <span
+          className="remove"
+          style={removeStyle}
+          onClick={this.onRemoveItem.bind(this, el.data.i)}
+        >
+          x
+        </span>
+      </div>
+    );
+  }
+
   render() {
     return (
       <div>
@@ -88,7 +154,7 @@ export default class LocalStorageLayout extends React.PureComponent {
           onDragStop= {this.onItemChange}
           onResizeStop = {this.onItemChange}
         >
-          <div key="1" data-grid={{ w: 1, h: 1, x: 0, y: 0 }}>
+          {/*<div key="1" data-grid={{ w: 1, h: 1, x: 0, y: 0 }}>
             <span className="text">PROJECTS</span>
           </div>
           <div key="2" data-grid={{ w: 1, h: 1, x: 2, y: 0 }}>
@@ -102,10 +168,15 @@ export default class LocalStorageLayout extends React.PureComponent {
           </div>
           <div key="5" data-grid={{ w: 1, h: 1, x: 8, y: 0 }}>
             <span className="text">ART</span>
-          </div>
+          </div>          
+          <div key="6" data-grid={{ w: 1, h: 1, x: 8, y: 20, static:true}}>
+            <span className="text">PLACEHOLDER</span>
+          </div>*/}
+          {this.state.items.map(el => this.createElement(el))}
           <div key="6" data-grid={{ w: 1, h: 1, x: 8, y: 20, static:true}}>
             <span className="text">PLACEHOLDER</span>
           </div>
+
         </ReactGridLayout>
       </div>
     );
