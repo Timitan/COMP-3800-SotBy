@@ -12,7 +12,8 @@
     grid-row-gap: 2px;
     grid-template-columns: repeat(50, 100px);
     /*grid-template-rows: 50px repeat(15, 100px);*/
-    grid-template-rows: repeat(15, 100px);
+    /*grid-template-rows: repeat(15, 100px);
+    grid-template-rows:subgrid;*/
     grid-auto-flow: column;
 }
 
@@ -55,4 +56,8 @@
 .grid-row-header p {
     font-weight: bold;
     margin-top: 45%;
+}
+
+.grid-row-header-close {
+    position: relative;
 }

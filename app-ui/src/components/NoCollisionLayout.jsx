@@ -1,11 +1,10 @@
 import React from "react";
 import RGL, { WidthProvider } from "react-grid-layout";
 import _ from "lodash";
+import ElementInput from "./ElemenInput";
 const ReactGridLayout = WidthProvider(RGL);
 const originalLayout = getFromLS("layout") || [];
-/**
- * This layout demonstrates how to sync to localstorage.
- */
+
 export default class LocalStorageLayout extends React.PureComponent {
   static defaultProps = {
     className: "layout",
@@ -19,7 +18,7 @@ export default class LocalStorageLayout extends React.PureComponent {
     isBounded: true,
   };
 
-  constructor({props, socket}) {
+  constructor({props, socket, heightLimit}) {
     super(props);
 
     this.state = {
@@ -37,14 +36,15 @@ export default class LocalStorageLayout extends React.PureComponent {
         };
       }),
       //layout: JSON.parse(JSON.stringify(originalLayout)),
-      newCounter: 0
+      newCounter: 0,
+      heightLimit: heightLimit
     };
 
     this.onLayoutChange = this.onLayoutChange.bind(this);
     this.resetLayout = this.resetLayout.bind(this);
     this.socket = socket;
 
-    this.onAddItem = this.onAddItem.bind(this);
+    //this.onAddItem = this.onAddItem.bind(this);
 
     this.socket.on("itemChanged", (item) => {
       console.log("Item Received: " + JSON.stringify(item));
@@ -71,7 +71,6 @@ export default class LocalStorageLayout extends React.PureComponent {
   resetLayout() {
     this.setState({
       layout: [],
-      newCounter: 0
     });
   }
 
@@ -95,17 +94,19 @@ export default class LocalStorageLayout extends React.PureComponent {
     this.socket.emit('itemChanged', newItem);
   }
 
-  onAddItem() {
-    /*eslint no-console: 0*/
+  onAddItem(text, x=0, y=0, w=3) {
     console.log("adding", "n" + this.state.newCounter);
     this.setState({
       // Add a new item. It must have a unique key!
-      layout: this.state.layout.concat({
-        i: "n" + this.state.newCounter,
-        x: 0,
-        y: 0, // puts it at the bottom
-        w: 2,
-        h: 1,
+      items: this.state.items.concat({
+        text: text,
+        data:{
+          i: text + this.state.newCounter,
+          x: x,
+          y: y, 
+          w: w,
+          h: 1,
+        }
       }),
       // Increment the counter to ensure key is always unique.
       newCounter: this.state.newCounter + 1
@@ -126,9 +127,11 @@ export default class LocalStorageLayout extends React.PureComponent {
       position: "absolute",
       right: "2px",
       top: 0,
-      cursor: "pointer"
+      cursor: "pointer",
+      padding: "5px",
     };
     const i = el.i;
+    console.log("Added " + el.text);
     return (
       <div key={el.data.i} data-grid={el.data}>
         <span className="text">{el.text}</span>
@@ -147,6 +150,7 @@ export default class LocalStorageLayout extends React.PureComponent {
     return (
       <div>
         <button onClick={this.resetLayout} style={{position: "sticky", zIndex: 99}}>Reset Layout</button>
+        <ElementInput text={"Add Element: "} callBack={(text) => this.onAddItem(text)}/>
         <ReactGridLayout
           {...this.props}
           layout={this.state.layout}
@@ -154,27 +158,9 @@ export default class LocalStorageLayout extends React.PureComponent {
           onDragStop= {this.onItemChange}
           onResizeStop = {this.onItemChange}
         >
-          {/*<div key="1" data-grid={{ w: 1, h: 1, x: 0, y: 0 }}>
-            <span className="text">PROJECTS</span>
-          </div>
-          <div key="2" data-grid={{ w: 1, h: 1, x: 2, y: 0 }}>
-            <span className="text">MATH</span>
-          </div>
-          <div key="3" data-grid={{ w: 1, h: 1, x: 4, y: 0 }}>
-            <span className="text">STATS</span>
-          </div>
-          <div key="4" data-grid={{ w: 1, h: 1, x: 6, y: 0 }}>
-            <span className="text">ENGLISH</span>
-          </div>
-          <div key="5" data-grid={{ w: 1, h: 1, x: 8, y: 0 }}>
-            <span className="text">ART</span>
-          </div>          
-          <div key="6" data-grid={{ w: 1, h: 1, x: 8, y: 20, static:true}}>
-            <span className="text">PLACEHOLDER</span>
-          </div>*/}
           {this.state.items.map(el => this.createElement(el))}
-          <div key="6" data-grid={{ w: 1, h: 1, x: 8, y: 20, static:true}}>
-            <span className="text">PLACEHOLDER</span>
+          <div key="grid-limit" data-grid={{ w: 1, h: 1, x: 8, y: this.state.heightLimit, static:true}}>
+            <span className="text">HEIGHT LIMIT</span>
           </div>
 
         </ReactGridLayout>
