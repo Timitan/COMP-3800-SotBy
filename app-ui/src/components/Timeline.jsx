@@ -5,25 +5,6 @@ import RowHeader from './RowHeader';
 import ElementInput from "./ElemenInput";
 import { useState } from "react";
 
-function getWeeks(startDate, month) {
-    const weeks = [];
-    
-    while(startDate.getMonth() == month) {
-        weeks.push(startDate.getDate());
-        startDate.setDate(startDate.getDate() + 7);
-    }
-    return weeks;
-}
-
-function getNumberOfWeeks(weeks, index) {
-    let sum = 0;
-    //console.log(weeks[0].weeks.length);
-    for(let i = index-1; i >= 0; i--) {
-        sum += weeks[i].weeks.length;
-    }
-    return sum;
-}
-
 export default function Timeline({socket, heightLimit}) {
     let dateOffset = new Date(new Date().getFullYear(), 0, 1);
 
@@ -64,20 +45,43 @@ export default function Timeline({socket, heightLimit}) {
     const [height, setHeight] = useState(initialRowHeaderArray.length * rowHeight);
     const [monthArray, setMonthArray] = useState(initialMonthArray);
     const [rowHeaderArray, setRowHeaderArray] = useState(initialRowHeaderArray);
-    heightLimit.set(rowHeaderArray.length);
+
+    const parseInstructors = (data) => {
+        const parsedData = JSON.parse(data);
+        const instructorArray = [];
+        for(let i = 0; i < parsedData.length; i++) {
+            const instructor = {};
+            instructor.key = parsedData[i].id;
+            instructor.name = parsedData[i].first_name + " " + parsedData[i].last_name;
+            instructorArray.push(instructor);
+        }
+        setRowHeaderArray(instructorArray);
+    }
+
+    const retrieveNamesFromDatabase = () => {
+        fetch('http://localhost:8000/instructors')
+        .then(response => {
+            return response.text();
+        })
+        .then(data => {
+            parseInstructors(data)
+        });
+    }
+    retrieveNamesFromDatabase();
 
     // TODO: Change row headers to take in a key and a text
     const addRowHeader = (text) => {
+        heightLimit.set((rowHeaderArray.length + 1) * 2);
         setRowHeaderArray([...rowHeaderArray, {key: text + rowHeaderArray.length, name: text}]);
         setHeight(height + rowHeight);
-        heightLimit.set(rowHeaderArray.length);
+        console.log("Length in Timeline: " + rowHeaderArray.length);
     }
 
     // TODO: Find a key in the row header array and remove that instead of the name
     const removeRowHeader = (key) => {
+        heightLimit.set((rowHeaderArray.length - 1) * 2);
         setRowHeaderArray(_.reject(rowHeaderArray, (element) => {return element.key == key}))
         setHeight(height - rowHeight);
-        heightLimit.set(rowHeaderArray.length);
     }
     
     const createRowHeader = (item, i) => {
@@ -90,16 +94,6 @@ export default function Timeline({socket, heightLimit}) {
         return <Month key={monthNameArray[item.monthIndex] + " month"} title={monthNameArray[item.monthIndex]} 
             position={{x: 1, y: i === 0 ? i+3 : getNumberOfWeeks(initialMonthArray, i)+3/*(i) * (item.weeks.length) + 3}*/}} weeks={item.weeks} />
     }
-    /*
-    const createInitialSlotArray = () =>{
-        let slotArray = [];
-        for(let x = 1; x < 50; x++) {
-            for(let y = 3; y < 40; y++) {
-                slotArray.push(<Slot key={"slot x:" + x + "y:" + y} socket={socket} position={{x: x, y: y}} />);
-            }
-        }
-        return slotArray;
-    }*/
 
     return(
         <React.Fragment>
@@ -129,4 +123,23 @@ export default function Timeline({socket, heightLimit}) {
             <button onClick={this.addMonth}>Add Row</button>*/}
         </React.Fragment>
     );
+}
+
+function getWeeks(startDate, month) {
+    const weeks = [];
+    
+    while(startDate.getMonth() == month) {
+        weeks.push(startDate.getDate());
+        startDate.setDate(startDate.getDate() + 7);
+    }
+    return weeks;
+}
+
+function getNumberOfWeeks(weeks, index) {
+    let sum = 0;
+    //console.log(weeks[0].weeks.length);
+    for(let i = index-1; i >= 0; i--) {
+        sum += weeks[i].weeks.length;
+    }
+    return sum;
 }

@@ -15,7 +15,8 @@ export default class LocalStorageLayout extends React.PureComponent {
     preventCollision: true,
     resizeHandles: ['e'],
     compactType: null,
-    isBounded: true,
+    autoSize: true
+    // isBounded: true,
   };
 
   constructor({props, socket, heightLimit}) {
@@ -27,7 +28,7 @@ export default class LocalStorageLayout extends React.PureComponent {
         return {
           text: i,
           data: {
-            i: key,
+            i: i + key,
             x: key * 2,
             y: 0,
             w: 2,
@@ -79,9 +80,10 @@ export default class LocalStorageLayout extends React.PureComponent {
     saveToLS("layout", layout);
     this.setState({ layout });
     this.props.onLayoutChange(layout); // updates status display
+    console.log("layout changed");
   }
 
-  onItemChange(layout, oldItem, newItem, placeholder, e, element) {
+  onItemChange = (layout, oldItem, newItem, placeholder, e, element) => {
     /*
     console.log("Layout:" + JSON.stringify(layout));
     console.log("Old Item: " + JSON.stringify(oldItem));
@@ -92,6 +94,22 @@ export default class LocalStorageLayout extends React.PureComponent {
     console.log("Layout Index: " + this.layout)*/
 
     this.socket.emit('itemChanged', newItem);
+
+    
+    console.log("item Changed");
+    console.log("New Item: " + JSON.stringify(newItem));
+    const index = _.findIndex(this.state.items, (element) => {return element.data.i == newItem.i});
+    const newItems = this.state.items.slice();
+    const foundItem = this.state.items[index];
+    foundItem.data.h = newItem.h;
+    foundItem.data.w = newItem.w;
+    foundItem.data.x = newItem.x;
+    foundItem.data.y = newItem.y;
+    newItems.splice(index, 1, foundItem);
+    //console.log("Found Item: " + JSON.stringify(this.state.items[index]));
+    //console.log("NewItems: " +JSON.stringify(newItems));
+    this.setState({items: newItems});
+    //console.log("New Items State: " + JSON.stringify(this.state.items));
   }
 
   onAddItem(text, x=0, y=0, w=3) {
@@ -131,7 +149,17 @@ export default class LocalStorageLayout extends React.PureComponent {
       padding: "5px",
     };
     const i = el.i;
-    console.log("Added " + el.text);
+    // console.log("Added " + el.text);
+
+    // TODO: Figure out how to programmatically reset elements that are over the height limit, solution needs setState to update the DOM
+    // const currentHeightLimit = this.state.heightLimit();
+    // console.log("el.data.y: " + JSON.stringify(el.data.y) + ", Height: " + currentHeightLimit);
+
+    // if(el.data.y > currentHeightLimit) {
+    //   el.data.y = currentHeightLimit;
+    //   console.log("el.data.y after: " + el.data.y);
+    // } 
+
     return (
       <div key={el.data.i} data-grid={el.data}>
         <span className="text">{el.text}</span>
@@ -153,15 +181,16 @@ export default class LocalStorageLayout extends React.PureComponent {
         <ElementInput text={"Add Element: "} callBack={(text) => this.onAddItem(text)}/>
         <ReactGridLayout
           {...this.props}
+          maxRows={this.state.heightLimit()}
           layout={this.state.layout}
           onLayoutChange={this.onLayoutChange}
           onDragStop= {this.onItemChange}
           onResizeStop = {this.onItemChange}
         >
           {this.state.items.map(el => this.createElement(el))}
-          <div key="grid-limit" data-grid={{ w: 1, h: 1, x: 8, y: this.state.heightLimit, static:true}}>
+          {/* <div key="grid-limit" data-grid={{ w: 1, h: this.state.heightLimit(), x: 1, y: 6, static:true}}>
             <span className="text">HEIGHT LIMIT</span>
-          </div>
+          </div> */}
 
         </ReactGridLayout>
       </div>

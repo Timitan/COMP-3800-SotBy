@@ -3,7 +3,8 @@
     top: 135px;
     left: 210px;
     width: 2550px; /*Equal to item x-padding + number of columns * column width*/
-    height: 2000px; /*Equal to number of rows * row height*/
+    /*height: 2000px;*/ /*Equal to number of rows * row height*/
+    height: 500px;
 }
 
 .grid-container-layout {

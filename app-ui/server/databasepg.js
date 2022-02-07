@@ -10,7 +10,7 @@ const client = new Client({
 
 client.connect();
 
-client.query(`SELECT * from instructors`, (err, res) => {
+client.query(`SELECT * from instructors LIMIT 4`, (err, res) => {
     if(!err) {
         console.log(res.rows);
     } else {

@@ -10,7 +10,7 @@ const socket = io.connect('/');
 export default class App extends React.Component {
   state = {
     users: [],
-    heightLimit: 5,
+    heightLimit: 8,
   };
 
   getHeightLimit() {
@@ -18,16 +18,17 @@ export default class App extends React.Component {
   }
 
   setHeightLimit(heightLimit) {
-    this.state.heightLimit = heightLimit;
-    console.log(this.state.heightLimit);
+    this.setState({heightLimit: heightLimit});
+    console.log("HeightLimit: " + this.state.heightLimit);
   }
 
   render() {
+    console.log("rendered with height: " + this.getHeightLimit());
     return (
       <div className="App">
         <Timeline socket={socket} heightLimit={{get: () => this.getHeightLimit(), set: (limit) => this.setHeightLimit(limit)}} />
         <div className="grid-item-container"> 
-          <NoCollisionLayout socket={socket} heightLimit={this.state.heightLimit} />
+          <NoCollisionLayout socket={socket} heightLimit={() => this.getHeightLimit()} />
           </div>
       </div>
     );
