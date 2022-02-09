@@ -19,29 +19,56 @@ export default class LocalStorageLayout extends React.PureComponent {
     // isBounded: true,
   };
 
-  constructor({props, socket, heightLimit, instructorArray, weekRangesArray}) {
+  constructor({props, socket, heightLimit, instructorArray, weekInformation}) {
     super(props);
 
     console.log(instructorArray);
+    console.log(weekInformation);
 
     this.state = {
-      items: ["MATH", "ENGLISH", "STATS", "HISTORY", "PHYSICS"].map(function(i, key, list) {
-        // console.log(i + key);
-        return {
-          text: i,
-          data: {
-            i: i + key,
-            x: key * 2,
-            y: 0,
-            w: 2,
-            h: 1,
-          }
-        };
-      }),
+      items: instructorArray.reduce(function(acc, element, index) {
+        console.log(element + index);
+        console.log(element.timeblocks[0]);
+        if(element.timeblocks.length == 0){
+          return;
+        }
+        const start = findWeekIndex(weekInformation, element.timeblocks[0].start);
+        const end = findWeekIndex(weekInformation, element.timeblocks[0].end) + 1;
+        return acc.concat(
+          element.timeblocks.map((info) => {
+            return(
+              {
+                text: info.name + element.key,
+                data: {
+                  i: element.key + info.name,
+                  x: start,
+                  y: index * 2,
+                  w: end - start,
+                  h: 1,
+                }
+              }
+            )
+          })
+        );
+      }, []),
+      // items: ["MATH", "ENGLISH", "STATS", "HISTORY", "PHYSICS"].reduce(function(acc, element, key) {
+      //   console.log(element + key);
+      //   return acc.concat([{
+      //     text: element,
+      //     data: {
+      //       i: element + key,
+      //       x: key * 2,
+      //       y: 0,
+      //       w: 2,
+      //       h: 1,
+      //     }
+      //   }]);
+      // }, []),
       //layout: JSON.parse(JSON.stringify(originalLayout)),
       newCounter: 0,
       heightLimit: heightLimit
     };
+    console.log(JSON.stringify(this.state.items));
 
     this.onLayoutChange = this.onLayoutChange.bind(this);
     this.resetLayout = this.resetLayout.bind(this);
@@ -205,6 +232,23 @@ function getFromLS(key) {
     }
   }
   return ls[key];
+}
+
+function findWeekIndex(weekInformation, date) {
+  const monthIndex = date.getMonth();
+  console.log("MonthIndex: " + monthIndex);
+  console.log(weekInformation.weekRangesArray);
+  const weekRanges = weekInformation.weekRangesArray[monthIndex].times;
+
+  for(let i = 0; i < weekRanges.length; i++) {
+    if(date <= weekRanges[i].date) {
+      return weekRanges[i].index;
+    }
+
+  }
+
+  // Return the index of the last week of the month
+  return weekRanges[weekRanges.length - 1].index;
 }
 
 function saveToLS(key, value) {

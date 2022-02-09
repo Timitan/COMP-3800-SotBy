@@ -13,7 +13,7 @@ pool.connect();
 const getInstructors = () => {
     return new Promise(function(resolve, reject) {
       pool.query(`SELECT * from instructors
-                  LIMIT 4`
+                  LIMIT 8`
       ,(error, results) => {
         if (error) {
           reject(error)

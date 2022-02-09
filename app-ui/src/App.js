@@ -23,7 +23,7 @@ export default class App extends React.Component {
 
   parseData = (data) => {
     const parsedData = JSON.parse(data);
-    //console.log(parsedData);
+    console.log("Data: " + data);
     
     const instructorArray = [];
     for(let i = 0; i < parsedData.length; i++) {
@@ -37,7 +37,7 @@ export default class App extends React.Component {
     }
 
     this.setState({instructors: instructorArray})
-    console.log(this.state.instructors);
+    //console.log(JSON.stringify(this.state.instructors));
   }
 
   retrieveInstructorDataFromDatabase = () => {
