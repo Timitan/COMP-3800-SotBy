@@ -1,17 +1,19 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Month from './Month';
 import _ from "lodash";
 import RowHeader from './RowHeader';
-import ElementInput from "./ElemenInput";
+import ElementInput from "./ElementInput";
 import { useState } from "react";
+import NoCollisionLayout from './NoCollisionLayout';
 
-export default function Timeline({socket, heightLimit}) {
+export default function Timeline({socket, heightLimit, instructorArray}) {
     let dateOffset = new Date(new Date().getFullYear(), 0, 1);
 
-    const initialMonthArray = Array.from(Array(11).keys()).map((item, i) => {
+    const weekInformation = {weekNum: 0, weekRangesArray: []};
+    const initialMonthArray = Array.from(Array(12).keys()).map((item, i) => {
         return({
             monthIndex: i,
-            weeks: getWeeks(dateOffset, i),
+            weeks: getWeeks(dateOffset, i, weekInformation),
         });
     });
     //console.log(initialMonthArray);
@@ -28,16 +30,19 @@ export default function Timeline({socket, heightLimit}) {
         "September",
         "October",
         "November",
-        "December"
+        "December",
     ];
 
     // TODO: Once users and their IDs are established, replace the keys below with the appropriate user ID
+    const initialRowHeaderArray = instructorArray;
+    /*
     const initialRowHeaderArray = [
         {key: "jackson1", name: "Jackson"},
         {key: "pete2", name: "Pete"},
         {key: "michelle3", name: "Michelle"},
         {key: "ken4", name: "Ken"},
     ];
+    */
 
     // 100px height cells + 4 px total margin, change later if needed
     const rowHeight = 204;
@@ -46,6 +51,7 @@ export default function Timeline({socket, heightLimit}) {
     const [monthArray, setMonthArray] = useState(initialMonthArray);
     const [rowHeaderArray, setRowHeaderArray] = useState(initialRowHeaderArray);
 
+    /*
     const parseInstructors = (data) => {
         const parsedData = JSON.parse(data);
         const instructorArray = [];
@@ -55,6 +61,8 @@ export default function Timeline({socket, heightLimit}) {
             instructor.name = parsedData[i].first_name + " " + parsedData[i].last_name;
             instructorArray.push(instructor);
         }
+
+        setHeight(instructorArray.length * rowHeight);
         setRowHeaderArray(instructorArray);
     }
 
@@ -67,7 +75,11 @@ export default function Timeline({socket, heightLimit}) {
             parseInstructors(data)
         });
     }
-    retrieveNamesFromDatabase();
+
+    useEffect(() => {
+        retrieveNamesFromDatabase();
+    }, []); // Only retrieve names from the database when the component mounts
+    */
 
     // TODO: Change row headers to take in a key and a text
     const addRowHeader = (text) => {
@@ -92,7 +104,7 @@ export default function Timeline({socket, heightLimit}) {
 
     const createMonth = (item, i) => {
         return <Month key={monthNameArray[item.monthIndex] + " month"} title={monthNameArray[item.monthIndex]} 
-            position={{x: 1, y: i === 0 ? i+3 : getNumberOfWeeks(initialMonthArray, i)+3/*(i) * (item.weeks.length) + 3}*/}} weeks={item.weeks} />
+            position={{x: 1, y: i === 0 ? i+3 : getNumberOfWeeks(initialMonthArray, i)+3}} weeks={item.weeks} />
     }
 
     return(
@@ -108,9 +120,6 @@ export default function Timeline({socket, heightLimit}) {
             </div>
             <div className="grid-container-layout" style={{height:height}}>
                 {
-                    //createInitialSlotArray()
-                }
-                {
                     rowHeaderArray.map((item, i) => {
                         return (
                             createRowHeader(item, i)
@@ -121,25 +130,43 @@ export default function Timeline({socket, heightLimit}) {
             <ElementInput text={"Add Row: "} callBack={(text) => addRowHeader(text)}/>
             {/*this.inputBox
             <button onClick={this.addMonth}>Add Row</button>*/}
+            <div className="grid-item-container"> 
+                <NoCollisionLayout socket={socket} heightLimit={heightLimit.get} instructorArray={instructorArray} weekInformation={weekInformation}/>
+            </div>
         </React.Fragment>
     );
 }
 
-function getWeeks(startDate, month) {
+function getWeeks(startDate, month, weekInformation) {
     const weeks = [];
-    
+    const weekTimes = {month: startDate.getMonth(), times: []};
+
+    // Retrieve first days of every week in all of the months
     while(startDate.getMonth() == month) {
+        // Save the date to an array to position courses in the timeline
+        weekTimes.times.push({index: weekInformation.weekNum + weeks.length, date: new Date(startDate.getTime())});
+
+        // Get the first day of every week
         weeks.push(startDate.getDate());
+
+        // Increment the date by a week
         startDate.setDate(startDate.getDate() + 7);
     }
+
+    weekInformation.weekRangesArray.push(weekTimes);
+    weekInformation.weekNum += weeks.length;
+    //console.log(weekInformation);
     return weeks;
 }
 
 function getNumberOfWeeks(weeks, index) {
     let sum = 0;
+
+    //console.log(weeks)
     //console.log(weeks[0].weeks.length);
     for(let i = index-1; i >= 0; i--) {
         sum += weeks[i].weeks.length;
     }
+
     return sum;
 }

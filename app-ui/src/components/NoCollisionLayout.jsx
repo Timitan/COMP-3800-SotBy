@@ -1,7 +1,7 @@
 import React from "react";
 import RGL, { WidthProvider } from "react-grid-layout";
 import _ from "lodash";
-import ElementInput from "./ElemenInput";
+import ElementInput from "./ElementInput";
 const ReactGridLayout = WidthProvider(RGL);
 const originalLayout = getFromLS("layout") || [];
 
@@ -19,12 +19,14 @@ export default class LocalStorageLayout extends React.PureComponent {
     // isBounded: true,
   };
 
-  constructor({props, socket, heightLimit}) {
+  constructor({props, socket, heightLimit, instructorArray, weekRangesArray}) {
     super(props);
+
+    console.log(instructorArray);
 
     this.state = {
       items: ["MATH", "ENGLISH", "STATS", "HISTORY", "PHYSICS"].map(function(i, key, list) {
-        console.log(i + key);
+        // console.log(i + key);
         return {
           text: i,
           data: {
@@ -52,7 +54,6 @@ export default class LocalStorageLayout extends React.PureComponent {
 
       for(let i = 0; i < this.state.layout.length; i++) {
         if(this.state.layout[i].i == item.i) {
-          //const newLayout = JSON.parse(JSON.stringify(this.state.layout));
           const newLayout = this.state.layout.slice();
           newLayout[i] = item;
 
@@ -95,9 +96,8 @@ export default class LocalStorageLayout extends React.PureComponent {
 
     this.socket.emit('itemChanged', newItem);
 
-    
-    console.log("item Changed");
-    console.log("New Item: " + JSON.stringify(newItem));
+    // console.log("item Changed");
+    // console.log("New Item: " + JSON.stringify(newItem));
     const index = _.findIndex(this.state.items, (element) => {return element.data.i == newItem.i});
     const newItems = this.state.items.slice();
     const foundItem = this.state.items[index];
@@ -132,8 +132,8 @@ export default class LocalStorageLayout extends React.PureComponent {
   }
 
   onRemoveItem(i) {
-    console.log("removing", i);
-    console.log(JSON.stringify(this.state.layout));
+    // console.log("removing", i);
+    // console.log(JSON.stringify(this.state.layout));
     //this.setState({ layout: this.state.layout.filter((element) => element.i != i) });
     this.setState({ items: _.reject(this.state.items, (element) => {return element.data.i == i}) });
     console.log(JSON.stringify(this.state.layout));
@@ -188,9 +188,6 @@ export default class LocalStorageLayout extends React.PureComponent {
           onResizeStop = {this.onItemChange}
         >
           {this.state.items.map(el => this.createElement(el))}
-          {/* <div key="grid-limit" data-grid={{ w: 1, h: this.state.heightLimit(), x: 1, y: 6, static:true}}>
-            <span className="text">HEIGHT LIMIT</span>
-          </div> */}
 
         </ReactGridLayout>
       </div>
