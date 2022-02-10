@@ -27,11 +27,6 @@ handleEditSave() {
   return;
 }
 
-getStringDate(date) {
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  return (months[date.getMonth()] + " " + date.getDate());
-}
-
   render() {
     const descEditSave = this.state.editMode ? "Save" : "Edit";
 
@@ -40,7 +35,7 @@ getStringDate(date) {
         <td>
           <EditText
             name="date"
-            defaultValue={this.getStringDate(this.props.info.date)}
+            defaultValue={getStringDate(this.props.info.date)}
             readonly
           />
         </td>
@@ -77,23 +72,31 @@ getStringDate(date) {
 }
 
 class Week extends React.Component {
-  renderDay(info) {
+
+  // constructor(props) {
+  //   super(props);
+  //   this.state = {
+  //     editMode: false,
+  //   }
+  // }
+
+  renderDay(dayInfo) {
     return (
-      <Day key={info.id}
-        info={info}
+      <Day key={dayInfo.id}
+        info={dayInfo}
       />
     );
   }
 
   render() {
-    const daysList = generateRandomData();
-    const days = daysList.map((day, index) => {
+    const days = this.props.info.map((day, index) => {
       return (
         this.renderDay(day)
       );
     });
     return (
       <table>
+        <caption>Schedule for week of {getStringDate(this.props.info[0].date)}</caption>
         <thead>
           <tr>
             <th>Date</th>
@@ -111,13 +114,51 @@ class Week extends React.Component {
   }
 }
 
+class Course extends React.Component {
+
+  renderWeek(weekInfo) {
+    return (
+      <Week key={weekInfo[0].id}
+        info={weekInfo}
+      />
+    );
+
+  }
+
+  render() {
+    const data = generateRandomData();
+    let weeksData = new Array();
+    const chunk = 7;
+    for (let i = 0, j = data.length; i < j; i += chunk) {
+        weeksData.push(data.slice(i, i + chunk));
+    }
+    const weeks = weeksData.map((week, index) => {
+      return (
+        this.renderWeek(week)
+      );
+    });
+    return (
+      <div>
+        <h1>Detailed Schedule for {this.props.courseName}</h1>
+        {weeks}
+      </div>
+    );
+  }
+}
+
 const App = () => {
     return (
-      <Week></Week>
+      <Course courseName="ASTO1"></Course>
     );
 }
 
 export default App;
+
+function getStringDate(date) {
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return (months[date.getMonth()] + " " + date.getDate());
+}
+
 
 function generateRandomData() {
   
@@ -177,6 +218,62 @@ function generateRandomData() {
     description: "Tools & Equipment",
     resources: null,
   };
+  const day9 = {
+    id: "id9",
+    date: new Date(2022, 0, 11),
+    instructor: "Daniel",
+    description: "Tools & Equipment",
+    resources: null,
+  };
+  const day10 = {
+    id: "id10",
+    date: new Date(2022, 0, 12),
+    instructor: "Tim",
+    description: "Tools & Equipment",
+    resources: null,
+  };
+  const day11 = {
+    id: "id11",
+    date: new Date(2022, 0, 13),
+    instructor: "Max",
+    description: "Tools & Equipment",
+    resources: "NE16-Tire Room",
+  };
+  const day12 = {
+    id: "id12",
+    date: new Date(2022, 0, 14),
+    instructor: "Sam",
+    description: "Tools & Equipment",
+    resources: "NE16-Tire Room",
+  };
+  const day13 = {
+    id: "id13",
+    date: new Date(2022, 0, 15),
+    instructor: null,
+    description: null,
+    resources: null,
+  };
+  const day14 = {
+    id: "id14",
+    date: new Date(2022, 0, 16),
+    instructor: null,
+    description: null,
+    resources: null,
+  };
+  const day15 = {
+    id: "id15",
+    date: new Date(2022, 0, 17),
+    instructor: "Sam",
+    description: "Welding",
+    resources: null,
+  };
+  const day16 = {
+    id: "id16",
+    date: new Date(2022, 0, 18),
+    instructor: "Welding",
+    description: "Tools & Equipment",
+    resources: null,
+  };
   
-  return ([day1, day2, day3, day4, day5, day6, day7, day8]);
+  return ([day1, day2, day3, day4, day5, day6, day7, day8, day9, day10, day11, day12, day13, day14, day15, day16]);
 }
