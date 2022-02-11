@@ -28,10 +28,26 @@ app.use(function (req, res, next) {
   next();
 });
 
+// Routes
 app.get('/instructors', (req, res) => {
   instructor_model.getInstructors()
   .then(response => {
     console.log("Response: " + response);
+    res.status(200).send(response);
+  })
+  .catch(error => {
+    console.log(error);
+    res.status(500).send(error);
+  })
+})
+
+app.put('/instructors/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  const { start, end } = req.body;
+  //console.log("Id: " + id + "\nStart and Ends: " + start + " | " + end);
+  instructor_model.updateCourse(id, start, end)
+  .then(response => {
+    console.log("Response: " + JSON.stringify(response));
     res.status(200).send(response);
   })
   .catch(error => {
@@ -53,8 +69,20 @@ io.adapter(createAdapter(pool));
 
 io.on('connection', (socket) => {
   console.log('a user connected');
-  socket.on('itemChanged', (item) => {
+  socket.on('itemChanged', (item, itemInfo) => {
     // Broadcast to everyone except sender
+    //console.log(item);
     socket.broadcast.emit('itemChanged', item);
+
+    // Update posgresql database with the changed item
+    console.log(itemInfo);
+    instructor_model.updateCourse(itemInfo.id, itemInfo.start, itemInfo.end)
+    .then(response => {
+      console.log("Update Success");
+      //console.log("Response: " + JSON.stringify(response));
+    })
+    .catch(error => {
+      console.log(error);
+    })
   });
 });

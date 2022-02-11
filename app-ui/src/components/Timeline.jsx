@@ -6,10 +6,20 @@ import ElementInput from "./ElementInput";
 import { useState } from "react";
 import NoCollisionLayout from './NoCollisionLayout';
 
+// To find the a course's x position based on date and the date based on x position
+function TwoWayMap(map) {
+    this.map = map;
+    this.reverseMap = {};
+    for(var key in map) {
+       var value = map[key];
+       this.reverseMap[value] = key;   
+    }
+ }
+
 export default function Timeline({socket, heightLimit, instructorArray}) {
     let dateOffset = new Date(new Date().getFullYear(), 0, 1);
 
-    const weekInformation = {weekNum: 0, weekRangesArray: []};
+    const weekInformation = {weekNum: 0, weekRangesArray: [], indexMap: {}};
     const initialMonthArray = Array.from(Array(12).keys()).map((item, i) => {
         return({
             monthIndex: i,
@@ -17,6 +27,8 @@ export default function Timeline({socket, heightLimit, instructorArray}) {
         });
     });
     //console.log(initialMonthArray);
+    //const weekInformation = new TwoWayMap(weekRangeInformation.weekRanges); 
+    //console.log("Week information: " + JSON.stringify(weekInformation.map) + " \n| Week information rev: " + JSON.stringify(weekInformation.reverseMap));
 
     const monthNameArray = [
         "January",
@@ -50,6 +62,7 @@ export default function Timeline({socket, heightLimit, instructorArray}) {
     const [height, setHeight] = useState(initialRowHeaderArray.length * rowHeight);
     const [monthArray, setMonthArray] = useState(initialMonthArray);
     const [rowHeaderArray, setRowHeaderArray] = useState(initialRowHeaderArray);
+    //const removedRow = useEffect();
 
     /*
     const parseInstructors = (data) => {
@@ -144,7 +157,10 @@ function getWeeks(startDate, month, weekInformation) {
     // Retrieve first days of every week in all of the months
     while(startDate.getMonth() == month) {
         // Save the date to an array to position courses in the timeline
-        weekTimes.times.push({index: weekInformation.weekNum + weeks.length, date: new Date(startDate.getTime())});
+        const index = weekInformation.weekNum + weeks.length
+        const date = new Date(startDate.getTime());
+        weekTimes.times.push({index: index, date: date});
+        weekInformation.indexMap[index] = date;
 
         // Get the first day of every week
         weeks.push(startDate.getDate());

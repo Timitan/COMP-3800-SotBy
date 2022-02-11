@@ -6,6 +6,9 @@ import Timeline from './components/Timeline';
 import io from "socket.io-client";
 const socket = io.connect('/');
 
+const END_POINT_ROOT = "http://localhost:8000/";
+const INSTRUCTORS_RESOURCE = "instructors";
+
 export default class App extends React.Component {
   state = {
     instructors: [],
@@ -23,7 +26,7 @@ export default class App extends React.Component {
 
   parseData = (data) => {
     const parsedData = JSON.parse(data);
-    console.log("Data: " + data);
+    //console.log("Data: " + data);
     
     const instructorArray = [];
     for(let i = 0; i < parsedData.length; i++) {
@@ -36,12 +39,11 @@ export default class App extends React.Component {
         instructorArray.push(instructor);
     }
 
-    this.setState({instructors: instructorArray})
-    //console.log(JSON.stringify(this.state.instructors));
+    this.setState({instructors: instructorArray, heightLimit: (instructorArray.length + 1) * 2})
   }
 
   retrieveInstructorDataFromDatabase = () => {
-      fetch('http://localhost:8000/instructors')
+      fetch(END_POINT_ROOT + INSTRUCTORS_RESOURCE)
       .then(response => {
           return response.text();
       })

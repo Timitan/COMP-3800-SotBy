@@ -3,7 +3,8 @@ import RGL, { WidthProvider } from "react-grid-layout";
 import _ from "lodash";
 import ElementInput from "./ElementInput";
 const ReactGridLayout = WidthProvider(RGL);
-const originalLayout = getFromLS("layout") || [];
+const PUT = "PUT";
+//const originalLayout = getFromLS("layout") || [];
 
 export default class LocalStorageLayout extends React.PureComponent {
   static defaultProps = {
@@ -11,7 +12,6 @@ export default class LocalStorageLayout extends React.PureComponent {
     cols: 25,
     rowHeight: 100,
     margin: [2, 2],
-    onLayoutChange: function() {},
     preventCollision: true,
     resizeHandles: ['e'],
     compactType: null,
@@ -22,13 +22,13 @@ export default class LocalStorageLayout extends React.PureComponent {
   constructor({props, socket, heightLimit, instructorArray, weekInformation}) {
     super(props);
 
-    console.log(instructorArray);
-    console.log(weekInformation);
+    // console.log(instructorArray);
+    // console.log(weekInformation);
 
     this.state = {
       items: instructorArray.reduce(function(acc, element, index) {
-        console.log(element + index);
-        console.log(element.timeblocks[0]);
+        // console.log(element + index);
+        // console.log(element.timeblocks[0]);
         if(element.timeblocks.length == 0){
           return;
         }
@@ -40,7 +40,7 @@ export default class LocalStorageLayout extends React.PureComponent {
               {
                 text: info.name + element.key,
                 data: {
-                  i: element.key + info.name,
+                  i: element.key,
                   x: start,
                   y: index * 2,
                   w: end - start,
@@ -51,34 +51,20 @@ export default class LocalStorageLayout extends React.PureComponent {
           })
         );
       }, []),
-      // items: ["MATH", "ENGLISH", "STATS", "HISTORY", "PHYSICS"].reduce(function(acc, element, key) {
-      //   console.log(element + key);
-      //   return acc.concat([{
-      //     text: element,
-      //     data: {
-      //       i: element + key,
-      //       x: key * 2,
-      //       y: 0,
-      //       w: 2,
-      //       h: 1,
-      //     }
-      //   }]);
-      // }, []),
-      //layout: JSON.parse(JSON.stringify(originalLayout)),
       newCounter: 0,
-      heightLimit: heightLimit
+      heightLimit: heightLimit,
+      weekInformation: weekInformation
     };
-    console.log(JSON.stringify(this.state.items));
+    //console.log(JSON.stringify(this.state.items));
 
     this.onLayoutChange = this.onLayoutChange.bind(this);
     this.resetLayout = this.resetLayout.bind(this);
     this.socket = socket;
 
-    //this.onAddItem = this.onAddItem.bind(this);
-
     this.socket.on("itemChanged", (item) => {
       console.log("Item Received: " + JSON.stringify(item));
 
+      console.log("Layout: " + this.state.layout);
       for(let i = 0; i < this.state.layout.length; i++) {
         if(this.state.layout[i].i == item.i) {
           const newLayout = this.state.layout.slice();
@@ -90,7 +76,7 @@ export default class LocalStorageLayout extends React.PureComponent {
             layout: newLayout
           });
   
-          saveToLS("layout", this.state.layout);
+          //saveToLS("layout", this.state.layout);
           break;
         }
       }
@@ -105,14 +91,35 @@ export default class LocalStorageLayout extends React.PureComponent {
 
   onLayoutChange(layout) {
     /*eslint no-console: 0*/
-    saveToLS("layout", layout);
+    //saveToLS("layout", layout);
     this.setState({ layout });
-    this.props.onLayoutChange(layout); // updates status display
+    // this.props.onLayoutChange(layout); // updates status display
     console.log("layout changed");
   }
+  
+  /*
+  // Note: Websockets are used to send a query to update the database
+  updateCourse(id, start, end) {
+    const body = {start: start, end: end};
+    fetch('http://localhost:8000/instructors/' + id, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    })
+    .then(response => {
+      console.log("Response: " + JSON.stringify(response));
+        return response.text();
+    })
+    .then(data => {
+        console.log("Data from updating course: " + data);
+    });
+  }
+  */
 
   onItemChange = (layout, oldItem, newItem, placeholder, e, element) => {
-    /*
+    /* Information logging
     console.log("Layout:" + JSON.stringify(layout));
     console.log("Old Item: " + JSON.stringify(oldItem));
     console.log("New Item: " + JSON.stringify(newItem));
@@ -121,10 +128,24 @@ export default class LocalStorageLayout extends React.PureComponent {
     console.log(layout.indexOf(newItem));
     console.log("Layout Index: " + this.layout)*/
 
-    this.socket.emit('itemChanged', newItem);
-
-    // console.log("item Changed");
+    // console.log("Week Information: " + this.state.weekInformation);
+    // console.log("Layout:" + JSON.stringify(layout));
     // console.log("New Item: " + JSON.stringify(newItem));
+
+    // Update the dates on the postgresql database
+    const startDate = findWeekDate(this.state.weekInformation, newItem.x);
+    const endDate = findWeekDate(this.state.weekInformation, newItem.w + newItem.x - 1);
+    // HTTP request instead of sockets
+    //this.updateCourse(newItem.i, startDate.getTime(), endDate.getTime());
+
+    this.socket.emit('itemChanged', newItem, {id: newItem.i, start: startDate.getTime(), end: endDate.getTime()});
+
+    //console.log("ISO: " + new Date(Date.now()).toISOString());
+    //console.log("Start: " + startDate + "\nEnd: " + endDate);
+    //console.log("Date now: " + Date.now());
+    //console.log("StartDate: " + startDate.getTime());
+
+    // Code for updating the properties of an item's state
     const index = _.findIndex(this.state.items, (element) => {return element.data.i == newItem.i});
     const newItems = this.state.items.slice();
     const foundItem = this.state.items[index];
@@ -133,10 +154,7 @@ export default class LocalStorageLayout extends React.PureComponent {
     foundItem.data.x = newItem.x;
     foundItem.data.y = newItem.y;
     newItems.splice(index, 1, foundItem);
-    //console.log("Found Item: " + JSON.stringify(this.state.items[index]));
-    //console.log("NewItems: " +JSON.stringify(newItems));
     this.setState({items: newItems});
-    //console.log("New Items State: " + JSON.stringify(this.state.items));
   }
 
   onAddItem(text, x=0, y=0, w=3) {
@@ -159,12 +177,9 @@ export default class LocalStorageLayout extends React.PureComponent {
   }
 
   onRemoveItem(i) {
-    // console.log("removing", i);
-    // console.log(JSON.stringify(this.state.layout));
-    //this.setState({ layout: this.state.layout.filter((element) => element.i != i) });
+    
     this.setState({ items: _.reject(this.state.items, (element) => {return element.data.i == i}) });
     console.log(JSON.stringify(this.state.layout));
-    
   }
 
   createElement(el) {
@@ -176,14 +191,14 @@ export default class LocalStorageLayout extends React.PureComponent {
       padding: "5px",
     };
     const i = el.i;
-    // console.log("Added " + el.text);
 
+    // console.log("Recreating Items...");
     // TODO: Figure out how to programmatically reset elements that are over the height limit, solution needs setState to update the DOM
     // const currentHeightLimit = this.state.heightLimit();
     // console.log("el.data.y: " + JSON.stringify(el.data.y) + ", Height: " + currentHeightLimit);
 
     // if(el.data.y > currentHeightLimit) {
-    //   el.data.y = currentHeightLimit;
+    //   el.data.y = 1;
     //   console.log("el.data.y after: " + el.data.y);
     // } 
 
@@ -204,7 +219,7 @@ export default class LocalStorageLayout extends React.PureComponent {
   render() {
     return (
       <div>
-        <button onClick={this.resetLayout} style={{position: "sticky", zIndex: 99}}>Reset Layout</button>
+        {/*<button onClick={this.resetLayout} style={{position: "sticky", zIndex: 99}}>Reset Layout</button>*/}
         <ElementInput text={"Add Element: "} callBack={(text) => this.onAddItem(text)}/>
         <ReactGridLayout
           {...this.props}
@@ -235,9 +250,12 @@ function getFromLS(key) {
 }
 
 function findWeekIndex(weekInformation, date) {
+  // Search for a week in a particular month
   const monthIndex = date.getMonth();
-  console.log("MonthIndex: " + monthIndex);
-  console.log(weekInformation.weekRangesArray);
+  // console.log("MonthIndex: " + monthIndex);
+  // console.log(weekInformation.weekRangesArray);
+
+  // Get the first day of every week in that month
   const weekRanges = weekInformation.weekRangesArray[monthIndex].times;
 
   for(let i = 0; i < weekRanges.length; i++) {
@@ -249,6 +267,10 @@ function findWeekIndex(weekInformation, date) {
 
   // Return the index of the last week of the month
   return weekRanges[weekRanges.length - 1].index;
+}
+
+function findWeekDate(weekInformation, index) {
+  return weekInformation.indexMap[index];
 }
 
 function saveToLS(key, value) {
