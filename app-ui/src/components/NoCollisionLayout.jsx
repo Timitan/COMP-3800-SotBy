@@ -1,7 +1,7 @@
 import React from "react";
 import RGL, { WidthProvider } from "react-grid-layout";
 import _ from "lodash";
-import ElementInput from "./ElementInput";
+import Form from "./Form";
 const ReactGridLayout = WidthProvider(RGL);
 const PUT = "PUT";
 //const originalLayout = getFromLS("layout") || [];
@@ -29,9 +29,11 @@ export default class LocalStorageLayout extends React.PureComponent {
       items: instructorArray.reduce(function(acc, element, index) {
         // console.log(element + index);
         // console.log(element.timeblocks[0]);
-        if(element.timeblocks.length == 0){
+        console.log(element.timeblocks);
+        if(element.timeblocks.length == 0 || weekInformation.length == 0){
           return;
         }
+
         const start = findWeekIndex(weekInformation, element.timeblocks[0].start);
         const end = findWeekIndex(weekInformation, element.timeblocks[0].end) + 1;
         return acc.concat(
@@ -220,7 +222,7 @@ export default class LocalStorageLayout extends React.PureComponent {
     return (
       <div>
         {/*<button onClick={this.resetLayout} style={{position: "sticky", zIndex: 99}}>Reset Layout</button>*/}
-        <ElementInput text={"Add Element: "} callBack={(text) => this.onAddItem(text)}/>
+        {/*<Form text={"Add Element: "} callBack={(text) => this.onAddItem(text)}/>*/}
         <ReactGridLayout
           {...this.props}
           maxRows={this.state.heightLimit()}

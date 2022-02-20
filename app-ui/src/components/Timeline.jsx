@@ -2,7 +2,8 @@ import React, { useEffect } from "react";
 import Month from './Month';
 import _ from "lodash";
 import RowHeader from './RowHeader';
-import ElementInput from "./ElementInput";
+import Form from "./Form";
+import Popup from "reactjs-popup";
 import { useState } from "react";
 import NoCollisionLayout from './NoCollisionLayout';
 
@@ -140,7 +141,11 @@ export default function Timeline({socket, heightLimit, instructorArray}) {
                     })
                 }
             </div>
-            <ElementInput text={"Add Row: "} callBack={(text) => addRowHeader(text)}/>
+            <Popup trigger={<button>Add Row</button>} modal>
+                <div className="add-row-modal-bg">
+                    <Form text={"Add Row: "} textObject={["Username", "First Name", "Last Name", "Email", "Password"]}callBack={(text) => addRowHeader(text)}/>
+                </div>
+            </Popup>
             {/*this.inputBox
             <button onClick={this.addMonth}>Add Row</button>*/}
             <div className="grid-item-container"> 

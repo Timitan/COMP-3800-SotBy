@@ -7,12 +7,13 @@ import io from "socket.io-client";
 const socket = io.connect('/');
 
 const END_POINT_ROOT = "http://localhost:8000/";
-const INSTRUCTORS_RESOURCE = "instructors";
+const INSTRUCTORS_RESOURCE = "users";
 
 export default class App extends React.Component {
   state = {
     instructors: [],
     heightLimit: 8,
+    loaded: false
   };
 
   getHeightLimit() {
@@ -25,6 +26,11 @@ export default class App extends React.Component {
   }
 
   parseData = (data) => {
+    console.log(data);
+    if(!data) {
+      return null;
+    }
+
     const parsedData = JSON.parse(data);
     //console.log("Data: " + data);
     
@@ -34,12 +40,13 @@ export default class App extends React.Component {
         instructor.key = parsedData[i].id;
         instructor.name = parsedData[i].first_name + " " + parsedData[i].last_name;
         instructor.timeblocks = [];
-        instructor.timeblocks.push({start: new Date(parsedData[i].created_at), end: new Date(parsedData[i].updated_at), name: "Test " + i});
+        instructor.timeblocks.push({start: new Date(parsedData[i].start_date), end: new Date(parsedData[i].end_date), name: "Test " + i});
 
         instructorArray.push(instructor);
     }
 
     this.setState({instructors: instructorArray, heightLimit: (instructorArray.length + 1) * 2})
+    this.setState({loaded: true})
   }
 
   retrieveInstructorDataFromDatabase = () => {
@@ -66,7 +73,7 @@ export default class App extends React.Component {
   }
 
   render() {
-    return (this.state.instructors.length ? this.renderApp() :
+    return (this.state.loaded ? this.renderApp() :
       <span>Loading data...</span>
     );
   }

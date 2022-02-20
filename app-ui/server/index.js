@@ -13,7 +13,7 @@ const pool = new Pool({
   user: "postgres",
   port: 5432,
   password: "password123",
-  database: "sotby-test"
+  database: "sotby"
 })
 
 const instructor_model = require('./requests')
@@ -29,8 +29,8 @@ app.use(function (req, res, next) {
 });
 
 // Routes
-app.get('/instructors', (req, res) => {
-  instructor_model.getInstructors()
+app.get('/users', (req, res) => {
+  instructor_model.getUsers()
   .then(response => {
     console.log("Response: " + response);
     res.status(200).send(response);
@@ -41,7 +41,19 @@ app.get('/instructors', (req, res) => {
   })
 })
 
-app.put('/instructors/:id', (req, res) => {
+app.post('/users', (req, res) => {
+  instructor_model.postUser(req.body)
+  .then(response => {
+    console.log("Response: " + response);
+    res.status(200).send(response);
+  })
+  .catch(error => {
+    console.log(error);
+    res.status(500).send(error);
+  })
+})
+
+app.put('/users/:id', (req, res) => {
   const id = parseInt(req.params.id);
   const { start, end } = req.body;
   //console.log("Id: " + id + "\nStart and Ends: " + start + " | " + end);
@@ -76,7 +88,7 @@ io.on('connection', (socket) => {
 
     // Update posgresql database with the changed item
     console.log(itemInfo);
-    instructor_model.updateCourse(itemInfo.id, itemInfo.start, itemInfo.end)
+    instructor_model.putCourse(itemInfo.id, itemInfo.start, itemInfo.end)
     .then(response => {
       console.log("Update Success");
       //console.log("Response: " + JSON.stringify(response));
