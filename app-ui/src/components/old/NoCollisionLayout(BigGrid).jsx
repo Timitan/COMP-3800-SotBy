@@ -2,9 +2,9 @@ import React from "react";
 import RGL, { WidthProvider } from "react-grid-layout";
 import _ from "lodash";
 import Form from "./Form";
-import TimelineGrid from "./TimelineGrid";
 const ReactGridLayout = WidthProvider(RGL);
 const PUT = "PUT";
+//const originalLayout = getFromLS("layout") || [];
 
 export default class LocalStorageLayout extends React.PureComponent {
   static defaultProps = {
@@ -16,10 +16,14 @@ export default class LocalStorageLayout extends React.PureComponent {
     resizeHandles: ['e'],
     compactType: null,
     autoSize: true
+    // isBounded: true,
   };
 
   constructor({props, socket, heightLimit, instructorArray, weekInformation}) {
     super(props);
+
+    // console.log(instructorArray);
+    // console.log(weekInformation);
 
     this.state = {
       items: instructorArray.reduce(function(acc, element, index) {
@@ -50,14 +54,12 @@ export default class LocalStorageLayout extends React.PureComponent {
         );
       }, []),
       newCounter: 0,
-      heightLimit: heightLimit.get,
+      heightLimit: heightLimit,
       weekInformation: weekInformation
     };
 
     //this.onLayoutChange = this.onLayoutChange.bind(this);
     this.socket = socket;
-    this.instructorArray = instructorArray;
-    this.heightLimit = heightLimit;
 
     this.socket.on("itemChanged", (item) => {
       console.log("Item Received: " + JSON.stringify(item));
@@ -217,8 +219,21 @@ export default class LocalStorageLayout extends React.PureComponent {
   render() {
     return (
       <React.Fragment>
-      <TimelineGrid socket={this.socket} heightLimit={this.heightLimit} instructorArray={this.instructorArray} />
-      <div className="grid-item-container" style={{position: "absolute"}}>
+      <button style={{position: "sticky", zIndex: 99}} onClick={() => this.onAddItem("test1")}>Add Item</button>
+      <div 
+          style={{position: "absolute", zIndex: 99, width: 200, backgroundColor: "yellow"}}
+          className="droppable-element"
+          draggable={true}
+          unselectable="on"
+          // this is a hack for firefox
+          // Firefox requires some kind of initialization
+          // which we can do by adding this attribute
+          // @see https://bugzilla.mozilla.org/show_bug.cgi?id=568313
+          onDragStart={e => e.dataTransfer.setData("text/plain", "")}
+        >
+          Drag me!
+        </div>
+      <div>
         {/*<button onClick={this.resetLayout} style={{position: "sticky", zIndex: 99}}>Reset Layout</button>*/}
         <ReactGridLayout
           {...this.props}
@@ -233,11 +248,27 @@ export default class LocalStorageLayout extends React.PureComponent {
           droppingItem={this.props.item}
         >
           {this.state.items.map(el => this.createElement(el))}
+          {/* <div key={"j"}>
+            <span className="text">{"hge;p"}</span>
+          </div> */}
+
         </ReactGridLayout>
       </div>
       </React.Fragment>
     );
   }
+}
+
+function getFromLS(key) {
+  let ls = {};
+  if (global.localStorage) {
+    try {
+      ls = JSON.parse(global.localStorage.getItem("rgl-7")) || {};
+    } catch (e) {
+      /*Ignore*/
+    }
+  }
+  return ls[key];
 }
 
 function findWeekIndex(weekInformation, date) {
@@ -262,4 +293,15 @@ function findWeekIndex(weekInformation, date) {
 
 function findWeekDate(weekInformation, index) {
   return weekInformation.indexMap[index];
+}
+
+function saveToLS(key, value) {
+  if (global.localStorage) {
+    global.localStorage.setItem(
+      "rgl-7",
+      JSON.stringify({
+        [key]: value
+      })
+    );
+  }
 }

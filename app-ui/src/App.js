@@ -32,15 +32,15 @@ export default class App extends React.Component {
     }
 
     const parsedData = JSON.parse(data);
-    //console.log("Data: " + data);
+    console.log("Data: " + data);
     
     const instructorArray = [];
     for(let i = 0; i < parsedData.length; i++) {
         const instructor = {};
-        instructor.key = parsedData[i].id;
+        instructor.key = parsedData[i].username;
         instructor.name = parsedData[i].first_name + " " + parsedData[i].last_name;
         instructor.timeblocks = [];
-        instructor.timeblocks.push({start: new Date(parsedData[i].start_date), end: new Date(parsedData[i].end_date), name: "Test " + i});
+        instructor.timeblocks.push({start: new Date(parsedData[i].start_date), end: new Date(parsedData[i].end_date), name: parsedData[i].title + i});
 
         instructorArray.push(instructor);
     }

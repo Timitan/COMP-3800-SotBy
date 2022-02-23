@@ -32,7 +32,6 @@ app.use(function (req, res, next) {
 app.get('/users', (req, res) => {
   instructor_model.getUsers()
   .then(response => {
-    console.log("Response: " + response);
     res.status(200).send(response);
   })
   .catch(error => {
@@ -68,6 +67,20 @@ app.put('/users/:id', (req, res) => {
   })
 })
 
+// app.delete('/users/:id', (req, res) => {
+//   const id = req.params.id;
+//   //console.log("Id: " + id + "\nStart and Ends: " + start + " | " + end);
+//   instructor_model.deleteUser(id)
+//   .then(response => {
+//     console.log("Response: " + JSON.stringify(response));
+//     res.status(200).send(response);
+//   })
+//   .catch(error => {
+//     console.log(error);
+//     res.status(500).send(error);
+//   })
+// })
+
 var server = app.listen(
   port,
   console.log(
@@ -91,6 +104,40 @@ io.on('connection', (socket) => {
     instructor_model.putCourse(itemInfo.id, itemInfo.start, itemInfo.end)
     .then(response => {
       console.log("Update Success");
+      //console.log("Response: " + JSON.stringify(response));
+    })
+    .catch(error => {
+      console.log(error);
+    })
+  });
+
+  socket.on('userAdded', (user) => {
+    // Broadcast to everyone except sender
+    //console.log(item);
+    socket.broadcast.emit('userAdded', user);
+
+    // Update posgresql database
+    console.log(user);
+    instructor_model.postUser(user)
+    .then(response => {
+      console.log("Add Success");
+      //console.log("Response: " + JSON.stringify(response));
+    })
+    .catch(error => {
+      console.log(error);
+    })
+  });
+
+  socket.on('userDeleted', (key) => {
+    // Broadcast to everyone except sender
+    //console.log(item);
+    socket.broadcast.emit('userDeleted', key);
+
+    // Update posgresql database
+    console.log(key);
+    instructor_model.deleteUser(key)
+    .then(response => {
+      console.log("Add Success");
       //console.log("Response: " + JSON.stringify(response));
     })
     .catch(error => {

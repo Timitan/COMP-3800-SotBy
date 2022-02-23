@@ -9,12 +9,12 @@ export default function Form({title, textObject, callBack}) {
           return(
             <React.Fragment key={item + " container"}>
               <label key={item + " label"}>{item}</label>
-              <input key={item + " input"} onInput={e => setInput({...input, [item]: e.target.value})}/>
+              <input key={item + " input"} onInput={e => setInput({...input, [item.split(" ").join("").toLowerCase()]: e.target.value})}/>
               <br />
             </React.Fragment>
           )
         })}
-        <button key={title + " button"} onClick={() => callBack(input)}>Submit</button>
+        <button key={title + " button"} onClick={() => callBack({...input, datejoined: new Date().getTime()})}>Submit</button>
       </div>
     );
 }

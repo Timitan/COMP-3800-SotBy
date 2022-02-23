@@ -3,6 +3,7 @@
   transition: height 200ms ease;
 }
 .react-grid-item {
+  z-index: 100;
   transition: all 200ms ease;
   /*transition-property: left, top;*/
   background-color: rgba(241, 241, 241, 0.5);

@@ -41,65 +41,95 @@ export default function Timeline({socket, heightLimit, instructorArray}) {
         "December",
     ];
 
-    // // TODO: Once users and their IDs are established, replace the keys below with the appropriate user ID
-    // const initialRowHeaderArray = instructorArray;
-    // /*
-    // const initialRowHeaderArray = [
-    //     {key: "jackson1", name: "Jackson"},
-    //     {key: "pete2", name: "Pete"},
-    //     {key: "michelle3", name: "Michelle"},
-    //     {key: "ken4", name: "Ken"},
-    // ];
-    // */
+    // TODO: Once users and their IDs are established, replace the keys below with the appropriate user ID
+    const initialRowHeaderArray = instructorArray;
+    /*
+    const initialRowHeaderArray = [
+        {key: "jackson1", name: "Jackson"},
+        {key: "pete2", name: "Pete"},
+        {key: "michelle3", name: "Michelle"},
+        {key: "ken4", name: "Ken"},
+    ];
+    */
 
-    // // 100px height cells + 4 px total margin, change later if needed
-    // const rowHeight = 204;
+    // 100px height cells + 4 px total margin, change later if needed
+    const rowHeight = 204;
 
-    // const [height, setHeight] = useState(initialRowHeaderArray.length * rowHeight);
+    const [height, setHeight] = useState(initialRowHeaderArray.length * rowHeight);
     const [monthArray, setMonthArray] = useState(initialMonthArray);
-    // const [rowHeaderArray, setRowHeaderArray] = useState(initialRowHeaderArray);
-    // //const removedRow = useEffect();
+    const [rowHeaderArray, setRowHeaderArray] = useState(initialRowHeaderArray);
+    //const removedRow = useEffect();
 
-    // // TODO: Change row headers to take in a key and a text
-    // const addRowHeader = (user, emit=true) => {
-    //     heightLimit.set((rowHeaderArray.length + 1) * 2);
-    //     setRowHeaderArray([...rowHeaderArray, {key: user.username, name: user.firstname + " " + user.lastname}]);
-    //     setHeight(height + rowHeight);
-    //     console.log("Length in Timeline: " + rowHeaderArray.length);
+    /*
+    const parseInstructors = (data) => {
+        const parsedData = JSON.parse(data);
+        const instructorArray = [];
+        for(let i = 0; i < parsedData.length; i++) {
+            const instructor = {};
+            instructor.key = parsedData[i].id;
+            instructor.name = parsedData[i].first_name + " " + parsedData[i].last_name;
+            instructorArray.push(instructor);
+        }
 
-    //     if(emit) {
-    //         socket.emit('userAdded', user);
-    //     }
-    // }
+        setHeight(instructorArray.length * rowHeight);
+        setRowHeaderArray(instructorArray);
+    }
 
-    // // TODO: Find a key in the row header array and remove that instead of the name
-    // const removeRowHeader = (key, emit=true) => {
-    //     heightLimit.set((rowHeaderArray.length - 1) * 2);
-    //     setRowHeaderArray(_.reject(rowHeaderArray, (element) => {return element.key == key}))
-    //     setHeight(height - rowHeight);
-    //     if(emit) {
-    //         socket.emit('userDeleted', key);
-    //     }
-    // }
+    const retrieveNamesFromDatabase = () => {
+        fetch('http://localhost:8000/instructors')
+        .then(response => {
+            return response.text();
+        })
+        .then(data => {
+            parseInstructors(data)
+        });
+    }
+
+    useEffect(() => {
+        retrieveNamesFromDatabase();
+    }, []); // Only retrieve names from the database when the component mounts
+    */
+
+    // TODO: Change row headers to take in a key and a text
+    const addRowHeader = (user, emit=true) => {
+        heightLimit.set((rowHeaderArray.length + 1) * 2);
+        setRowHeaderArray([...rowHeaderArray, {key: user.username, name: user.firstname + " " + user.lastname}]);
+        setHeight(height + rowHeight);
+        console.log("Length in Timeline: " + rowHeaderArray.length);
+
+        if(emit) {
+            socket.emit('userAdded', user);
+        }
+    }
+
+    // TODO: Find a key in the row header array and remove that instead of the name
+    const removeRowHeader = (key, emit=true) => {
+        heightLimit.set((rowHeaderArray.length - 1) * 2);
+        setRowHeaderArray(_.reject(rowHeaderArray, (element) => {return element.key == key}))
+        setHeight(height - rowHeight);
+        if(emit) {
+            socket.emit('userDeleted', key);
+        }
+    }
     
-    // const createRowHeader = (item, i) => {
-    //     return <RowHeader key={item.key + "rowHeader" + i} socket={socket} text={item.name} 
-    //             position={{x: i*2+1, y: 1}} width={monthArray.length * 5} height={2}
-    //             removeFunction={() => removeRowHeader(item.key)}/>
-    // }
+    const createRowHeader = (item, i) => {
+        return <RowHeader key={item.key + "rowHeader" + i} socket={socket} text={item.name} 
+                position={{x: i*2+1, y: 1}} width={monthArray.length * 5} height={2}
+                removeFunction={() => removeRowHeader(item.key)}/>
+    }
 
     const createMonth = (item, i) => {
         return <Month key={monthNameArray[item.monthIndex] + " month"} title={monthNameArray[item.monthIndex]} 
             position={{x: 1, y: i === 0 ? i+3 : getNumberOfWeeks(initialMonthArray, i)+3}} weeks={item.weeks} />
     }
 
-    // socket.on("userAdded", (user) => {
-    //     addRowHeader(user, false);
-    // });
+    socket.on("userAdded", (user) => {
+        addRowHeader(user, false);
+    });
 
-    // socket.on("userDeleted", (id) => {
-    //     removeRowHeader(id, false);
-    // });
+    socket.on("userDeleted", (id) => {
+        removeRowHeader(id, false);
+    });
 
     return(
         <React.Fragment>
@@ -121,14 +151,16 @@ export default function Timeline({socket, heightLimit, instructorArray}) {
                     })
                 }
             </div> */}
-            {/* <Popup trigger={<button>Add Row</button>} modal>
+            <Popup trigger={<button>Add Row</button>} modal>
                 <div className="add-row-modal-bg">
                     <Form text={"Add Row: "} textObject={["Username", "First Name", "Last Name", "Email", "Password"]}callBack={(text) => addRowHeader(text)}/>
                 </div>
-            </Popup> */}
+            </Popup>
             {/*this.inputBox
             <button onClick={this.addMonth}>Add Row</button>*/}
-            <NoCollisionLayout socket={socket} heightLimit={heightLimit} instructorArray={instructorArray} weekInformation={weekInformation}/>
+            <div className="grid-item-container"> 
+                <NoCollisionLayout socket={socket} heightLimit={heightLimit.get} instructorArray={instructorArray} weekInformation={weekInformation}/>
+            </div>
         </React.Fragment>
     );
 }

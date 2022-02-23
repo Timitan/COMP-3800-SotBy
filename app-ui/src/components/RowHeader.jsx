@@ -1,6 +1,7 @@
 import React from "react";
 import Slot from "./Slot";
 import { useState } from "react";
+import CourseElement from "./CourseElement";
 
 export default function RowHeader({socket, position, text, width, height, removeFunction}) {
     //const item = null;
