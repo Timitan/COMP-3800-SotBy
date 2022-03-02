@@ -11,7 +11,7 @@ import { useState } from "react";
 import NoCollisionLayout from './NoCollisionLayout';
 // import DragFromOutsideLayout from "./DragFromOutside";
 
-export default function TimelineGrid({socket, heightLimit, instructorArray}) {
+export default function TimelineGrid({socket, heightLimit, instructorArray, createCourse, totalWeeks}) {
 
     let dateOffset = new Date(new Date().getFullYear(), 0, 1);
 
@@ -25,39 +25,32 @@ export default function TimelineGrid({socket, heightLimit, instructorArray}) {
     const [rowHeaderArray, setRowHeaderArray] = useState(initialRowHeaderArray);
 
     // TODO: Change row headers to take in a key and a text
-    const addRowHeader = (user, emit=true) => {
+    const addRowHeader = (user) => {
         heightLimit.set((rowHeaderArray.length + 1) * 2);
         setRowHeaderArray([...rowHeaderArray, {key: user.username, name: user.firstname + " " + user.lastname}]);
         setHeight(height + rowHeight);
         console.log("Length in Timeline: " + rowHeaderArray.length);
-
-        if(emit) {
-            socket.emit('userAdded', user);
-        }
     }
 
     // TODO: Find a key in the row header array and remove that instead of the name
-    const removeRowHeader = (key, emit=true) => {
+    const removeRowHeader = (key) => {
         heightLimit.set((rowHeaderArray.length - 1) * 2);
-        setRowHeaderArray(_.reject(rowHeaderArray, (element) => {return element.key == key}))
+        setRowHeaderArray(_.reject(rowHeaderArray, (element) => {return element.key == key}));
         setHeight(height - rowHeight);
-        if(emit) {
-            socket.emit('userDeleted', key);
-        }
     }
     
     const createRowHeader = (item, i) => {
         return <RowHeader key={item.key + "rowHeader" + i} socket={socket} text={item.name} 
-                position={{x: i*2+1, y: 1}} width={12 * 5} height={2}
-                removeFunction={() => removeRowHeader(item.key)}/>
+                position={{x: i*2+1, y: 1}} width={totalWeeks} height={2}
+                removeFunction={() => {socket.emit('userDeleted', item.key); removeRowHeader(item.key)}} createCourse={createCourse}/>
     }
 
     socket.on("userAdded", (user) => {
-        addRowHeader(user, false);
+        addRowHeader(user);
     });
 
     socket.on("userDeleted", (id) => {
-        removeRowHeader(id, false);
+        removeRowHeader(id);
     });
 
     return(
@@ -73,7 +66,7 @@ export default function TimelineGrid({socket, heightLimit, instructorArray}) {
             </div>
             <Popup trigger={<button>Add Row</button>} modal>
                 <div className="add-row-modal-bg">
-                    <Form text={"Add Row: "} textObject={["Username", "First Name", "Last Name", "Email", "Password"]}callBack={(text) => addRowHeader(text)}/>
+                    <Form text={"Add Row: "} textObject={["Username", "First Name", "Last Name", "Email", "Password"]}callBack={(text) => {socket.emit('userAdded', text); addRowHeader(text)}}/>
                 </div>
             </Popup>
             {/*this.inputBox

@@ -57,36 +57,10 @@ export default function Timeline({socket, heightLimit, instructorArray}) {
 
     // const [height, setHeight] = useState(initialRowHeaderArray.length * rowHeight);
     const [monthArray, setMonthArray] = useState(initialMonthArray);
-    // const [rowHeaderArray, setRowHeaderArray] = useState(initialRowHeaderArray);
-    // //const removedRow = useEffect();
-
-    // // TODO: Change row headers to take in a key and a text
-    // const addRowHeader = (user, emit=true) => {
-    //     heightLimit.set((rowHeaderArray.length + 1) * 2);
-    //     setRowHeaderArray([...rowHeaderArray, {key: user.username, name: user.firstname + " " + user.lastname}]);
-    //     setHeight(height + rowHeight);
-    //     console.log("Length in Timeline: " + rowHeaderArray.length);
-
-    //     if(emit) {
-    //         socket.emit('userAdded', user);
-    //     }
-    // }
-
-    // // TODO: Find a key in the row header array and remove that instead of the name
-    // const removeRowHeader = (key, emit=true) => {
-    //     heightLimit.set((rowHeaderArray.length - 1) * 2);
-    //     setRowHeaderArray(_.reject(rowHeaderArray, (element) => {return element.key == key}))
-    //     setHeight(height - rowHeight);
-    //     if(emit) {
-    //         socket.emit('userDeleted', key);
-    //     }
-    // }
-    
-    // const createRowHeader = (item, i) => {
-    //     return <RowHeader key={item.key + "rowHeader" + i} socket={socket} text={item.name} 
-    //             position={{x: i*2+1, y: 1}} width={monthArray.length * 5} height={2}
-    //             removeFunction={() => removeRowHeader(item.key)}/>
-    // }
+    let totalWeeks = 0;
+    for(let i = 0; i < monthArray.length; i++) {
+        totalWeeks += monthArray[i].weeks.length;
+    }
 
     const createMonth = (item, i) => {
         return <Month key={monthNameArray[item.monthIndex] + " month"} title={monthNameArray[item.monthIndex]} 
@@ -128,7 +102,7 @@ export default function Timeline({socket, heightLimit, instructorArray}) {
             </Popup> */}
             {/*this.inputBox
             <button onClick={this.addMonth}>Add Row</button>*/}
-            <NoCollisionLayout socket={socket} heightLimit={heightLimit} instructorArray={instructorArray} weekInformation={weekInformation}/>
+            <NoCollisionLayout socket={socket} heightLimit={heightLimit} instructorArray={instructorArray} weekInformation={weekInformation} totalWeeks={totalWeeks}/>
         </React.Fragment>
     );
 }

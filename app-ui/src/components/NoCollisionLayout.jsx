@@ -9,7 +9,6 @@ const PUT = "PUT";
 export default class LocalStorageLayout extends React.PureComponent {
   static defaultProps = {
     className: "layout",
-    cols: 25,
     rowHeight: 100,
     margin: [2, 2],
     preventCollision: true,
@@ -18,27 +17,31 @@ export default class LocalStorageLayout extends React.PureComponent {
     autoSize: true
   };
 
-  constructor({props, socket, heightLimit, instructorArray, weekInformation}) {
+  constructor({props, socket, heightLimit, instructorArray, weekInformation, totalWeeks}) {
     super(props);
 
     this.state = {
+      // Loop through the instructor array to get all the courses associated with them
       items: instructorArray.reduce(function(acc, element, index) {
         // console.log(element + index);
         // console.log(element.timeblocks[0]);
-        console.log(element.timeblocks);
         if(element.timeblocks.length == 0 || weekInformation.length == 0){
-          return;
+          return acc;
         }
 
-        const start = findWeekIndex(weekInformation, element.timeblocks[0].start);
-        const end = findWeekIndex(weekInformation, element.timeblocks[0].end) + 1;
+        // const start = findWeekIndex(weekInformation, element.timeblocks[0].start);
+        // const end = findWeekIndex(weekInformation, element.timeblocks[0].end) + 1;
         return acc.concat(
           element.timeblocks.map((info) => {
+            const start = findWeekIndex(weekInformation, info.start);
+            const end = findWeekIndex(weekInformation, info.end) + 1;
             return(
               {
-                text: info.name + element.key,
+                text: info.name,
+                courseNum: info.courseNum,
+                userId: info.userId,
                 data: {
-                  i: element.key,
+                  i: info.name,
                   x: start,
                   y: index * 2,
                   w: end - start,
@@ -54,10 +57,10 @@ export default class LocalStorageLayout extends React.PureComponent {
       weekInformation: weekInformation
     };
 
-    //this.onLayoutChange = this.onLayoutChange.bind(this);
     this.socket = socket;
     this.instructorArray = instructorArray;
     this.heightLimit = heightLimit;
+    this.totalWeeks = totalWeeks;
 
     this.socket.on("itemChanged", (item) => {
       console.log("Item Received: " + JSON.stringify(item));
@@ -73,20 +76,27 @@ export default class LocalStorageLayout extends React.PureComponent {
           this.setState({
             layout: newLayout
           });
-  
-          //saveToLS("layout", this.state.layout);
+
           break;
         }
       }
+    });
+
+    this.socket.on("courseAdded", (item) => {
+      console.log("Item Received: " + JSON.stringify(item));
+
+      this.onAddCourse(item, parseInt(item.x), parseInt(item.y), false);
     });
   }
 
   onLayoutChange = (layout, layouts) => {
     /*eslint no-console: 0*/
     //saveToLS("layout", layout);
-    this.setState({ layout });
+    this.setState({
+      layout: layout
+    });
     // this.props.onLayoutChange(layout); // updates status display
-    // this.props.onLayoutChange(layout);
+    //this.props.onLayoutChange(layout);
     console.log("layout changed");
   }
   
@@ -131,7 +141,12 @@ export default class LocalStorageLayout extends React.PureComponent {
     // HTTP request instead of sockets
     //this.updateCourse(newItem.i, startDate.getTime(), endDate.getTime());
 
-    this.socket.emit('itemChanged', newItem, {id: newItem.i, start: startDate.getTime(), end: endDate.getTime()});
+    const index = _.findIndex(this.state.items, (element) => {return element.data.i == newItem.i});
+    const newItems = this.state.items.slice();
+    const foundItem = this.state.items[index];
+
+    console.log(foundItem);
+    this.socket.emit('itemChanged', newItem, {courseNum: foundItem.courseNum, start: startDate.getTime(), end: endDate.getTime()});
 
     //console.log("ISO: " + new Date(Date.now()).toISOString());
     //console.log("Start: " + startDate + "\nEnd: " + endDate);
@@ -139,9 +154,6 @@ export default class LocalStorageLayout extends React.PureComponent {
     //console.log("StartDate: " + startDate.getTime());
 
     // Code for updating the properties of an item's state
-    const index = _.findIndex(this.state.items, (element) => {return element.data.i == newItem.i});
-    const newItems = this.state.items.slice();
-    const foundItem = this.state.items[index];
     foundItem.data.h = newItem.h;
     foundItem.data.w = newItem.w;
     foundItem.data.x = newItem.x;
@@ -150,14 +162,16 @@ export default class LocalStorageLayout extends React.PureComponent {
     this.setState({items: newItems});
   }
 
-  onAddItem(text, x=0, y=0, w=3) {
-    console.log("adding", "n" + this.state.newCounter);
+  onAddCourse = (course, x=0, y=0, emit=true) => {
+    console.log("adding", course);
+    console.log("Course position: x:" + x + " | y:" + y);
+    const w = parseInt(course.weeklength);
     this.setState({
       // Add a new item. It must have a unique key!
       items: this.state.items.concat({
-        text: text,
+        text: course.title,
         data:{
-          i: text + this.state.newCounter,
+          i: course.number,
           x: x,
           y: y, 
           w: w,
@@ -165,20 +179,33 @@ export default class LocalStorageLayout extends React.PureComponent {
         }
       }),
       // Increment the counter to ensure key is always unique.
-      newCounter: this.state.newCounter + 1
     });
+
+    const startDate = findWeekDate(this.state.weekInformation, x);
+    const endDate = findWeekDate(this.state.weekInformation, w + x - 1);
+    console.log(this.instructorArray);
+    const instructor = this.instructorArray[Math.floor(y / 2)];
+    console.log("Index: " + Math.floor(y / 2));
+    console.log(instructor);
+
+    if(emit){
+      this.socket.emit('courseAdded', {...course, x: x, y: y, instructorKey: instructor.key,  start: startDate.getTime(), end: endDate.getTime()});
+    }
   }
 
-  onRemoveItem(i) {
-    
+  onRemoveItem(i, emit=true) {
+    const index = _.findIndex(this.state.items, (element) => {return element.data.i == i});
+    const newItems = this.state.items.slice();
+    const foundItem = this.state.items[index];
+    console.log(foundItem);
+
+    if(emit) {
+      this.socket.emit("courseDeleted", foundItem);
+    }
+
     this.setState({ items: _.reject(this.state.items, (element) => {return element.data.i == i}) });
     console.log(JSON.stringify(this.state.layout));
   }
-
-  onDrop = (layout, layoutItem, _event) => {
-    console.log("LayoutItem: " + JSON.stringify(layoutItem));
-    alert(`Dropped element props:\n${JSON.stringify(layoutItem, ['x', 'y', 'w', 'h'], 2)}`);
-  };
 
   createElement(el) {
     const removeStyle = {
@@ -217,20 +244,18 @@ export default class LocalStorageLayout extends React.PureComponent {
   render() {
     return (
       <React.Fragment>
-      <TimelineGrid socket={this.socket} heightLimit={this.heightLimit} instructorArray={this.instructorArray} />
-      <div className="grid-item-container" style={{position: "absolute"}}>
+      <TimelineGrid socket={this.socket} heightLimit={this.heightLimit} instructorArray={this.instructorArray} createCourse={this.onAddCourse} totalWeeks={this.totalWeeks}/>
+      <div className="grid-item-container" style={{width: this.totalWeeks * 102,position: "absolute"}}>
         {/*<button onClick={this.resetLayout} style={{position: "sticky", zIndex: 99}}>Reset Layout</button>*/}
         <ReactGridLayout
           {...this.props}
+          cols={this.totalWeeks}
           maxRows={this.state.heightLimit()}
           layout={this.state.layout}
-          onLayoutChange={() => this.onLayoutChange}
-          //onDragStop= {this.onItemChange}
+          onLayoutChange={this.onLayoutChange}
           onResizeStop = {this.onItemChange}
+          onDragStop = {this.onItemChange}
           onDrop={this.onDrop}
-          measureBeforeMount={false}
-          isDroppable={true}
-          droppingItem={this.props.item}
         >
           {this.state.items.map(el => this.createElement(el))}
         </ReactGridLayout>

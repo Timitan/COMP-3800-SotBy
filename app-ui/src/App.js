@@ -3,6 +3,7 @@ import "./style.css";
 import './gridstyles.css';
 import "./timeline.css";
 import Timeline from './components/Timeline';
+import _ from "lodash";
 import io from "socket.io-client";
 const socket = io.connect('/');
 
@@ -32,18 +33,34 @@ export default class App extends React.Component {
     }
 
     const parsedData = JSON.parse(data);
-    console.log("Data: " + data);
+    console.log(parsedData);
     
-    const instructorArray = [];
+    let instructorArray = {};
     for(let i = 0; i < parsedData.length; i++) {
-        const instructor = {};
-        instructor.key = parsedData[i].username;
-        instructor.name = parsedData[i].first_name + " " + parsedData[i].last_name;
-        instructor.timeblocks = [];
-        instructor.timeblocks.push({start: new Date(parsedData[i].start_date), end: new Date(parsedData[i].end_date), name: parsedData[i].title + i});
+        const key = parsedData[i].username;
 
-        instructorArray.push(instructor);
+        let instructor;
+        // Check if instructor is already in the object
+        if(instructorArray[key]) {
+          instructor = instructorArray[key];
+        } else {
+          instructor = {};
+          instructor.timeblocks = [];
+          instructor.name = parsedData[i].first_name + " " + parsedData[i].last_name;
+          instructor.key = key;
+          instructorArray[key] = instructor;
+        }
+        // Check if there are any valid courses associated with the instructor
+        if(parsedData[i].start_date != null && parsedData[i].end_date != null) {
+          instructor.timeblocks.push({
+            start: new Date(parsedData[i].start_date), 
+            end: new Date(parsedData[i].end_date), 
+            name: parsedData[i].title + " " + parsedData[i].course_num, 
+            courseNum: parsedData[i].course_num,
+            userId: parsedData[i].username});  
+        }
     }
+    instructorArray = Object.values(instructorArray);
 
     this.setState({instructors: instructorArray, heightLimit: (instructorArray.length + 1) * 2})
     this.setState({loaded: true})

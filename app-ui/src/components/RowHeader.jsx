@@ -3,7 +3,7 @@ import Slot from "./Slot";
 import { useState } from "react";
 import CourseElement from "./CourseElement";
 
-export default function RowHeader({socket, position, text, width, height, removeFunction}) {
+export default function RowHeader({socket, position, text, width, height, removeFunction, createCourse}) {
     //const item = null;
 
     const createRowSlots = () => {
@@ -21,7 +21,7 @@ export default function RowHeader({socket, position, text, width, height, remove
 
     const createSlot= (item, i) => {
         return(
-            <Slot key={item.key} socket={socket} position={{x: item.pos.x, y: item.pos.y}}/>
+            <Slot key={item.key} socket={socket} position={{x: item.pos.x, y: item.pos.y}} createCourse={createCourse}/>
         );
     }
 

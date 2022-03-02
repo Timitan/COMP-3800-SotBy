@@ -12,7 +12,7 @@ pool.connect();
 
 const getUsers = () => {
     return new Promise(function(resolve, reject) {
-      pool.query(`SELECT u.username, u.first_name, u.last_name, c.start_date, c.end_date, c.title, c.colour from "user" u
+      pool.query(`SELECT u.username, u.first_name, u.last_name, c.start_date, c.end_date, c.course_num, c.title, c.colour from "user" u
                   LEFT JOIN course_assignment ca ON u.username = ca.username
                   LEFT JOIN course c ON ca.course_num = c.course_num
                   LIMIT 9`
@@ -52,8 +52,14 @@ const postCourse = (course) => {
     pool.query(`INSERT INTO "course"
             (course_num, subject, course, title, divs, dept_num, sect_num, ptrm, camp, start_date, end_date, colour)
             VALUES 
-            (${course.courseNum}, ${course.subject}, ${course.course}, ${course.title}, ${course.divs}, ${course.dept_num}, 
-            ${course.sect_num}, ${course.ptrm}, ${course.camp}, to_timestamp(${course.start_date} / 1000.0), to_timestamp(${course.end_date} / 1000.0), ${course.colour})`
+            (${course.number}, '${course.subject}', '${course.course}', '${course.title}', '${course.divs}', ${course.deptnum}, 
+            ${course.sectnum}, ${course.ptrm}, ${course.camp}, to_timestamp(${course.start} / 1000.0), to_timestamp(${course.end} / 1000.0), 
+            '${course.color}');
+            INSERT INTO "course_assignment"
+            (username, course_num)
+            VALUES
+            ('${course.instructorKey}', ${course.number})
+            `
     ,(error, results) => {
       if (error) {
         reject(error)
@@ -65,7 +71,7 @@ const postCourse = (course) => {
 
 const putCourse = (id, start, end) =>{
   return new Promise(function(resolve, reject) {
-    pool.query(`UPDATE "user" SET created_at = (to_timestamp(${start} / 1000.0)), updated_at = (to_timestamp(${end} / 1000.0)) WHERE id = ${id}`,
+    pool.query(`UPDATE "course" SET start_date = (to_timestamp(${start} / 1000.0)), end_date = (to_timestamp(${end} / 1000.0)) WHERE course_num = ${id}`,
     (error, results) => {
       if (error) {
         reject(error)
@@ -88,10 +94,30 @@ const deleteUser = (id) => {
   }) 
 }
 
+const deleteCourse = (courseId, userId) => {
+  return new Promise(function(resolve, reject) {
+    pool.query(`
+                DELETE FROM "course_assignment" ca
+                WHERE ca.course_num = ${courseId} 
+                AND ca.username = '${userId}';
+    
+                DELETE FROM "course" c
+                WHERE c.course_num = '${courseId}'
+                `,
+    (error, results) => {
+      if (error) {
+        reject(error)
+      }
+      resolve(results)
+    })
+  }) 
+}
+
 module.exports = {
     getUsers,
     postUser,
+    deleteUser,
     postCourse,
     putCourse,
-    deleteUser
+    deleteCourse
 }

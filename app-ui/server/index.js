@@ -96,12 +96,29 @@ io.on('connection', (socket) => {
   console.log('a user connected');
   socket.on('itemChanged', (item, itemInfo) => {
     // Broadcast to everyone except sender
-    //console.log(item);
+    console.log(itemInfo);
     socket.broadcast.emit('itemChanged', item);
 
     // Update posgresql database with the changed item
-    console.log(itemInfo);
-    instructor_model.putCourse(itemInfo.id, itemInfo.start, itemInfo.end)
+    //console.log(itemInfo);
+    instructor_model.putCourse(itemInfo.courseNum, itemInfo.start, itemInfo.end)
+    .then(response => {
+      console.log("Update Success");
+      //console.log("Response: " + JSON.stringify(response));
+    })
+    .catch(error => {
+      console.log(error);
+    })
+  });
+
+  socket.on('courseDeleted', (course) => {
+    // Broadcast to everyone except sender
+    console.log(course);
+    socket.broadcast.emit('courseDeleted', course);
+
+    // Update posgresql database with the changed item
+    //console.log(itemInfo);
+    instructor_model.deleteCourse(course.courseNum, course.userId)
     .then(response => {
       console.log("Update Success");
       //console.log("Response: " + JSON.stringify(response));
@@ -138,6 +155,22 @@ io.on('connection', (socket) => {
     instructor_model.deleteUser(key)
     .then(response => {
       console.log("Add Success");
+      //console.log("Response: " + JSON.stringify(response));
+    })
+    .catch(error => {
+      console.log(error);
+    })
+  });
+
+  socket.on('courseAdded', (course) => {
+    // Broadcast to everyone except sender
+    socket.broadcast.emit('courseAdded', course);
+
+    // Update posgresql database
+    console.log(course);
+    instructor_model.postCourse(course)
+    .then(response => {
+      console.log("Course Post Success");
       //console.log("Response: " + JSON.stringify(response));
     })
     .catch(error => {
