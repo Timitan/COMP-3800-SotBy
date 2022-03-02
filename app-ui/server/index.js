@@ -5,6 +5,8 @@ const http = require('http');
 const socket = require("socket.io");
 const { createAdapter } = require("@socket.io/postgres-adapter");
 const { Pool } = require("pg");
+const socketConnect = require("./socket");
+const instructorModel = require('./requests')
 
 console.log("Script started");
 
@@ -15,8 +17,6 @@ const pool = new Pool({
   password: "password123",
   database: "sotby"
 })
-
-const instructor_model = require('./requests')
 
 const port = 8000;
 
@@ -30,7 +30,7 @@ app.use(function (req, res, next) {
 
 // Routes
 app.get('/users', (req, res) => {
-  instructor_model.getUsers()
+  instructorModel.getUsers()
   .then(response => {
     res.status(200).send(response);
   })
@@ -41,7 +41,7 @@ app.get('/users', (req, res) => {
 })
 
 app.post('/users', (req, res) => {
-  instructor_model.postUser(req.body)
+  instructorModel.postUser(req.body)
   .then(response => {
     console.log("Response: " + response);
     res.status(200).send(response);
@@ -56,7 +56,7 @@ app.put('/users/:id', (req, res) => {
   const id = parseInt(req.params.id);
   const { start, end } = req.body;
   //console.log("Id: " + id + "\nStart and Ends: " + start + " | " + end);
-  instructor_model.updateCourse(id, start, end)
+  instructorModel.updateCourse(id, start, end)
   .then(response => {
     console.log("Response: " + JSON.stringify(response));
     res.status(200).send(response);
@@ -70,7 +70,7 @@ app.put('/users/:id', (req, res) => {
 // app.delete('/users/:id', (req, res) => {
 //   const id = req.params.id;
 //   //console.log("Id: " + id + "\nStart and Ends: " + start + " | " + end);
-//   instructor_model.deleteUser(id)
+//   instructorModel.deleteUser(id)
 //   .then(response => {
 //     console.log("Response: " + JSON.stringify(response));
 //     res.status(200).send(response);
@@ -88,93 +88,95 @@ var server = app.listen(
   )
 );
 
+socketConnect.socketStart(server, pool, instructorModel);
+
 // Socket.io code
-const io = socket(server);
-io.adapter(createAdapter(pool));
+// const io = socket(server);
+// io.adapter(createAdapter(pool));
 
-io.on('connection', (socket) => {
-  console.log('a user connected');
-  socket.on('itemChanged', (item, itemInfo) => {
-    // Broadcast to everyone except sender
-    console.log(itemInfo);
-    socket.broadcast.emit('itemChanged', item);
+// io.on('connection', (socket) => {
+//   console.log('a user connected');
+//   socket.on('itemChanged', (item, itemInfo) => {
+//     // Broadcast to everyone except sender
+//     console.log(itemInfo);
+//     socket.broadcast.emit('itemChanged', item);
 
-    // Update posgresql database with the changed item
-    //console.log(itemInfo);
-    instructor_model.putCourse(itemInfo.courseNum, itemInfo.start, itemInfo.end)
-    .then(response => {
-      console.log("Update Success");
-      //console.log("Response: " + JSON.stringify(response));
-    })
-    .catch(error => {
-      console.log(error);
-    })
-  });
+//     // Update posgresql database with the changed item
+//     //console.log(itemInfo);
+//     instructor_model.putCourse(itemInfo.courseNum, itemInfo.start, itemInfo.end)
+//     .then(response => {
+//       console.log("Update Success");
+//       //console.log("Response: " + JSON.stringify(response));
+//     })
+//     .catch(error => {
+//       console.log(error);
+//     })
+//   });
 
-  socket.on('courseDeleted', (course) => {
-    // Broadcast to everyone except sender
-    console.log(course);
-    socket.broadcast.emit('courseDeleted', course);
+//   socket.on('courseDeleted', (course) => {
+//     // Broadcast to everyone except sender
+//     console.log(course);
+//     socket.broadcast.emit('courseDeleted', course);
 
-    // Update posgresql database with the changed item
-    //console.log(itemInfo);
-    instructor_model.deleteCourse(course.courseNum, course.userId)
-    .then(response => {
-      console.log("Update Success");
-      //console.log("Response: " + JSON.stringify(response));
-    })
-    .catch(error => {
-      console.log(error);
-    })
-  });
+//     // Update posgresql database with the changed item
+//     //console.log(itemInfo);
+//     instructor_model.deleteCourse(course.courseNum, course.userId)
+//     .then(response => {
+//       console.log("Update Success");
+//       //console.log("Response: " + JSON.stringify(response));
+//     })
+//     .catch(error => {
+//       console.log(error);
+//     })
+//   });
 
-  socket.on('userAdded', (user) => {
-    // Broadcast to everyone except sender
-    //console.log(item);
-    socket.broadcast.emit('userAdded', user);
+//   socket.on('userAdded', (user) => {
+//     // Broadcast to everyone except sender
+//     //console.log(item);
+//     socket.broadcast.emit('userAdded', user);
 
-    // Update posgresql database
-    console.log(user);
-    instructor_model.postUser(user)
-    .then(response => {
-      console.log("Add Success");
-      //console.log("Response: " + JSON.stringify(response));
-    })
-    .catch(error => {
-      console.log(error);
-    })
-  });
+//     // Update posgresql database
+//     console.log(user);
+//     instructor_model.postUser(user)
+//     .then(response => {
+//       console.log("Add Success");
+//       //console.log("Response: " + JSON.stringify(response));
+//     })
+//     .catch(error => {
+//       console.log(error);
+//     })
+//   });
 
-  socket.on('userDeleted', (key) => {
-    // Broadcast to everyone except sender
-    //console.log(item);
-    socket.broadcast.emit('userDeleted', key);
+//   socket.on('userDeleted', (key) => {
+//     // Broadcast to everyone except sender
+//     //console.log(item);
+//     socket.broadcast.emit('userDeleted', key);
 
-    // Update posgresql database
-    console.log(key);
-    instructor_model.deleteUser(key)
-    .then(response => {
-      console.log("Add Success");
-      //console.log("Response: " + JSON.stringify(response));
-    })
-    .catch(error => {
-      console.log(error);
-    })
-  });
+//     // Update posgresql database
+//     console.log(key);
+//     instructor_model.deleteUser(key)
+//     .then(response => {
+//       console.log("Add Success");
+//       //console.log("Response: " + JSON.stringify(response));
+//     })
+//     .catch(error => {
+//       console.log(error);
+//     })
+//   });
 
-  socket.on('courseAdded', (course) => {
-    // Broadcast to everyone except sender
-    socket.broadcast.emit('courseAdded', course);
+//   socket.on('courseAdded', (course) => {
+//     // Broadcast to everyone except sender
+//     socket.broadcast.emit('courseAdded', course);
 
-    // Update posgresql database
-    console.log(course);
-    instructor_model.postCourse(course)
-    .then(response => {
-      console.log("Course Post Success");
-      //console.log("Response: " + JSON.stringify(response));
-    })
-    .catch(error => {
-      console.log(error);
-    })
-  });
-});
+//     // Update posgresql database
+//     console.log(course);
+//     instructor_model.postCourse(course)
+//     .then(response => {
+//       console.log("Course Post Success");
+//       //console.log("Response: " + JSON.stringify(response));
+//     })
+//     .catch(error => {
+//       console.log(error);
+//     })
+//   });
+// });

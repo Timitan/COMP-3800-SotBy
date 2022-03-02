@@ -255,7 +255,6 @@ export default class LocalStorageLayout extends React.PureComponent {
           onLayoutChange={this.onLayoutChange}
           onResizeStop = {this.onItemChange}
           onDragStop = {this.onItemChange}
-          onDrop={this.onDrop}
         >
           {this.state.items.map(el => this.createElement(el))}
         </ReactGridLayout>
