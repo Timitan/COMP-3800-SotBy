@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400&display=swap");
 
 /* Root */
 * {
@@ -8,7 +8,7 @@
 }
 
 body {
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
 }
 
 .container {
@@ -48,6 +48,64 @@ header {
   width: 100%;
   display: flex;
   flex-flow: row nowrap;
+}
+
+/* Vacation Grid */
+.vacation-inputs {
+  margin: 30px 5px 20px 5px;
+}
+
+.vacation-grid-box {
+  border: 1px solid #242424;
+  font-size: 16px;
+  text-align: center;
+  width: 12.5%;
+  height: 70px;
+}
+
+.padding {
+  padding: 7px;
+}
+
+.vacation-label {
+  font-weight: bold;
+}
+.vacation-row {
+  display: flex;
+  flex-flow: row nowrap;
+}
+
+.vacation-column {
+  display: flex;
+  flex-flow: column nowrap;
+}
+
+.vacation-column-reverse {
+  display: flex;
+  flex-flow: column-reverse nowrap;
+}
+
+.vacation-label-triple {
+  width: 25%;
+}
+
+.vacation-grid-box-triple-left {
+  width: 50%;
+  border-width: 1px 1px 0px 0px;
+  border-style: solid;
+  border-color: #242424;
+}
+
+.vacation-grid-box-triple-right {
+  width: 50%;
+  border-width: 1px 0px 0px 0px;
+  border-style: solid;
+  border-color: #242424;
+}
+
+.vacation-label-notes {
+  font-weight: bold;
+  width: 25%;
 }
 
 /* Submit button */
