@@ -13,6 +13,7 @@ const socketStart = (server, pool, instructorModel) => {
         socket.on('itemChanged', (item, itemInfo) => {
             // Broadcast to everyone except sender
             console.log(itemInfo);
+            console.log(item);
             socket.broadcast.emit('itemChanged', item);
 
             // Update posgresql database with the changed item
@@ -27,10 +28,10 @@ const socketStart = (server, pool, instructorModel) => {
             })
         });
 
-        socket.on('courseDeleted', (course) => {
+        socket.on('courseDeleted', (course, i) => {
             // Broadcast to everyone except sender
             console.log(course);
-            socket.broadcast.emit('courseDeleted', course);
+            socket.broadcast.emit('courseDeleted', i);
 
             // Update posgresql database with the changed item
             //console.log(itemInfo);
@@ -61,16 +62,16 @@ const socketStart = (server, pool, instructorModel) => {
             })
         });
 
-        socket.on('userDeleted', (key) => {
+        socket.on('userDeleted', (key, x) => {
             // Broadcast to everyone except sender
             //console.log(item);
-            socket.broadcast.emit('userDeleted', key);
+            socket.broadcast.emit('userDeleted', key, x);
 
             // Update posgresql database
             console.log(key);
             instructorModel.deleteUser(key)
             .then(response => {
-            console.log("Add Success");
+            console.log("Delete Success");
             //console.log("Response: " + JSON.stringify(response));
             })
             .catch(error => {

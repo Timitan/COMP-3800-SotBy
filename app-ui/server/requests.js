@@ -52,8 +52,8 @@ const postCourse = (course) => {
     pool.query(`INSERT INTO "course"
             (course_num, subject, course, title, divs, dept_num, sect_num, ptrm, camp, start_date, end_date, colour)
             VALUES 
-            (${course.number}, '${course.subject}', '${course.course}', '${course.title}', '${course.divs}', ${course.deptnum}, 
-            ${course.sectnum}, ${course.ptrm}, ${course.camp}, to_timestamp(${course.start} / 1000.0), to_timestamp(${course.end} / 1000.0), 
+            (${course.number}, '${course.subject}', '${course.course}', '${course.title}', '1', 1, 
+            1, 1, 1, to_timestamp(${course.start} / 1000.0), to_timestamp(${course.end} / 1000.0), 
             '${course.color}');
             INSERT INTO "course_assignment"
             (username, course_num)
@@ -83,8 +83,44 @@ const putCourse = (id, start, end) =>{
 
 const deleteUser = (id) => {
   return new Promise(function(resolve, reject) {
-    pool.query(`DELETE FROM "user" u
-                WHERE u.username = '${id}'`,
+    pool.query(`
+                DO
+                $do$
+                BEGIN
+                  IF EXISTS (
+                    SELECT * FROM "course_assignment" ca
+                    WHERE ca.username = '${id}'
+                  ) THEN
+                      WITH deleted as 
+                    (
+                      DELETE FROM "course_assignment" ca
+                      WHERE ca.username = '${id}'
+                      RETURNING *
+                    ),
+                    deleted2 as
+                    (
+                      DELETE FROM "user" u
+                      WHERE EXISTS 
+                      (
+                        SELECT d.username FROM deleted d
+                        WHERE u.username = d.username
+                      )
+                      RETURNING *
+                    )
+                    DELETE from "course" c
+                    WHERE EXISTS 
+                    (
+                      SELECT d.course_num FROM deleted d
+                      WHERE c.course_num = d.course_num
+                    )
+                    ;
+                  ELSE
+                      DELETE from "user" u
+                    WHERE u.username = '${id}';
+                  END IF;
+                END
+                $do$
+                `,
     (error, results) => {
       if (error) {
         reject(error)

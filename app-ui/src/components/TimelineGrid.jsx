@@ -11,9 +11,8 @@ import { useState } from "react";
 import NoCollisionLayout from './NoCollisionLayout';
 // import DragFromOutsideLayout from "./DragFromOutside";
 
-export default function TimelineGrid({socket, heightLimit, instructorArray, createCourse, totalWeeks}) {
-
-    let dateOffset = new Date(new Date().getFullYear(), 0, 1);
+export default function TimelineGrid({socket, heightLimit, instructorArray, createCourse, totalWeeks, onRemoveUser, onAddUser}) {
+    // let dateOffset = new Date(new Date().getFullYear(), 0, 1);
 
     // TODO: Once users and their IDs are established, replace the keys below with the appropriate user ID
     const initialRowHeaderArray = instructorArray;
@@ -25,33 +24,52 @@ export default function TimelineGrid({socket, heightLimit, instructorArray, crea
     const [rowHeaderArray, setRowHeaderArray] = useState(initialRowHeaderArray);
 
     // TODO: Change row headers to take in a key and a text
-    const addRowHeader = (user) => {
+    const addRowHeader = (user, emit=true) => {
+        setRowHeaderArray(rowHeaderArray => [...rowHeaderArray, {key: user.username, name: user.firstname + " " + user.lastname}]);
         heightLimit.set((rowHeaderArray.length + 1) * 2);
-        setRowHeaderArray([...rowHeaderArray, {key: user.username, name: user.firstname + " " + user.lastname}]);
-        setHeight(height + rowHeight);
+        setHeight(height => height + rowHeight);
+        onAddUser(user);
         console.log("Length in Timeline: " + rowHeaderArray.length);
+        
+        if(emit)
+            socket.emit('userAdded', user);
     }
 
     // TODO: Find a key in the row header array and remove that instead of the name
-    const removeRowHeader = (key) => {
+    const removeRowHeader = (key, x, emit=true) => {
+        setRowHeaderArray(rowHeaderArray => _.reject(rowHeaderArray, (element) => {return element.key == key}));
+        setHeight(height => height - rowHeight);
         heightLimit.set((rowHeaderArray.length - 1) * 2);
-        setRowHeaderArray(_.reject(rowHeaderArray, (element) => {return element.key == key}));
-        setHeight(height - rowHeight);
+        console.log(key);
+        onRemoveUser(key, x - 1);
+        console.log("Length in Timeline: " + rowHeaderArray.length);
+
+        if(emit)
+            socket.emit('userDeleted', key, x); 
     }
     
     const createRowHeader = (item, i) => {
+        const x = i * 2 + 1;
         return <RowHeader key={item.key + "rowHeader" + i} socket={socket} text={item.name} 
-                position={{x: i*2+1, y: 1}} width={totalWeeks} height={2}
-                removeFunction={() => {socket.emit('userDeleted', item.key); removeRowHeader(item.key)}} createCourse={createCourse}/>
+                position={{x: x, y: 1}} width={totalWeeks} height={2}
+                removeFunction={() => {
+                    removeRowHeader(item.key, x)}} 
+                    createCourse={createCourse}/>
     }
 
-    socket.on("userAdded", (user) => {
-        addRowHeader(user);
-    });
+    useEffect(() => {
+        socket.on("userAdded", (user) => {
+            console.log("Added: " + JSON.stringify(user));
+            addRowHeader(user, false);
+        });
+    
+        socket.on("userDeleted", (id, x) => {
+            console.log(x);
+            console.log(id);
+            removeRowHeader(id, x, false);
+        });
+    }, []);
 
-    socket.on("userDeleted", (id) => {
-        removeRowHeader(id);
-    });
 
     return(
         <React.Fragment>
@@ -66,7 +84,7 @@ export default function TimelineGrid({socket, heightLimit, instructorArray, crea
             </div>
             <Popup trigger={<button>Add Row</button>} modal>
                 <div className="add-row-modal-bg">
-                    <Form text={"Add Row: "} textObject={["Username", "First Name", "Last Name", "Email", "Password"]}callBack={(text) => {socket.emit('userAdded', text); addRowHeader(text)}}/>
+                    <Form text={"Add Row: "} textObject={["Username", "First Name", "Last Name", "Email", "Password"]}callBack={(user) => {addRowHeader(user)}}/>
                 </div>
             </Popup>
             {/*this.inputBox
