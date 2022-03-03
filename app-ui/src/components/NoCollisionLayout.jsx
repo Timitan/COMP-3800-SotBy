@@ -160,7 +160,8 @@ export default class LocalStorageLayout extends React.PureComponent {
 
     //console.log("Found Item:");
     //console.log(foundItem);
-    this.socket.emit('itemChanged', yAxisLockedItem, {courseNum: foundItem.courseNum, start: startDate.getTime(), end: endDate.getTime()});
+    const instructor = this.instructorArray[Math.floor(newItem.y / 2)];
+    this.socket.emit('itemChanged', yAxisLockedItem, {username: instructor.key, courseNum: foundItem.courseNum, start: startDate.getTime(), end: endDate.getTime()});
 
     //console.log("ISO: " + new Date(Date.now()).toISOString());
     //console.log("Start: " + startDate + "\nEnd: " + endDate);
@@ -245,7 +246,9 @@ export default class LocalStorageLayout extends React.PureComponent {
       if (element.data.y > y) {
         console.log(acc);
         console.log(this.state.layout);
+        console.log(element);
         const newElement = element;
+        //newElement.data.x = element.data.x;
         newElement.data.y -= 2;
         return [...acc, newElement];
       } else {

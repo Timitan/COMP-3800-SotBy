@@ -12,10 +12,10 @@ pool.connect();
 
 const getUsers = () => {
     return new Promise(function(resolve, reject) {
-      pool.query(`SELECT u.username, u.first_name, u.last_name, c.start_date, c.end_date, c.course_num, c.title, c.colour from "user" u
+      pool.query(`SELECT u.username, u.first_name, u.last_name, u.row_num, ca.start_date, ca.end_date, c.course_num, c.title, c.colour from "user" u
                   LEFT JOIN course_assignment ca ON u.username = ca.username
                   LEFT JOIN course c ON ca.course_num = c.course_num
-                  LIMIT 9`
+                  ORDER BY u.date_joined`
                   //ORDER BY username ASC
       ,(error, results) => {
         if (error) {
@@ -26,14 +26,16 @@ const getUsers = () => {
     }) 
   }
 
-const postUser = (user) => {
+const postUser = (user, rownum) => {
   return new Promise(function(resolve, reject) {
     // INSERT INTO public."public.user" (username, first_name, last_name, date_joined, email, password)
     // VALUES ('John Smith', 'John', 'Smith', current_date, 'johnsmith@notreal.com', 'johnsmithiscool')
     pool.query(`INSERT INTO "user"
             (username, first_name, last_name, date_joined, email, password)
             VALUES 
-            ('${user.username}', '${user.firstname}', '${user.lastname}', to_timestamp(${user.datejoined} / 1000.0), '${user.email}', '${user.password}')`
+            ('${user.username}', '${user.firstname}', '${user.lastname}', 
+            to_timestamp(${user.datejoined} / 1000.0), '${user.email}', 
+            '${user.password}')`
     ,(error, results) => {
       if (error) {
         reject(error)
@@ -50,15 +52,16 @@ const postCourse = (course) => {
     //             VALUES 
     //             (123456, 'Math', 'MATH 3023', 'Discrete Mathematics', 1, 1, 1, 1, 1, current_timestamp, current_timestamp, '#FF1155')`
     pool.query(`INSERT INTO "course"
-            (course_num, subject, course, title, divs, dept_num, sect_num, ptrm, camp, start_date, end_date, colour)
+            (course_num, subject, course, title, start_date, end_date, colour)
             VALUES 
-            (${course.number}, '${course.subject}', '${course.course}', '${course.title}', '1', 1, 
-            1, 1, 1, to_timestamp(${course.start} / 1000.0), to_timestamp(${course.end} / 1000.0), 
+            (${course.number}, '${course.subject}', '${course.course}', '${course.title}', 
+            current_timestamp, current_timestamp, 
             '${course.color}');
             INSERT INTO "course_assignment"
-            (username, course_num)
+            (username, course_num, start_date, end_date)
             VALUES
-            ('${course.instructorKey}', ${course.number})
+            ('${course.instructorKey}', ${course.number}, 
+            to_timestamp(${course.start} / 1000.0), to_timestamp(${course.end} / 1000.0))
             `
     ,(error, results) => {
       if (error) {
@@ -69,9 +72,11 @@ const postCourse = (course) => {
   }) 
 }
 
-const putCourse = (id, start, end) =>{
+const putCourse = (username, id, start, end) =>{
   return new Promise(function(resolve, reject) {
-    pool.query(`UPDATE "course" SET start_date = (to_timestamp(${start} / 1000.0)), end_date = (to_timestamp(${end} / 1000.0)) WHERE course_num = ${id}`,
+    pool.query(`UPDATE "course_assignment" 
+    SET start_date = (to_timestamp(${start} / 1000.0)), end_date = (to_timestamp(${end} / 1000.0)) 
+    WHERE course_num = ${id} AND username = '${username}'`,
     (error, results) => {
       if (error) {
         reject(error)

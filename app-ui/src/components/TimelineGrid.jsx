@@ -25,6 +25,7 @@ export default function TimelineGrid({socket, heightLimit, instructorArray, crea
 
     // TODO: Change row headers to take in a key and a text
     const addRowHeader = (user, emit=true) => {
+        const length = rowHeaderArray.length;
         setRowHeaderArray(rowHeaderArray => [...rowHeaderArray, {key: user.username, name: user.firstname + " " + user.lastname}]);
         heightLimit.set((rowHeaderArray.length + 1) * 2);
         setHeight(height => height + rowHeight);
@@ -32,7 +33,7 @@ export default function TimelineGrid({socket, heightLimit, instructorArray, crea
         console.log("Length in Timeline: " + rowHeaderArray.length);
         
         if(emit)
-            socket.emit('userAdded', user);
+            socket.emit('userAdded', user, length);
     }
 
     // TODO: Find a key in the row header array and remove that instead of the name
@@ -82,9 +83,9 @@ export default function TimelineGrid({socket, heightLimit, instructorArray, crea
                     })
                 }
             </div>
-            <Popup trigger={<button>Add Row</button>} modal>
+            <Popup trigger={<button id="addRowBtn" name="addRowBtn">Add Row</button>} modal>
                 <div className="add-row-modal-bg">
-                    <Form text={"Add Row: "} textObject={["Username", "First Name", "Last Name", "Email", "Password"]}callBack={(user) => {addRowHeader(user)}}/>
+                    <Form text={"Add Row: "} title={"user"} textObject={["Username", "First Name", "Last Name", "Email", "Password"]}callBack={(user) => {addRowHeader(user)}}/>
                 </div>
             </Popup>
             {/*this.inputBox
