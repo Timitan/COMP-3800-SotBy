@@ -10,31 +10,7 @@ import Button from "./components/Button";
 import { useState } from "react"
 
 function App() {
-	const [vacations, setVacations] = useState([
-		{
-			id: 1,
-			NC: "N",
-			from: "March 23",
-			to: "April 1",
-			day: "8",
-			hour: "48",
-			VABT: "VA",
-			notes:
-				"No coverage needed, will teach on Mar 26 and take alternate day off.",
-		},
-
-		{
-			id: 2,
-			NC: "N",
-			from: "June 2",
-			to: "June 10",
-			day: "7",
-			hour: "42",
-			VABT: "VA",
-			notes:
-				"No coverage needed, will teach on Mar 26 and take alternate day off.",
-		},
-	])
+	const [vacations, setVacations] = useState([])
 
 	const addVacation = (vacation) => {
 		const id = Math.floor(Math.random() * 100000) + 1
