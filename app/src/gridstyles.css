@@ -6,6 +6,7 @@
   z-index: 100;
   transition: all 200ms ease;
   /*transition-property: left, top;*/
+  transition-property: left;
   background-color: rgba(241, 241, 241, 0.5);
 }
 .react-grid-item img {

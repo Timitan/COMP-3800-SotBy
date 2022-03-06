@@ -30,7 +30,7 @@ export default function RowHeader({socket, position, text, width, height, remove
     return(
         <React.Fragment>
             <div className="grid-row-header" style={{gridArea: position.x + " / " + position.y + " / span 2 / span 2"}}>
-                <button className="grid-row-header-close" onClick={removeFunction}>
+                <button name={text + " remove"} className="grid-row-header-close" onClick={removeFunction}>
                     <p>Remove</p>
                 </button>
                 <p>{text}</p>
