@@ -11,13 +11,13 @@ import { useState } from "react";
 import NoCollisionLayout from './NoCollisionLayout';
 // import DragFromOutsideLayout from "./DragFromOutside";
 
-export default function Timeline({socket, heightLimit, instructorArray}) {
+export default function Timeline({ socket, heightLimit, instructorArray }) {
 
     let dateOffset = new Date(new Date().getFullYear(), 0, 1);
 
-    const weekInformation = {weekNum: 0, weekRangesArray: [], indexMap: {}};
+    const weekInformation = { weekNum: 0, weekRangesArray: [], indexMap: {} };
     const initialMonthArray = Array.from(Array(12).keys()).map((item, i) => {
-        return({
+        return ({
             monthIndex: i,
             weeks: getWeeks(dateOffset, i, weekInformation),
         });
@@ -58,13 +58,13 @@ export default function Timeline({socket, heightLimit, instructorArray}) {
     // const [height, setHeight] = useState(initialRowHeaderArray.length * rowHeight);
     const [monthArray, setMonthArray] = useState(initialMonthArray);
     let totalWeeks = 0;
-    for(let i = 0; i < monthArray.length; i++) {
+    for (let i = 0; i < monthArray.length; i++) {
         totalWeeks += monthArray[i].weeks.length;
     }
 
     const createMonth = (item, i) => {
-        return <Month key={monthNameArray[item.monthIndex] + " month"} title={monthNameArray[item.monthIndex]} 
-            position={{x: 1, y: i === 0 ? i+3 : getNumberOfWeeks(initialMonthArray, i)+3}} weeks={item.weeks} />
+        return <Month key={monthNameArray[item.monthIndex] + " month"} title={monthNameArray[item.monthIndex]}
+            position={{ x: 1, y: i === 0 ? i + 3 : getNumberOfWeeks(initialMonthArray, i) + 3 }} weeks={item.weeks} />
     }
 
     // socket.on("userAdded", (user) => {
@@ -75,9 +75,13 @@ export default function Timeline({socket, heightLimit, instructorArray}) {
     //     removeRowHeader(id, false);
     // });
 
-    return(
+    return (
         <React.Fragment>
+
             <div className="grid-container-months">
+                <button className="vacation-form-btn">
+                    <a href="/vacation">Submit Vacation form</a>
+                </button>
                 {
                     monthArray.map((item, i) => {
                         return (
@@ -102,21 +106,21 @@ export default function Timeline({socket, heightLimit, instructorArray}) {
             </Popup> */}
             {/*this.inputBox
             <button onClick={this.addMonth}>Add Row</button>*/}
-            <NoCollisionLayout socket={socket} heightLimit={heightLimit} instructorArray={instructorArray} weekInformation={weekInformation} totalWeeks={totalWeeks}/>
+            <NoCollisionLayout socket={socket} heightLimit={heightLimit} instructorArray={instructorArray} weekInformation={weekInformation} totalWeeks={totalWeeks} />
         </React.Fragment>
     );
 }
 
 function getWeeks(startDate, month, weekInformation) {
     const weeks = [];
-    const weekTimes = {month: startDate.getMonth(), times: []};
+    const weekTimes = { month: startDate.getMonth(), times: [] };
 
     // Retrieve first days of every week in all of the months
-    while(startDate.getMonth() == month) {
+    while (startDate.getMonth() == month) {
         // Save the date to an array to position courses in the timeline
         const index = weekInformation.weekNum + weeks.length
         const date = new Date(startDate.getTime());
-        weekTimes.times.push({index: index, date: date});
+        weekTimes.times.push({ index: index, date: date });
         weekInformation.indexMap[index] = date;
 
         // Get the first day of every week
@@ -137,7 +141,7 @@ function getNumberOfWeeks(weeks, index) {
 
     //console.log(weeks)
     //console.log(weeks[0].weeks.length);
-    for(let i = index-1; i >= 0; i--) {
+    for (let i = index - 1; i >= 0; i--) {
         sum += weeks[i].weeks.length;
     }
 

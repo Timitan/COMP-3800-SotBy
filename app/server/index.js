@@ -15,7 +15,7 @@ const pool = new Pool({
   user: "postgres",
   port: 5432,
   password: "password123",
-  database: "sotby"
+  database: "sotby-test"
 })
 
 const port = 8000;
@@ -67,6 +67,30 @@ app.put('/users/:id', (req, res) => {
   })
 })
 
+// Vacations
+app.get('/vacations', (req, res) => {
+  instructorModel.getVacationsApproved(req)
+  .then(response => {
+    res.status(200).send(response);
+  })
+  .catch(error => {
+    console.log(error);
+    res.status(500).send(error);
+  })
+})
+
+app.post('/vacations', (req, res) => {
+  instructorModel.postUser(req.body)
+  .then(response => {
+    console.log("Response: " + response);
+    res.status(200).send(response);
+  })
+  .catch(error => {
+    console.log(error);
+    res.status(500).send(error);
+  })
+})
+
 // app.delete('/users/:id', (req, res) => {
 //   const id = req.params.id;
 //   //console.log("Id: " + id + "\nStart and Ends: " + start + " | " + end);
@@ -80,6 +104,8 @@ app.put('/users/:id', (req, res) => {
 //     res.status(500).send(error);
 //   })
 // })
+
+app.put
 
 var server = app.listen(
   port,
