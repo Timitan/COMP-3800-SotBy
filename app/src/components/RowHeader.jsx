@@ -1,9 +1,8 @@
 import React from "react";
 import Slot from "./Slot";
 import { useState } from "react";
-import CourseElement from "./CourseElement";
 
-export default function RowHeader({socket, position, text, width, height, removeFunction, createCourse}) {
+export default function RowHeader({position, text, width, height, removeFunction, createCourse}) {
     //const item = null;
 
     const createRowSlots = () => {
@@ -21,11 +20,14 @@ export default function RowHeader({socket, position, text, width, height, remove
 
     const createSlot= (item, i) => {
         return(
-            <Slot key={item.key} socket={socket} position={{x: item.pos.x, y: item.pos.y}} createCourse={createCourse}/>
+            <Slot key={item.key} position={{x: item.pos.x, y: item.pos.y}} 
+            // Rowheader has 2 rows associated with it, one that can create courses, one that can't (vacation row)
+            createCourse={item.pos.x % 2 === 1 ? createCourse : null} 
+            name={text}/>
         );
     }
 
-    const [slotArray, setSlotArray] = useState(createRowSlots());
+    const [slotArray, ] = useState(createRowSlots());
 
     return(
         <React.Fragment>

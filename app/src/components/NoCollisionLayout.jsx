@@ -1,7 +1,6 @@
 import React from "react";
 import RGL, { WidthProvider } from "react-grid-layout";
 import _ from "lodash";
-import Form from "./Form";
 import TimelineGrid from "./TimelineGrid";
 const ReactGridLayout = WidthProvider(RGL);
 
@@ -25,7 +24,7 @@ export default class LocalStorageLayout extends React.PureComponent {
       items: instructorArray.reduce(function(acc, element, index) {
         // console.log(element + index);
         // console.log(element.timeblocks[0]);
-        if(element.timeblocks.length == 0 || weekInformation.length == 0){
+        if(element.timeblocks.length === 0 || weekInformation.length === 0){
           return acc;
         }
 
@@ -84,7 +83,7 @@ export default class LocalStorageLayout extends React.PureComponent {
 
   replaceItem = (item) => {
     for(let i = 0; i < this.state.layout.length; i++) {
-      if(this.state.layout[i].i == item.i) {
+      if(this.state.layout[i].i === item.i) {
         const newLayout = this.state.layout.slice();
         newLayout[i] = item;
 
@@ -141,46 +140,24 @@ export default class LocalStorageLayout extends React.PureComponent {
     console.log(layout.indexOf(newItem));
     console.log("Layout Index: " + this.layout)*/
 
-    // console.log("Week Information: " + this.state.weekInformation);
-    // console.log("Layout:" + JSON.stringify(layout));
-    // console.log("New Item: " + JSON.stringify(newItem));
-
     // Update the dates on the postgresql database
     const startDate = findWeekDate(this.state.weekInformation, newItem.x);
     const endDate = findWeekDate(this.state.weekInformation, newItem.w + newItem.x - 1);
+
     // HTTP request instead of sockets
     //this.updateCourse(newItem.i, startDate.getTime(), endDate.getTime());
 
-    const index = _.findIndex(this.state.items, (element) => {return element.data.i == newItem.i});
-    //const newItems = this.state.items.slice();
+    const index = _.findIndex(this.state.items, (element) => {return element.data.i === newItem.i});
     const foundItem = this.state.items[index];
     const yAxisLockedItem = newItem;
     yAxisLockedItem.y = oldItem.y;
     this.replaceItem(yAxisLockedItem);
 
-    //console.log("Found Item:");
-    //console.log(foundItem);
     const instructor = this.instructorArray[Math.floor(newItem.y / 2)];
     this.socket.emit('itemChanged', yAxisLockedItem, {username: instructor.key, courseNum: foundItem.courseNum, start: startDate.getTime(), end: endDate.getTime()});
-
-    //console.log("ISO: " + new Date(Date.now()).toISOString());
-    //console.log("Start: " + startDate + "\nEnd: " + endDate);
-    //console.log("Date now: " + Date.now());
-    //console.log("StartDate: " + startDate.getTime());
-
-    // Code for updating the properties of an item's state
-    // foundItem.data.h = newItem.h;
-    // foundItem.data.w = newItem.w;
-    // foundItem.data.x = newItem.x;
-    // foundItem.data.y = newItem.y;
-    // newItems.splice(index, 1, foundItem);
-    // this.setState({items: newItems});
   }
 
   onAddCourse = (course, x=0, y=0, emit=true) => {
-    console.log("adding", course);
-    console.log("Course position: x:" + x + " | y:" + y);
-
     const w = parseInt(course.weeklength);
 
     const startDate = findWeekDate(this.state.weekInformation, x);
@@ -212,17 +189,7 @@ export default class LocalStorageLayout extends React.PureComponent {
   }
 
   onRemoveItem(i, emit=true) {
-    // let index;
-    // this.setState({ items: _.reject(this.state.items, (element) => {
-    //   if(element.data.i == i) {
-    //     index = i;
-    //     return true;
-    //   } else {
-    //     return false;
-    //   }
-    // })});
-    const index = _.findIndex(this.state.items, (element) => {return element.data.i == i});
-    const newItems = this.state.items.slice();
+    const index = _.findIndex(this.state.items, (element) => {return element.data.i === i});
     const foundItem = this.state.items[index];
     console.log(foundItem);
 
@@ -230,16 +197,15 @@ export default class LocalStorageLayout extends React.PureComponent {
       this.socket.emit("courseDeleted", foundItem, i);
     }
 
-    this.setState({ items: _.reject(this.state.items, (element) => {return element.data.i == i})});
+    this.setState({ items: _.reject(this.state.items, (element) => {return element.data.i === i})});
     console.log(JSON.stringify(this.state.layout));
   }
 
   onRemoveUser = (key, y) => {
     // Remove elements on the same row
-    this.setState({ items: _.reject(this.state.items, (element) => {return element.data.y == y || element.data.y == y + 1}) });
+    this.setState({ items: _.reject(this.state.items, (element) => {return element.data.y === y || element.data.y === y + 1}) });
 
-    this.instructorArray = _.reject(this.instructorArray, (element) => {return element.key == key});
-    console.log(this.instructorArray);
+    this.instructorArray = _.reject(this.instructorArray, (element) => {return element.key === key});
 
     // Move elements down
     this.setState({item: _.reduce(this.state.items, (acc, element) => {
@@ -248,7 +214,6 @@ export default class LocalStorageLayout extends React.PureComponent {
         console.log(this.state.layout);
         console.log(element);
         const newElement = element;
-        //newElement.data.x = element.data.x;
         newElement.data.y -= 2;
         return [...acc, newElement];
       } else {
@@ -278,20 +243,9 @@ export default class LocalStorageLayout extends React.PureComponent {
       cursor: "pointer",
       padding: "5px",
     };
-    const i = el.i;
-
-    // console.log("Recreating Items...");
-    // TODO: Figure out how to programmatically reset elements that are over the height limit, solution needs setState to update the DOM
-    // const currentHeightLimit = this.state.heightLimit();
-    // console.log("el.data.y: " + JSON.stringify(el.data.y) + ", Height: " + currentHeightLimit);
-
-    // if(el.data.y > currentHeightLimit) {
-    //   el.data.y = 1;
-    //   console.log("el.data.y after: " + el.data.y);
-    // } 
 
     return (
-      <div key={el.data.i} data-grid={el.data}>
+      <div key={el.data.i} data-grid={el.data} name={el.text + " el"}>
         <span className="text">{el.text}</span>
         <span
           className="remove"
@@ -316,7 +270,6 @@ export default class LocalStorageLayout extends React.PureComponent {
       onRemoveUser={this.onRemoveUser} 
       onAddUser={this.onAddUser} />
       <div className="grid-item-container" style={{width: this.totalWeeks * 102,position: "absolute"}}>
-        {/*<button onClick={this.resetLayout} style={{position: "sticky", zIndex: 99}}>Reset Layout</button>*/}
         <ReactGridLayout
           {...this.props}
           cols={this.totalWeeks}

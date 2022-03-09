@@ -15,7 +15,7 @@ const socketStart = (server, pool, instructorModel) => {
             //console.log(itemInfo);
             instructorModel.putCourse(itemInfo.username, itemInfo.courseNum, itemInfo.start, itemInfo.end)
             .then(response => {
-            console.log("Update Success");
+                console.log("Update Success");
                 //console.log("Response: " + JSON.stringify(response));
                 // Broadcast to everyone except sender
                 console.log(itemInfo);
@@ -23,7 +23,8 @@ const socketStart = (server, pool, instructorModel) => {
                 socket.broadcast.emit('itemChanged', item);
             })
             .catch(error => {
-            console.log(error);
+                console.log(error);
+                socket.emit('error', error);
             })
         });
 
@@ -39,7 +40,8 @@ const socketStart = (server, pool, instructorModel) => {
                 socket.broadcast.emit('courseDeleted', i);
             })
             .catch(error => {
-            console.log(error);
+                console.log(error);
+                socket.emit('error', error);
             })
         });
 
@@ -56,6 +58,7 @@ const socketStart = (server, pool, instructorModel) => {
             })
             .catch(error => {
                 console.log(error);
+                socket.emit('error', error);
             })
         });
 
@@ -71,7 +74,8 @@ const socketStart = (server, pool, instructorModel) => {
                 socket.broadcast.emit('userDeleted', key, x);
             })
             .catch(error => {
-            console.log(error);
+                console.log(error);
+                socket.emit('error', error);
             })
         });
 
@@ -86,7 +90,9 @@ const socketStart = (server, pool, instructorModel) => {
                 socket.broadcast.emit('courseAdded', course);
             })
             .catch(error => {
-            console.log(error);
+                console.log(error);
+                console.log("error");
+                socket.emit('error', error);
             })
         });
     });

@@ -42,25 +42,36 @@ async function testTwoAddRow(driver, driver2, {fname, lname, email, pass}, {fnam
     await driver2.sleep(1000);
 
     // Remove buttons are associated with each user, find dupliates
-    const removeBtnList = await driver.wait(until.elementsLocated(By.name(`${fname + " " + lname + " remove"}`)), 5000);
+    const removeBtnList = await driver.wait(until.elementsLocated(By.name(`${fname + " " + lname + " remove"}`)), 8000);
     const removeBtnList2 = await driver2.wait(until.elementsLocated(By.name(`${fname2 + " " + lname2 + " remove"}`)), 5000);
 
     // Check if user was correctly sent over to the other browser
-    const removeBtnList3 = await driver.wait(until.elementsLocated(By.name(`${fname2 + " " + lname2 + " remove"}`)), 5000);
+    const removeBtnList3 = await driver.wait(until.elementsLocated(By.name(`${fname2 + " " + lname2 + " remove"}`)), 8000);
     const removeBtnList4 = await driver2.wait(until.elementsLocated(By.name(`${fname + " " + lname + " remove"}`)), 5000);
 
     console.log(removeBtnList.length);
     console.log(removeBtnList2.length);
     const dupeUser = "Error with creating user, 2 of the same user appears in the timeline.";
     const userNotSent = "Error with users sent.";
-    try{
-        assert.equal(1, removeBtnList.length, dupeUser);
-        assert.equal(1, removeBtnList2.length, dupeUser);
-        assert.equal(1, removeBtnList3.length, userNotSent);
-        assert.equal(1, removeBtnList4.length, userNotSent);
-    } catch(error) {
-        console.log(error);
-    }
+
+    await (() => {
+        try{
+            assert.equal(1, removeBtnList.length, dupeUser);
+            assert.equal(1, removeBtnList2.length, dupeUser);
+            assert.equal(1, removeBtnList3.length, userNotSent);
+            assert.equal(1, removeBtnList4.length, userNotSent);
+        } catch(error) {
+            console.log(error);
+        }
+    });
+
+    // Close modal
+    const el = await driver.wait(until.elementLocated(By.name('addRowBtn')));
+    await driver.executeScript("arguments[0].click();", el);
+
+    const el2 = await driver2.wait(until.elementLocated(By.name('addRowBtn')));
+    await driver2.executeScript("arguments[0].click();", el2);
+    console.log("Tests completed!");
 
     // driver.quit();
     // driver2.quit();

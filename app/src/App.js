@@ -3,7 +3,6 @@ import "./style.css";
 import './gridstyles.css';
 import "./timeline.css";
 import Timeline from './components/Timeline';
-import _ from "lodash";
 import io from "socket.io-client";
 const socket = io.connect('/');
 
@@ -14,7 +13,8 @@ export default class App extends React.Component {
   state = {
     instructors: [],
     heightLimit: 8,
-    loaded: false
+    loaded: false,
+    error: ""
   };
 
   getHeightLimit() {
@@ -83,15 +83,30 @@ export default class App extends React.Component {
   renderApp() {
     return (
       <div className="App">
-        <Timeline socket={socket} heightLimit={{get: () => this.getHeightLimit(), set: (limit) => this.setHeightLimit(limit)}}
-        instructorArray={this.state.instructors} />
+          <Timeline socket={socket} heightLimit={{get: () => this.getHeightLimit(), set: (limit) => this.setHeightLimit(limit)}}
+          instructorArray={this.state.instructors} />
       </div>
     );
   }
 
   render() {
-    return (this.state.loaded ? this.renderApp() :
-      <span>Loading data...</span>
+    // Remove this later on and add a real feedback message, this is just for development purposes
+    socket.on('error', (err) => {
+      console.log(err);
+      this.setState({error: err})
+    });
+
+    return (this.state.error != "" ?
+      <div className="App">
+        <h1>ERROR:</h1>
+        <p>{JSON.stringify(this.state.error)}</p>
+        <h2>Please refresh</h2>
+      </div>
+      :
+      this.state.loaded ? 
+        this.renderApp() 
+        :
+        <span>Loading data...</span>
     );
   }
 }
