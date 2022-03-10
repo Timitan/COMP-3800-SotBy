@@ -1,10 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import App from './App';
+import DetailedSchedule from './DetailedSchedule';
+import Resources from './resources';
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    
+    <Resources />
   </React.StrictMode>,
   document.getElementById('root')
 );

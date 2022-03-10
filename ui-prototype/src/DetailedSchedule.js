@@ -1,5 +1,7 @@
 import React from 'react';
 import { EditText, EditTextarea } from 'react-edit-text';
+// import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+//                                    ^^^^ Switch or Routes
 import 'react-edit-text/dist/index.css';
 import './index.css';
 
@@ -56,6 +58,9 @@ handleEditSave() {
           />
         </td>
         <td>
+        {/* <Router>
+          <Link to="/resources"> Book Resources </Link>
+        </Router> */}
           <EditText
             name="resources"
             defaultValue={this.props.info.resources}
@@ -128,7 +133,7 @@ class Course extends React.Component {
   render() {
     const data = generateRandomData();
     let weeksData = new Array();
-    const chunk = 7;
+    const chunk = 7; // # days in a week.
     for (let i = 0, j = data.length; i < j; i += chunk) {
         weeksData.push(data.slice(i, i + chunk));
     }
@@ -146,13 +151,21 @@ class Course extends React.Component {
   }
 }
 
-const App = () => {
+const DetailedSchedule = () => {
     return (
       <Course courseName="ASTO1"></Course>
     );
+    // return (
+    //   <Router>
+    //     <Routes>
+    //       <Route path='/' element={<Course courseName="ASTO1"></Course>} />
+    //       <Route path='/resources' element={<Resources></Resources>} />
+    //     </Routes>
+    //   </Router>
+    // );
 }
 
-export default App;
+export default DetailedSchedule;
 
 function getStringDate(date) {
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];

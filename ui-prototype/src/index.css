@@ -51,7 +51,6 @@ tr:hover td {
     background-color: transparent;
 } */
 
-/* CSS */
 button {
   align-items: center;
   background-color: #009879;
@@ -91,3 +90,15 @@ button:active {
   background: rgb(0, 63, 50);
   color: rgb(255, 255, 255, .7);
 }
+
+.modal {
+    background-color: #009879;
+}
+
+#popUpLabel {
+    color: #ffffff;
+}
+
+/* #popUpBookBtn {
+    width: 40%;
+} */
