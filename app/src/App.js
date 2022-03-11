@@ -80,9 +80,25 @@ export default class App extends React.Component {
     this.retrieveInstructorDataFromDatabase();
   }
 
+  removeElement(el) {
+    console.log(el);
+  }
+
   renderApp() {
     return (
       <div className="App">
+          {(this.state.error !== "") ?
+            <div className="error-modal">
+              <h1>Error:</h1>
+              <p>{this.state.error}</p>
+              <button style={{position:"absolute", top:0, right:0}} onClick={() => {this.setState({error: ""})}}>
+                <p>X</p>
+              </button>
+            </div>
+            :
+            undefined
+          }
+
           <Timeline socket={socket} heightLimit={{get: () => this.getHeightLimit(), set: (limit) => this.setHeightLimit(limit)}}
           instructorArray={this.state.instructors} />
       </div>
@@ -96,13 +112,7 @@ export default class App extends React.Component {
       this.setState({error: err})
     });
 
-    return (this.state.error != "" ?
-      <div className="App">
-        <h1>ERROR:</h1>
-        <p>{JSON.stringify(this.state.error)}</p>
-        <h2>Please refresh</h2>
-      </div>
-      :
+    return (
       this.state.loaded ? 
         this.renderApp() 
         :

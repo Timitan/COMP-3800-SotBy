@@ -1,11 +1,15 @@
 const socket = require("socket.io");
 const { createAdapter } = require("@socket.io/postgres-adapter");
+const EventEmitter = require('events');
 
 console.log("Socket Script started");
 
 // Socket.io code
 const socketStart = (server, pool, instructorModel) => {
     const io = socket(server);
+    const userActionQueue = [];
+    const bus = new EventEmitter();
+    let lock = false;
     io.adapter(createAdapter(pool));
 
     io.on('connection', (socket) => {
@@ -86,13 +90,32 @@ const socketStart = (server, pool, instructorModel) => {
             .then(response => {
                 console.log("Course Post Success");
                 //console.log("Response: " + JSON.stringify(response));
+                
                 // Broadcast to everyone except sender
+                //socket.broadcast.emit('courseAdded', course);
+
+                // Broadcast to everyone
+                socket.emit('courseAdded', course);
                 socket.broadcast.emit('courseAdded', course);
             })
             .catch(error => {
                 console.log(error);
-                console.log("error");
-                socket.emit('error', error);
+                // console.log("error");
+
+                // Error code
+                let msg;
+                switch(error.code) {
+                    case('23505'):
+                        msg = "Course number already exists for another course! Please choose another.";
+                        break;
+                    default:
+                        msg = "Error in inserting course. Please check your course input.";
+                        break;
+                }
+
+                console.log(msg);
+
+                socket.emit('error', msg);
             })
         });
     });

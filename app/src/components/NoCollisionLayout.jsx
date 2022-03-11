@@ -166,25 +166,25 @@ export default class LocalStorageLayout extends React.PureComponent {
     console.log("Index: " + Math.floor(y / 2));
     console.log(this.instructorArray);
     console.log(instructor);
-    this.setState({
-      // Add a new item. It must have a unique key!
-      items: this.state.items.concat({
-        text: course.title + " " + course.number,
-        userId: instructor.key,
-        courseNum: course.number,
-        data:{
-          i: course.number,
-          x: x,
-          y: y, 
-          w: w,
-          h: 1,
-        }
-      }),
-      // Increment the counter to ensure key is always unique.
-    });
-
     if(emit){
       this.socket.emit('courseAdded', {...course, x: x, y: y, instructorKey: instructor.key,  start: startDate.getTime(), end: endDate.getTime()});
+    } else {
+      this.setState({
+        // Add a new item. It must have a unique key!
+        items: this.state.items.concat({
+          text: course.title + " " + course.number,
+          userId: instructor.key,
+          courseNum: course.number,
+          data:{
+            i: course.number,
+            x: x,
+            y: y, 
+            w: w,
+            h: 1,
+          }
+        }),
+        // Increment the counter to ensure key is always unique.
+      });
     }
   }
 

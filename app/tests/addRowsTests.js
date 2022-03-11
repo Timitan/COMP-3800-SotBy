@@ -35,6 +35,11 @@ async function testTwoAddRow(driver, driver2, {fname, lname, email, pass}, {fnam
     const submitUser2 = await driver2.wait(until.elementLocated(By.name('user button')));
 
     submitUser.click();
+
+    // Wait for the user to be sent over
+    await driver.sleep(500);
+    await driver2.sleep(500);
+
     submitUser2.click();
 
     // Wait for elements to be generated
