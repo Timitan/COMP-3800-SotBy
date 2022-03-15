@@ -129,6 +129,13 @@
   font-size: 17px;
 }
 
+.vacation-input-half {
+  width: 6.25%;
+  height: 50px;
+  padding: 3px 7px;
+  font-size: 17px;
+}
+
 .vacation-input-large {
   width: 25%;
   height: 50px;

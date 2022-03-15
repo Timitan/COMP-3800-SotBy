@@ -13,7 +13,6 @@ const INSTRUCTORS_RESOURCE = "users";
 export default class Schedule extends React.Component {
   state = {
     instructors: [],
-    vacations: [],
     heightLimit: 8,
     loaded: false
   };

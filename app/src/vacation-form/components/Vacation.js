@@ -4,8 +4,10 @@ const Vacation = ({ vacation, onDelete }) => {
 	return (
 		<div className="vacation-row vacation vacation-header">
 			<div className="vacation-grid-box padding-top">{vacation.NC}</div>
-			<div className="vacation-grid-box padding-top">{vacation.from}</div>
-			<div className="vacation-grid-box padding-top">{vacation.to}</div>
+			<div className="vacation-grid-box padding-top">{vacation.startingMonth}</div>
+			<div className="vacation-grid-box padding-top">{vacation.startingDay}</div>
+			<div className="vacation-grid-box padding-top">{vacation.endingMonth}</div>
+			<div className="vacation-grid-box padding-top">{vacation.endingDay}</div>
 			<div className="vacation-grid-box padding-top">{vacation.day}</div>
 			<div className="vacation-grid-box padding-top">{vacation.hour}</div>
 			<div className="vacation-grid-box padding-top">{vacation.VABT}</div>
