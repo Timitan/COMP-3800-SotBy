@@ -86,6 +86,24 @@ const putCourse = (username, id, start, end) =>{
   }) 
 }
 
+const getUser = (username) => {
+  return new Promise(function(resolve, reject) {
+    pool.query(`SELECT u.username from "user" u
+                WHERE u.username = '${username}'
+                `
+    ,(error, results) => {
+      if (error) {
+        reject(error)
+      }
+      if(results.rows == 0) {
+        reject("User doesn't exist");
+      } else {
+        resolve(results.rows);
+      }
+    })
+  }) 
+}
+
 const deleteUser = (id) => {
   return new Promise(function(resolve, reject) {
     pool.query(`
@@ -120,7 +138,7 @@ const deleteUser = (id) => {
                     )
                     ;
                   ELSE
-                      DELETE from "user" u
+                    DELETE from "user" u
                     WHERE u.username = '${id}';
                   END IF;
                 END
@@ -160,5 +178,6 @@ module.exports = {
     deleteUser,
     postCourse,
     putCourse,
-    deleteCourse
+    deleteCourse,
+    getUser
 }

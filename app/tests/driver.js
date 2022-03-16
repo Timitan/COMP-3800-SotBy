@@ -23,13 +23,13 @@ async function main() {
     const name2 = user2.fname2 + " " + user2.lname2;
 
     // Create users and leave them until courses are created/ tested
-    // await addRows.testTwoAddRow(driver, driver2, user1, user2);
+    await addRows.testTwoAddRow(driver, driver2, user1, user2);
 
     // Create courses
-    // await addCourses.testCreateCourse(driver, driver2, course1, course2, name1, name2);
+    await addCourses.testCreateCourse(driver, driver2, course1, course2, name1, name2);
 
     // Move courses created
-    await moveCourses.testCourseMovement(driver, driver2, course1, course2, name1, name2);    
+    //await moveCourses.testCourseMovement(driver, driver2, course1, course2, name1, name2);    
 }
 
 main();

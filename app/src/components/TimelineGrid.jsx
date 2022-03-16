@@ -12,7 +12,7 @@ export default function TimelineGrid({socket, heightLimit, instructorArray, crea
     const initialRowHeaderArray = instructorArray;
 
     // 100px height cells + 4 px total margin, change later if needed
-    const rowHeight = 204;
+    const rowHeight = 204; 
 
     const [height, setHeight] = useState(initialRowHeaderArray.length * rowHeight);
     const [rowHeaderArray, setRowHeaderArray] = useState(initialRowHeaderArray);
@@ -30,17 +30,25 @@ export default function TimelineGrid({socket, heightLimit, instructorArray, crea
             socket.emit('userAdded', user, length);
     }
 
-    // TODO: Find a key in the row header array and remove that instead of the name
     const removeRowHeader = (key, x, emit=true) => {
-        setRowHeaderArray(rowHeaderArray => _.reject(rowHeaderArray, (element) => {return element.key === key}));
-        setHeight(height => height - rowHeight);
-        heightLimit.set((rowHeaderArray.length - 1) * 2);
-        console.log(key);
-        onRemoveUser(key, x - 1);
-        console.log("Length in Timeline: " + rowHeaderArray.length);
+        console.log("Key: " + key);
+        console.log("X: " + x);
 
-        if(emit)
-            socket.emit('userDeleted', key, x); 
+        let modifiedArray = rowHeaderArray;
+        const initialLength = modifiedArray.length;
+        console.log(modifiedArray);
+        modifiedArray = _.reject(rowHeaderArray, (element) => {return element.key === key})
+        console.log(modifiedArray);
+
+        if(modifiedArray.length !== initialLength) {
+            setRowHeaderArray(modifiedArray);
+            setHeight(height => height - rowHeight);
+            heightLimit.set((rowHeaderArray.length - 1) * 2);
+            onRemoveUser(key, x - 1);
+
+            if(emit)
+                socket.emit('userDeleted', key, x); 
+        }
     }
     
     const createRowHeader = (item, i) => {
@@ -52,20 +60,30 @@ export default function TimelineGrid({socket, heightLimit, instructorArray, crea
                     createCourse={createCourse}/>
     }
 
-    useEffect(() => {
-        socket.on("userAdded", (user) => {
-            console.log("Added: " + JSON.stringify(user));
-            addRowHeader(user, false);
-        });
-    
-        socket.on("userDeleted", (id, x) => {
-            console.log(x);
-            console.log(id);
-            removeRowHeader(id, x, false);
-        });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    socket.once("userAdded", (user) => {
+        console.log("Added: " + JSON.stringify(user));
+        addRowHeader(user, false);
+    });
 
+    socket.once("userDeleted", (id, x) => {
+        console.log(x);
+        console.log(id);
+        removeRowHeader(id, x, false);
+    });
+
+    // useEffect(() => {
+    //     socket.once("userAdded", (user) => {
+    //         console.log("Added: " + JSON.stringify(user));
+    //         addRowHeader(user, false);
+    //     });
+
+    //     socket.once("userDeleted", (id, x) => {
+    //         console.log(x);
+    //         console.log(id);
+    //         removeRowHeader(id, x, false);
+    //     });
+    //     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // }, []);
 
     return(
         <React.Fragment>

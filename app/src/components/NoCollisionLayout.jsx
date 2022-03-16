@@ -166,6 +166,12 @@ export default class LocalStorageLayout extends React.PureComponent {
     console.log("Index: " + Math.floor(y / 2));
     console.log(this.instructorArray);
     console.log(instructor);
+
+    // User/ instructor was deleted, can't create a course
+    if(instructor === undefined) {
+      return;
+    }
+
     if(emit){
       this.socket.emit('courseAdded', {...course, x: x, y: y, instructorKey: instructor.key,  start: startDate.getTime(), end: endDate.getTime()});
     } else {
@@ -202,30 +208,35 @@ export default class LocalStorageLayout extends React.PureComponent {
   }
 
   onRemoveUser = (key, y) => {
-    // Remove elements on the same row
-    this.setState({ items: _.reject(this.state.items, (element) => {return element.data.y === y || element.data.y === y + 1}) });
-
+    const initialLength = this.instructorArray.length;
     this.instructorArray = _.reject(this.instructorArray, (element) => {return element.key === key});
 
-    // Move elements down
-    this.setState({item: _.reduce(this.state.items, (acc, element) => {
-      if (element.data.y > y) {
-        console.log(acc);
-        console.log(this.state.layout);
-        console.log(element);
-        const newElement = element;
-        newElement.data.y -= 2;
-        return [...acc, newElement];
-      } else {
-        return  [...acc, element];
-      }
-    }, [])});
+    // No user/ instructor found to delete
+    if(this.instructorArray.length !== initialLength) {
+      // Remove elements on the same row
+      this.setState({ items: _.reject(this.state.items, (element) => {return element.data.y === y || element.data.y === y + 1}) });
 
-    // Reset layout so that the items are shifted up visually
-    this.setState({layout: _.reduce(this.state.items, (acc, element) => {
-      const itemData = element.data;
-      return [...acc, itemData];
-    }, [])});
+      // Move elements down
+      this.setState({item: _.reduce(this.state.items, (acc, element) => {
+        if (element.data.y > y) {
+          console.log(acc);
+          console.log(this.state.layout);
+          console.log(element);
+          const newElement = element;
+          newElement.data.y -= 2;
+          return [...acc, newElement];
+        } else {
+          return  [...acc, element];
+        }
+      }, [])});
+
+
+      // Reset layout so that the items are shifted up visually
+      this.setState({layout: _.reduce(this.state.items, (acc, element) => {
+        const itemData = element.data;
+        return [...acc, itemData];
+      }, [])});
+    }
   }
 
   onAddUser = (user) => {
