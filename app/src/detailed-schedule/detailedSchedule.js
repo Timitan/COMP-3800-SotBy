@@ -116,59 +116,6 @@ class Week extends React.Component {
             return [...acc, dayData];
         }, [])});
 
-    //     this.setState({days: [
-    //         {
-    //         id: "id1",
-    //         date: new Date(2022, 0, 3),
-    //         instructor: "Sam",
-    //         description: "Workplace Safety",
-    //         resources: null,
-    //       },{
-    //         id: "id2",
-    //         date: new Date(2022, 0, 3),
-    //         instructor: "Sam",
-    //         description: "Workplace Safety",
-    //         resources: null,
-    //       },{
-    //         id: "id8",
-    //         date: new Date(2022, 0, 3),
-    //         instructor: "id8",
-    //         description: "id8",
-    //         resources: null,
-    //       },{
-    //         id: "id4",
-    //         date: new Date(2022, 0, 3),
-    //         instructor: "Sam",
-    //         description: "Workplace Safety",
-    //         resources: null,
-    //       },{
-    //         id: "id5",
-    //         date: new Date(2022, 0, 3),
-    //         instructor: "Sam",
-    //         description: "Workplace Safety",
-    //         resources: null,
-    //       },{
-    //         id: "id6",
-    //         date: new Date(2022, 0, 3),
-    //         instructor: "Sam",
-    //         description: "Workplace Safety",
-    //         resources: null,
-    //       },{
-    //         id: "id7",
-    //         date: new Date(2022, 0, 3),
-    //         instructor: "Sam",
-    //         description: "Workplace Safety",
-    //         resources: null,
-    //       }
-    //     ]
-    // });
-
-
-        
-        // console.log("cd:", copyDays);
-        
-        // this.setState({days: []});
-        console.log(this.state.days);
     })
   }
 
@@ -213,11 +160,6 @@ class Course extends React.Component {
     constructor({props, socket}) {
         super(props);
         this.socket = socket;
-
-        // this.socket.on("getCourseDetail", (ca_id) => {
-        //     console.log("Getting course detail for: ", ca_id);
-        //     this.getCourseDetail(ca_id, false);
-        // });
     }
 
   renderWeek(weekInfo) {
@@ -229,10 +171,6 @@ class Course extends React.Component {
     );
 
   }
-
-//   componentDidMount() {
-//       this.socket.emit("getCourseDetail", ca_id);
-//   }
 
   render() {
     let data = generateRandomData();
