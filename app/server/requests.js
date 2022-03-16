@@ -210,11 +210,15 @@ const deleteVacation = (id) => {
 }
 
 // Sam
-
-const getCourseDetail = (ca_id) => {
+const getCourseDetail = (course_num) => {
+  console.log(course_num);
   return new Promise(function(resolve, reject) {
-    pool.query(`SELECT * FROM "daily_schedule" 
-                WHERE ca_id = '${ca_id}'`,
+    pool.query(`SELECT ds_id, daily_schedule.ca_id, date, description, course_assignment.username, subject, course
+                FROM daily_schedule
+                INNER JOIN course_assignment ON course_assignment.ca_id=daily_schedule.ca_id
+                INNER JOIN course ON course.course_num=course_assignment.course_num
+                WHERE course.course_num=${course_num}
+                ORDER BY date;`,
     (error, results) => {
       if (error) {
         reject(error)

@@ -107,6 +107,19 @@ app.post('/vacations', (req, res) => {
 
 // app.put
 
+// Sam
+app.get('/detailedSchedule', (req, res) => {
+  instructorModel.getCourseDetail(req.query.courseNum)
+  .then(response => {
+    console.log("Response: " + response);
+    res.status(200).send(response);
+  })
+  .catch(error => {
+    console.log(error);
+    res.status(500).send(error);
+  })
+})
+
 var server = app.listen(
   port,
   console.log(

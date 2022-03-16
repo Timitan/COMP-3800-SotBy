@@ -4,6 +4,8 @@ import 'react-edit-text/dist/index.css';
 import './index.css';
 import _ from "lodash";
 
+const END_POINT_ROOT = "http://localhost:8000/";
+
 
 class Day extends React.Component {
 
@@ -11,11 +13,11 @@ class Day extends React.Component {
     super(props);
     this.state = {
       editMode: false,
-      instructor: info.instructor,
+      instructor: info.username,
       description: info.description,
     }
-    this.id = info.id;
-    this.resources = info.resources;
+    this.ds_id = info.ds_id;
+    // this.resources = info.resources;  RESSSSSSSS***************************************************************** Q: should users be able to change instructor from this page? (new course_assignment is required!)
     this.date = info.date;
     this.socket = socket;
   }
@@ -160,11 +162,15 @@ class Course extends React.Component {
     constructor({props, socket}) {
         super(props);
         this.socket = socket;
+        this.state = {
+          data: null,
+          dataLoaded: false,
+        }
     }
 
   renderWeek(weekInfo) {
     return (
-      <Week key={weekInfo[0].id}
+      <Week key={weekInfo[0].ds_id}
         info={weekInfo}
         socket={this.socket}
       />
@@ -172,13 +178,11 @@ class Course extends React.Component {
 
   }
 
-  render() {
-    let data = generateRandomData();
-
+  renderCourse() {
     let weeksData = new Array();
     const chunk = 7; // # days in a week.
-    for (let i = 0, j = data.length; i < j; i += chunk) {
-        weeksData.push(data.slice(i, i + chunk));
+    for (let i = 0, j = this.state.data.length; i < j; i += chunk) {
+        weeksData.push(this.state.data.slice(i, i + chunk));
     }
     const weeks = weeksData.map((week, index) => {
       return (
@@ -187,24 +191,65 @@ class Course extends React.Component {
     });
     return (
       <div>
-        <h1>Detailed Schedule for {this.props.courseName}</h1>
+        <h1>Detailed Schedule for {`${this.state.data[0].subject} - ${this.state.data[0].course}`}</h1>
         {weeks}
       </div>
     );
   }
 
-  getCourseDetail(ca_id, emit = true) {
+  //----
+  parseData = (data) => {
+    console.log(data);
+    if (!data) {
+      return null;
+    }
+
+    const parsedData = JSON.parse(data);
+    console.log(parsedData);
+
+    console.log(parsedData.rows);
+    console.log(parsedData.rows[0].date);
+    console.log(new Date(parsedData.rows[0].date));
+
+    for (let i = 0; i < parsedData.rows.length; i++) {
+      parsedData.rows[i].date = new Date(parsedData.rows[i].date); // Changing date from string-date to date object.
+    }
 
 
-    if(emit) {
-        this.socket.emit("getCourseDetail", ca_id);
-      }
+    this.setState({ data: parsedData.rows });
+    this.setState({ dataLoaded: true });
   }
+
+  retrieveDailyScheduleDataFromDatabase = (courseNum) => {
+    fetch(END_POINT_ROOT + `detailedSchedule?courseNum=${courseNum}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    })
+    .then(response => {
+      return response.text();
+    })
+    .then(data => {
+      this.parseData(data)
+    });
+  }
+
+  componentDidMount() {
+    let courseNum = 12345;
+    this.retrieveDailyScheduleDataFromDatabase(courseNum);
+  }
+  //----
+
+  render() {
+    return (this.state.dataLoaded ? this.renderCourse() :
+      <span>Loading data...</span>
+    );
+  }
+
 }
 
 const DetailedSchedule = (socket) => {
     return (
-      <Course courseName="ASTO1" socket={socket.socket}></Course>
+      <Course socket={socket.socket}></Course>
     );
 }
 
@@ -214,122 +259,3 @@ function getStringDate(date) {
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   return (months[date.getMonth()] + " " + date.getDate());
 }
-
-
-function generateRandomData() {
-  
-    const day1 = {
-      id: "id1",
-      date: new Date(2022, 0, 3),
-      instructor: "Sam",
-      description: "Workplace Safety",
-      resources: null,
-    };
-    const day2 = {
-      id: "id2",
-      date: new Date(2022, 0, 4),
-      instructor: "Daniel",
-      description: "Workplace Safety",
-      resources: null,
-    };
-    const day3 = {
-      id: "id3",
-      date: new Date(2022, 0, 5),
-      instructor: "Tim",
-      description: "Workplace Safety",
-      resources: null,
-    };
-    const day4 = {
-      id: "id4",
-      date: new Date(2022, 0, 6),
-      instructor: "Max",
-      description: "Tools & Equipment",
-      resources: null,
-    };
-    const day5 = {
-      id: "id5",
-      date: new Date(2022, 0, 7),
-      instructor: "Sam",
-      description: "Tools & Equipment",
-      resources: "ExampleRes",
-    };
-    const day6 = {
-      id: "id6",
-      date: new Date(2022, 0, 8),
-      instructor: null,
-      description: null,
-      resources: null,
-    };
-    const day7 = {
-      id: "id7",
-      date: new Date(2022, 0, 9),
-      instructor: null,
-      description: null,
-      resources: null,
-    };
-    const day8 = {
-      id: "id8",
-      date: new Date(2022, 0, 10),
-      instructor: "Sam",
-      description: "Tools & Equipment",
-      resources: null,
-    };
-    const day9 = {
-      id: "id9",
-      date: new Date(2022, 0, 11),
-      instructor: "Daniel",
-      description: "Tools & Equipment",
-      resources: null,
-    };
-    const day10 = {
-      id: "id10",
-      date: new Date(2022, 0, 12),
-      instructor: "Tim",
-      description: "Tools & Equipment",
-      resources: null,
-    };
-    const day11 = {
-      id: "id11",
-      date: new Date(2022, 0, 13),
-      instructor: "Max",
-      description: "Tools & Equipment",
-      resources: "NE16-Tire Room",
-    };
-    const day12 = {
-      id: "id12",
-      date: new Date(2022, 0, 14),
-      instructor: "Sam",
-      description: "Tools & Equipment",
-      resources: "NE16-Tire Room",
-    };
-    const day13 = {
-      id: "id13",
-      date: new Date(2022, 0, 15),
-      instructor: null,
-      description: null,
-      resources: null,
-    };
-    const day14 = {
-      id: "id14",
-      date: new Date(2022, 0, 16),
-      instructor: null,
-      description: null,
-      resources: null,
-    };
-    const day15 = {
-      id: "id15",
-      date: new Date(2022, 0, 17),
-      instructor: "Sam",
-      description: "Welding",
-      resources: null,
-    };
-    const day16 = {
-      id: "id16",
-      date: new Date(2022, 0, 18),
-      instructor: "Welding",
-      description: "Tools & Equipment",
-      resources: null,
-    };
-    
-    return ([day1, day2, day3, day4, day5, day6, day7, day8, day9, day10, day11, day12, day13, day14, day15, day16]);
-  }
