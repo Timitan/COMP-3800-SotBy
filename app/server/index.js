@@ -15,7 +15,7 @@ const pool = new Pool({
   user: "postgres",
   port: 5432,
   password: "password123",
-  database: "sotby-test"
+  database: "sotby"
 })
 
 const port = 8000;
@@ -40,32 +40,32 @@ app.get('/users', (req, res) => {
   })
 })
 
-app.post('/users', (req, res) => {
-  instructorModel.postUser(req.body)
-  .then(response => {
-    console.log("Response: " + response);
-    res.status(200).send(response);
-  })
-  .catch(error => {
-    console.log(error);
-    res.status(500).send(error);
-  })
-})
+// app.post('/users', (req, res) => {
+//   instructorModel.postUser(req.body)
+//   .then(response => {
+//     console.log("Response: " + response);
+//     res.status(200).send(response);
+//   })
+//   .catch(error => {
+//     console.log(error);
+//     res.status(500).send(error);
+//   })
+// })
 
-app.put('/users/:id', (req, res) => {
-  const id = parseInt(req.params.id);
-  const { start, end } = req.body;
-  //console.log("Id: " + id + "\nStart and Ends: " + start + " | " + end);
-  instructorModel.updateCourse(id, start, end)
-  .then(response => {
-    console.log("Response: " + JSON.stringify(response));
-    res.status(200).send(response);
-  })
-  .catch(error => {
-    console.log(error);
-    res.status(500).send(error);
-  })
-})
+// app.put('/users/:id', (req, res) => {
+//   const id = parseInt(req.params.id);
+//   const { start, end } = req.body;
+//   //console.log("Id: " + id + "\nStart and Ends: " + start + " | " + end);
+//   instructorModel.updateCourse(id, start, end)
+//   .then(response => {
+//     console.log("Response: " + JSON.stringify(response));
+//     res.status(200).send(response);
+//   })
+//   .catch(error => {
+//     console.log(error);
+//     res.status(500).send(error);
+//   })
+// })
 
 // Vacations
 app.get('/vacations', (req, res) => {
@@ -105,7 +105,7 @@ app.post('/vacations', (req, res) => {
 //   })
 // })
 
-app.put
+// app.put
 
 var server = app.listen(
   port,

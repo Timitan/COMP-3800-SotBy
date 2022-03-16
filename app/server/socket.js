@@ -89,6 +89,33 @@ const socketStart = (server, pool, instructorModel) => {
             console.log(error);
             })
         });
+
+
+        // Sam 
+
+        socket.on('getCourseDetail', (ca_id) => {
+            instructorModel.getCourseDetail(ca_id)
+            .then(response => {
+                console.log("Got Course Detail!");
+                socket.broadcast.emit('getCourseDetail', ca_id);
+            })
+            .catch(error => {
+            console.log(error);
+            })
+        })
+
+        socket.on('changeDay', (rowInfo) => {
+            // instructorModel.getCourseDetail(ca_id)
+            // .then(response => {
+            //     console.log("Got Course Detail!");
+            //     socket.broadcast.emit('getCourseDetail', ca_id);
+            // })
+            // .catch(error => {
+            // console.log(error);
+            // })
+            socket.broadcast.emit('changeDay', rowInfo);
+        })
+
     });
 }
 

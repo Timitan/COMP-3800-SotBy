@@ -5,7 +5,7 @@ const pool = new Pool({
     user: "postgres",
     port: 5432,
     password: "password123",
-    database: "sotby-test"
+    database: "sotby"
 })
 
 pool.connect();
@@ -209,6 +209,21 @@ const deleteVacation = (id) => {
     })    
 }
 
+// Sam
+
+const getCourseDetail = (ca_id) => {
+  return new Promise(function(resolve, reject) {
+    pool.query(`SELECT * FROM "daily_schedule" 
+                WHERE ca_id = '${ca_id}'`,
+    (error, results) => {
+      if (error) {
+        reject(error)
+      }
+      resolve(results)
+    })
+  }) 
+}
+
 module.exports = {
   getUsers,
   postUser,
@@ -220,4 +235,5 @@ module.exports = {
   getAllVacationsNotApproved,
   postVacation,
   deleteVacation,
+  getCourseDetail,
 }
