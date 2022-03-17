@@ -96,7 +96,7 @@ app.post('/vacations', (req, res) => {
 //   //console.log("Id: " + id + "\nStart and Ends: " + start + " | " + end);
 //   instructorModel.deleteUser(id)
 //   .then(response => {
-//     console.log("Response: " + JSON.stringify(response));
+//     console.log("Response: " + JSON.stringify(response)); 
 //     res.status(200).send(response);
 //   })
 //   .catch(error => {
@@ -105,11 +105,21 @@ app.post('/vacations', (req, res) => {
 //   })
 // })
 
-// app.put
-
 // Sam
 app.get('/detailedSchedule', (req, res) => {
   instructorModel.getCourseDetail(req.query.courseNum)
+  .then(response => {
+    console.log("Response: " + response);
+    res.status(200).send(response);
+  })
+  .catch(error => {
+    console.log(error);
+    res.status(500).send(error);
+  })
+})
+
+app.get('/resources', (req, res) => {
+  instructorModel.getResources(req.query.ds_id)
   .then(response => {
     console.log("Response: " + response);
     res.status(200).send(response);

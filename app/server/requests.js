@@ -211,7 +211,6 @@ const deleteVacation = (id) => {
 
 // Sam
 const getCourseDetail = (course_num) => {
-  console.log(course_num);
   return new Promise(function(resolve, reject) {
     pool.query(`SELECT ds_id, daily_schedule.ca_id, date, description, course_assignment.username, subject, course
                 FROM daily_schedule
@@ -219,6 +218,22 @@ const getCourseDetail = (course_num) => {
                 INNER JOIN course ON course.course_num=course_assignment.course_num
                 WHERE course.course_num=${course_num}
                 ORDER BY date;`,
+    (error, results) => {
+      if (error) {
+        reject(error)
+      }
+      resolve(results)
+    })
+  }) 
+}
+
+const getResources = (ds_id) => {
+  return new Promise(function(resolve, reject) {
+    pool.query(`SELECT resource.model_num, model_name, quantity_total, model_location, (quantity_total - quantity) AS q_left
+                FROM "resource"
+                LEFT JOIN
+                (SELECT * FROM "resource_allocation" WHERE ds_id = ${ds_id}) res_allocated_for_day 
+                ON (res_allocated_for_day.model_num = resource.model_num);`,
     (error, results) => {
       if (error) {
         reject(error)
@@ -240,4 +255,5 @@ module.exports = {
   postVacation,
   deleteVacation,
   getCourseDetail,
+  getResources,
 }

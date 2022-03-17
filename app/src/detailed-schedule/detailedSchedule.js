@@ -9,7 +9,7 @@ const END_POINT_ROOT = "http://localhost:8000/";
 
 class Day extends React.Component {
 
-  constructor({props, info, socket}) {
+  constructor({ props, info, socket }) {
     super(props);
     this.state = {
       editMode: false,
@@ -24,21 +24,21 @@ class Day extends React.Component {
 
   handleSave = ({ name, value, previousValue }) => {
     if (name == "instructor") {
-        this.setState({instructor: value});
+      this.setState({ instructor: value });
     } else {
-        this.setState({description: value});
+      this.setState({ description: value });
     }
   };
 
-handleEditSave() {
-  this.setState({
-    editMode: !this.state.editMode,
-  });
-  if (this.state.editMode) {
-    this.socket.emit("changeDay", {id: this.id, resources: this.resources, instructor: this.state.instructor, description: this.state.description, date: this.date.getTime()});
+  handleEditSave() {
+    this.setState({
+      editMode: !this.state.editMode,
+    });
+    if (this.state.editMode) {
+      this.socket.emit("changeDay", { id: this.id, resources: this.resources, instructor: this.state.instructor, description: this.state.description, date: this.date.getTime() });
+    }
+    return;
   }
-  return;
-}
 
   render() {
     const descEditSave = this.state.editMode ? "Save" : "Edit";
@@ -69,7 +69,7 @@ handleEditSave() {
           />
         </td>
         <td>
-        {/* <Router>
+          {/* <Router>
           <Link to="/resources"> Book Resources </Link>
         </Router> */}
           <EditText
@@ -80,7 +80,7 @@ handleEditSave() {
           />
         </td>
         <td>
-        { this.state.description ? (<button onClick={() => this.handleEditSave()}>{descEditSave}</button>) : null }
+          {this.state.description ? (<button onClick={() => this.handleEditSave()}>{descEditSave}</button>) : null}
         </td>
       </tr>
     );
@@ -89,34 +89,36 @@ handleEditSave() {
 
 class Week extends React.Component {
 
-  constructor({props, info, socket}) {
-      
+  constructor({ props, info, socket }) {
+
     super(props);
     this.state = {
-        days: info,
+      days: info,
     }
     this.socket = socket;
 
     this.socket.on('changeDay', (rowInfo) => {
 
-        rowInfo.date = new Date(rowInfo.date);
+      rowInfo.date = new Date(rowInfo.date);
 
-        let index;
-        
-        for (let i = 0; i < this.state.days.length; i++) {
-            if (this.state.days[i].id == rowInfo.id) {
-                index = i;
-                break;
-            }
+      let index;
+
+      for (let i = 0; i < this.state.days.length; i++) {
+        if (this.state.days[i].id == rowInfo.id) {
+          index = i;
+          break;
         }
+      }
 
-        let copyDays = this.state.days.slice();
-        copyDays[index] = rowInfo;
+      let copyDays = this.state.days.slice();
+      copyDays[index] = rowInfo;
 
-        this.setState({days: _.reduce(copyDays, (acc, day) => {
-            const dayData = day;
-            return [...acc, dayData];
-        }, [])});
+      this.setState({
+        days: _.reduce(copyDays, (acc, day) => {
+          const dayData = day;
+          return [...acc, dayData];
+        }, [])
+      });
 
     })
   }
@@ -132,16 +134,16 @@ class Week extends React.Component {
 
   render() {
     const days = this.state.days.map((day, index) => {
-        return (
-            this.renderDay(day)
-        );
-      });
+      return (
+        this.renderDay(day)
+      );
+    });
     return (
       <table>
         <caption>Schedule for week of {getStringDate(this.state.days[0].date)}</caption>
         <thead>
           <tr>
-            <th>Date</th>       
+            <th>Date</th>
             <th>Instructor</th>
             <th>Description</th>
             <th>Resources</th>
@@ -159,14 +161,14 @@ class Week extends React.Component {
 class Course extends React.Component {
 
 
-    constructor({props, socket}) {
-        super(props);
-        this.socket = socket;
-        this.state = {
-          data: null,
-          dataLoaded: false,
-        }
+  constructor({ props, socket }) {
+    super(props);
+    this.socket = socket;
+    this.state = {
+      data: null,
+      dataLoaded: false,
     }
+  }
 
   renderWeek(weekInfo) {
     return (
@@ -182,7 +184,7 @@ class Course extends React.Component {
     let weeksData = new Array();
     const chunk = 7; // # days in a week.
     for (let i = 0, j = this.state.data.length; i < j; i += chunk) {
-        weeksData.push(this.state.data.slice(i, i + chunk));
+      weeksData.push(this.state.data.slice(i, i + chunk));
     }
     const weeks = weeksData.map((week, index) => {
       return (
@@ -199,17 +201,11 @@ class Course extends React.Component {
 
   //----
   parseData = (data) => {
-    console.log(data);
     if (!data) {
       return null;
     }
 
     const parsedData = JSON.parse(data);
-    console.log(parsedData);
-
-    console.log(parsedData.rows);
-    console.log(parsedData.rows[0].date);
-    console.log(new Date(parsedData.rows[0].date));
 
     for (let i = 0; i < parsedData.rows.length; i++) {
       parsedData.rows[i].date = new Date(parsedData.rows[i].date); // Changing date from string-date to date object.
@@ -225,12 +221,12 @@ class Course extends React.Component {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     })
-    .then(response => {
-      return response.text();
-    })
-    .then(data => {
-      this.parseData(data)
-    });
+      .then(response => {
+        return response.text();
+      })
+      .then(data => {
+        this.parseData(data)
+      });
   }
 
   componentDidMount() {
@@ -248,9 +244,9 @@ class Course extends React.Component {
 }
 
 const DetailedSchedule = (socket) => {
-    return (
-      <Course socket={socket.socket}></Course>
-    );
+  return (
+    <Course socket={socket.socket}></Course>
+  );
 }
 
 export default DetailedSchedule;
