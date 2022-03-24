@@ -147,6 +147,18 @@ const socketStart = async (server, pool, instructorModel) => {
                 socket.emit('error', msg);
             })
         });
+
+        socket.on('vacationAdded', (vacation) => {
+            console.log(vacation);
+            instructorModel.postVacation(vacation)
+            .then(response => {
+                console.log("Vacation Post Success");
+                socket.broadcast.emit('vacationAdded', vacation);
+            })
+            .catch(error => {
+                console.log(error);
+            })
+        })
     });
 }
 

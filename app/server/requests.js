@@ -5,7 +5,7 @@ const pool = new Pool({
     user: "postgres",
     port: 5432,
     password: "password123",
-    database: "sotby"
+    database: "sotby-test"
 })
 
 pool.connect();
@@ -31,10 +31,10 @@ const postUser = (user, rownum) => {
     // INSERT INTO public."public.user" (username, first_name, last_name, date_joined, email, password)
     // VALUES ('John Smith', 'John', 'Smith', current_date, 'johnsmith@notreal.com', 'johnsmithiscool')
     pool.query(`INSERT INTO "user"
-            (username, first_name, last_name, date_joined, email, password)
+            (username, first_name, last_name, date_joined, admin, email, password)
             VALUES 
             ('${user.username}', '${user.firstname}', '${user.lastname}', 
-            to_timestamp(${user.datejoined} / 1000.0), '${user.email}', 
+            to_timestamp(${user.datejoined} / 1000.0), '${0}', '${user.email}', 
             '${user.password}')`
     ,(error, results) => {
       if (error) {
@@ -172,12 +172,71 @@ const deleteCourse = (courseId, userId) => {
   }) 
 }
 
+// Vacations
+const getVacationsApproved = (username) => {
+  return new Promise(function(resolve, reject) {
+      pool.query(`SELECT v.username, v.start_date, v.end_date, v.duration from "vacation" v
+                  WHERE v.username = '${username}' AND v.approved = 1`
+      ,(error, results) => {
+        if (error) {
+          reject(error)
+        }
+        resolve(results.rows);
+      })
+    }) 
+}
+
+const getAllVacationsNotApproved = () => {
+  return new Promise(function(resolve, reject) {
+      pool.query(`SELECT v.username, v.start_date, v.end_date, v.duration from "vacation" v
+                  WHERE v.approved = 0`
+      ,(error, results) => {
+        if (error) {
+          reject(error)
+        }
+        resolve(results.rows);
+      })
+    }) 
+}
+
+const postVacation = (vacation) => {
+  return new Promise(function(resolve, reject) {
+      pool.query(`INSERT INTO "vacation" 
+                  (vacation_id, username, start_date, end_date, duration, approved)
+                  VALUES
+                  ('${vacation.id}', '${vacation.username}', to_timestamp(${vacation.start_date} / 1000),to_timestamp(${vacation.end_date} / 1000),'${vacation.duration}', 0)`
+      ,(error, results) => {
+        if (error) {
+          reject(error)
+        }
+        resolve(results);
+      })
+    }) 
+}
+
+const deleteVacation = (id) => {
+  return new Promise(function(resolve, reject) {
+      pool.query(`DELETE FROM "vacation" v
+                  WHERE v.id = '${id}'`,
+      (error, results) => {
+        if (error) {
+          reject(error)
+        }
+        resolve(results)
+      })
+    })    
+}
+
 module.exports = {
-    getUsers,
-    postUser,
-    deleteUser,
-    postCourse,
-    putCourse,
-    deleteCourse,
-    getUser
+  getUsers,
+  postUser,
+  deleteUser,
+  postCourse,
+  putCourse,
+  deleteCourse,
+  getUser,
+  getVacationsApproved,
+  getAllVacationsNotApproved,
+  postVacation,
+  deleteVacation,
 }
