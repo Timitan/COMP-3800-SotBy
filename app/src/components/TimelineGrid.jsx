@@ -6,44 +6,47 @@ import Popup from "reactjs-popup";
 import { useState } from "react";
 
 export default function TimelineGrid({socket, heightLimit, instructorArray, createCourse, totalWeeks, onRemoveUser, onAddUser}) {
-    // let dateOffset = new Date(new Date().getFullYear(), 0, 1);
-
-    // TODO: Once users and their IDs are established, replace the keys below with the appropriate user ID
     const initialRowHeaderArray = instructorArray;
 
     // 100px height cells + 4 px total margin, change later if needed
     const rowHeight = 204; 
 
+    // Height for the grid and for correct placment of the add row button
     const [height, setHeight] = useState(initialRowHeaderArray.length * rowHeight);
+
+    // List of users
     const [rowHeaderArray, setRowHeaderArray] = useState(initialRowHeaderArray);
 
-    // TODO: Change row headers to take in a key and a text
+    // Add a user to the timeline
     const addRowHeader = (user, emit=true) => {
         const length = rowHeaderArray.length;
         setRowHeaderArray(rowHeaderArray => [...rowHeaderArray, {key: user.username, name: user.firstname + " " + user.lastname}]);
+
+        // Set the height limit to the number of users * 2 since each user takes up 2 rows
         heightLimit.set((rowHeaderArray.length + 1) * 2);
         setHeight(height => height + rowHeight);
+
+        // Call the add user function passed in from the interactive grid so that it could also be updated
         onAddUser(user);
-        console.log("Length in Timeline: " + rowHeaderArray.length);
         
         if(emit)
             socket.emit('userAdded', user, length);
     }
 
     const removeRowHeader = (key, x, emit=true) => {
-        console.log("Key: " + key);
-        console.log("X: " + x);
-
         let modifiedArray = rowHeaderArray;
         const initialLength = modifiedArray.length;
-        console.log(modifiedArray);
         modifiedArray = _.reject(rowHeaderArray, (element) => {return element.key === key})
-        console.log(modifiedArray);
 
+        // Check that an element has been found and removed before adjusting the row heights
         if(modifiedArray.length !== initialLength) {
             setRowHeaderArray(modifiedArray);
             setHeight(height => height - rowHeight);
+
+            // Set the height limit to the number of users * 2 since each user takes up 2 rows
             heightLimit.set((rowHeaderArray.length - 1) * 2);
+
+            // Call the add user function passed in from the interactive grid so that it could also be updated
             onRemoveUser(key, x - 1);
 
             if(emit)
@@ -71,6 +74,7 @@ export default function TimelineGrid({socket, heightLimit, instructorArray, crea
         removeRowHeader(id, x, false);
     });
 
+    // Use effect for attaching socket event listeners once the component mounts
     // useEffect(() => {
     //     socket.once("userAdded", (user) => {
     //         console.log("Added: " + JSON.stringify(user));

@@ -30,9 +30,6 @@ export default function Timeline({socket, heightLimit, instructorArray}) {
         "December",
     ];
 
-    // 100px height cells + 4 px total margin, change later if needed
-    // const rowHeight = 204;
-
     const [monthArray, ] = useState(initialMonthArray);
     let totalWeeks = 0;
     for(let i = 0; i < monthArray.length; i++) {

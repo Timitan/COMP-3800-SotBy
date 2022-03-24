@@ -22,14 +22,11 @@ export default class LocalStorageLayout extends React.PureComponent {
     this.state = {
       // Loop through the instructor array to get all the courses associated with them
       items: instructorArray.reduce(function(acc, element, index) {
-        // console.log(element + index);
-        // console.log(element.timeblocks[0]);
         if(element.timeblocks.length === 0 || weekInformation.length === 0){
           return acc;
         }
-
-        // const start = findWeekIndex(weekInformation, element.timeblocks[0].start);
-        // const end = findWeekIndex(weekInformation, element.timeblocks[0].end) + 1;
+        
+        // Create a course element for every timeblock and concatenate them into one array
         return acc.concat(
           element.timeblocks.map((info) => {
             const start = findWeekIndex(weekInformation, info.start);
@@ -51,7 +48,6 @@ export default class LocalStorageLayout extends React.PureComponent {
           })
         );
       }, []),
-      newCounter: 0,
       heightLimit: heightLimit.get,
       weekInformation: weekInformation
     };
@@ -87,8 +83,6 @@ export default class LocalStorageLayout extends React.PureComponent {
         const newLayout = this.state.layout.slice();
         newLayout[i] = item;
 
-        //console.log(this.state.layout);
-        //console.log(newLayout);
         this.setState({
           layout: newLayout
         });
@@ -99,13 +93,9 @@ export default class LocalStorageLayout extends React.PureComponent {
   }
 
   onLayoutChange = (layout, layouts) => {
-    /*eslint no-console: 0*/
-    //saveToLS("layout", layout);
     this.setState({
       layout: layout
     });
-    // this.props.onLayoutChange(layout); // updates status display
-    //this.props.onLayoutChange(layout);
     console.log("layout changed");
   }
   
@@ -130,16 +120,7 @@ export default class LocalStorageLayout extends React.PureComponent {
   }
   */
 
-  onItemChange = (layout, oldItem, newItem, placeholder, e, element) => {
-    /* Information logging
-    console.log("Layout:" + JSON.stringify(layout));
-    console.log("Old Item: " + JSON.stringify(oldItem));
-    console.log("New Item: " + JSON.stringify(newItem));
-    console.log("PlaceHolder: " + JSON.stringify(placeholder));
-    console.log("MouseEvent: " + e);
-    console.log(layout.indexOf(newItem));
-    console.log("Layout Index: " + this.layout)*/
-
+  onItemChange = (layout, oldItem, newItem) => {
     // Update the dates on the postgresql database
     const startDate = findWeekDate(this.state.weekInformation, newItem.x);
     const endDate = findWeekDate(this.state.weekInformation, newItem.w + newItem.x - 1);
@@ -149,6 +130,8 @@ export default class LocalStorageLayout extends React.PureComponent {
 
     const index = _.findIndex(this.state.items, (element) => {return element.data.i === newItem.i});
     const foundItem = this.state.items[index];
+
+    // Restrict movement of the course to one row only
     const yAxisLockedItem = newItem;
     yAxisLockedItem.y = oldItem.y;
     this.replaceItem(yAxisLockedItem);
@@ -163,9 +146,9 @@ export default class LocalStorageLayout extends React.PureComponent {
     const startDate = findWeekDate(this.state.weekInformation, x);
     const endDate = findWeekDate(this.state.weekInformation, w + x - 1);
     const instructor = this.instructorArray[Math.floor(y / 2)];
-    console.log("Index: " + Math.floor(y / 2));
-    console.log(this.instructorArray);
-    console.log(instructor);
+    // console.log("Index: " + Math.floor(y / 2));
+    // console.log(this.instructorArray);
+    // console.log(instructor);
 
     // User/ instructor was deleted, can't create a course
     if(instructor === undefined) {
@@ -176,7 +159,7 @@ export default class LocalStorageLayout extends React.PureComponent {
       this.socket.emit('courseAdded', {...course, x: x, y: y, instructorKey: instructor.key,  start: startDate.getTime(), end: endDate.getTime()});
     } else {
       this.setState({
-        // Add a new item. It must have a unique key!
+        // Add a new item
         items: this.state.items.concat({
           text: course.title + " " + course.number,
           userId: instructor.key,
@@ -189,22 +172,22 @@ export default class LocalStorageLayout extends React.PureComponent {
             h: 1,
           }
         }),
-        // Increment the counter to ensure key is always unique.
       });
     }
   }
 
   onRemoveItem(i, emit=true) {
+    // Find the index of the course element in the state
     const index = _.findIndex(this.state.items, (element) => {return element.data.i === i});
     const foundItem = this.state.items[index];
-    console.log(foundItem);
 
+    // Emit a message to all other applications that a course has been edeleted
     if(emit) {
       this.socket.emit("courseDeleted", foundItem, i);
     }
 
+    // Remove the element from the state
     this.setState({ items: _.reject(this.state.items, (element) => {return element.data.i === i})});
-    console.log(JSON.stringify(this.state.layout));
   }
 
   onRemoveUser = (key, y) => {
@@ -216,7 +199,7 @@ export default class LocalStorageLayout extends React.PureComponent {
       // Remove elements on the same row
       this.setState({ items: _.reject(this.state.items, (element) => {return element.data.y === y || element.data.y === y + 1}) });
 
-      // Move elements down
+      // Move course elements up if they are below the user that was deleted
       this.setState({item: _.reduce(this.state.items, (acc, element) => {
         if (element.data.y > y) {
           console.log(acc);
@@ -240,10 +223,7 @@ export default class LocalStorageLayout extends React.PureComponent {
   }
 
   onAddUser = (user) => {
-    console.log(this.instructorArray);
-    console.log(user);
     this.instructorArray.push({key:user.username, name: user.firstname + " " + user.lastname, timeblocks: []});
-    console.log(this.instructorArray);
   }
 
   createElement(el) {
@@ -301,8 +281,6 @@ export default class LocalStorageLayout extends React.PureComponent {
 function findWeekIndex(weekInformation, date) {
   // Search for a week in a particular month
   const monthIndex = date.getMonth();
-  // console.log("MonthIndex: " + monthIndex);
-  // console.log(weekInformation.weekRangesArray);
 
   // Get the first day of every week in that month
   const weekRanges = weekInformation.weekRangesArray[monthIndex].times;

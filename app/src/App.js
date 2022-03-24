@@ -27,13 +27,10 @@ export default class App extends React.Component {
   }
 
   parseData = (data) => {
-    console.log(data);
     if(!data) {
       return null;
     }
-
     const parsedData = JSON.parse(data);
-    console.log(parsedData);
     
     let instructorArray = {};
     for(let i = 0; i < parsedData.length; i++) {
