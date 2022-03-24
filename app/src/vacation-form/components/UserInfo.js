@@ -24,10 +24,16 @@ const UserInfo = ({ onAdd, onSubmit }) => {
     return (
         <form onSubmit={submit}>
             <div className="vacation-row">
-                <input className="vacation-input" type="text" placeholder="First Name..." value={first} onChange={(e) => twoHandlers(setFirst, e.target.value)} />
-                <input className="vacation-input" type="text" placeholder="Last Name..." value={last} onChange={(e) => twoHandlers(setLast, e.target.value)} />
-                <input className="vacation-input" type="text" placeholder="Employee Number..." value={emp} onChange={(e) => twoHandlers(setEmp, e.target.value)} />
-                <input className="vacation-input" type="text" placeholder="Extension..." value={ext} onChange={(e) => twoHandlers(setExt, e.target.value)} />
+                <label className="vacation-input-labels">First Name</label>
+                <label className="vacation-input-labels">Last Name</label>
+                <label className="vacation-input-labels">Employee Number</label>
+                <label className="vacation-input-labels">Extension</label>
+            </div>
+            <div className="vacation-row">
+                <input className="vacation-input-large" type="text" placeholder="First Name..." value={first} onChange={(e) => twoHandlers(setFirst, e.target.value)} />
+                <input className="vacation-input-large" type="text" placeholder="Last Name..." value={last} onChange={(e) => twoHandlers(setLast, e.target.value)} />
+                <input className="vacation-input-large" type="text" placeholder="Employee Number..." value={emp} onChange={(e) => twoHandlers(setEmp, e.target.value)} />
+                <input className="vacation-input-large" type="text" placeholder="Extension..." value={ext} onChange={(e) => twoHandlers(setExt, e.target.value)} />
             </div>
 
             <input type="submit" value="Submit Form" className='btn' />

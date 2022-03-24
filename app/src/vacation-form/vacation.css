@@ -143,6 +143,10 @@
   font-size: 17px;
 }
 
+.vacation-input-labels {
+  width: 25%;
+}
+
 .padding-top {
   padding-top: 20px;
 }
