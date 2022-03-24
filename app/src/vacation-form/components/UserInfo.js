@@ -18,6 +18,7 @@ const UserInfo = ({ onAdd, onSubmit }) => {
 
         onAdd({ first, last, emp, ext })
         onSubmit()
+        window.location.reload(false);
     }
 
     return (

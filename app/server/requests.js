@@ -157,7 +157,7 @@ const deleteCourse = (courseId, userId) => {
 // Vacations
 const getVacationsApproved = (username) => {
   return new Promise(function(resolve, reject) {
-      pool.query(`SELECT v.start_date, v.end_date from "vacation" v
+      pool.query(`SELECT v.username, v.start_date, v.end_date, v.duration from "vacation" v
                   WHERE v.username = '${username}' AND v.approved = 1`
       ,(error, results) => {
         if (error) {
@@ -170,7 +170,7 @@ const getVacationsApproved = (username) => {
 
 const getAllVacationsNotApproved = () => {
   return new Promise(function(resolve, reject) {
-      pool.query(`SELECT v.start_date, v.end_date from "vacation" v
+      pool.query(`SELECT v.username, v.start_date, v.end_date, v.duration from "vacation" v
                   WHERE v.approved = 0`
       ,(error, results) => {
         if (error) {
@@ -186,12 +186,12 @@ const postVacation = (vacation) => {
       pool.query(`INSERT INTO "vacation" 
                   (vacation_id, username, start_date, end_date, duration, approved)
                   VALUES
-                  ('${vacation.id}', '${vacation.username}','${vacation.startdate}','${vacation.enddate}','${vacation.duration}', 0)`
+                  ('${vacation.id}', '${vacation.username}', to_timestamp(${vacation.start_date} / 1000),to_timestamp(${vacation.end_date} / 1000),'${vacation.duration}', 0)`
       ,(error, results) => {
         if (error) {
           reject(error)
         }
-        resolve(results.rows);
+        resolve(results);
       })
     }) 
 }

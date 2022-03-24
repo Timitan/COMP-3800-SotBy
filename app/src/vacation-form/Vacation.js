@@ -5,11 +5,11 @@ import GridTripleLabel from "./components/GridTripleLabel";
 import GridNotesLabel from "./components/GridNotesLabel";
 import VacationInput from "./components/VacationInput";
 import VacationList from "./components/VacationList";
-
-
+import io from "socket.io-client";
 import './vacation.css'
-
 import { useState } from "react"
+
+const socket = io.connect('/');
 
 function Vacation() {
 	const [user, setUser] = useState('')
@@ -27,7 +27,7 @@ function Vacation() {
 
 	const addVacation = (vacation) => {
 		const id = Math.floor(Math.random() * 100000000) + 1    // TODO: set id to increment, not random
-		const newVacation = {id, user, ...vacation}
+		const newVacation = {id, user, ...vacation}				// change postgres id PK from int to serial
 		setVacations([...vacations, newVacation])
 	}
 
@@ -45,17 +45,13 @@ function Vacation() {
 		for (let index = 0; index < vacations.length; index++) {
 			const id = vacations[index].id
 			const username = user
-			const start_date = createDate(vacations[index].startingMonth, vacations[index].startingDay)
-			const end_date = createDate(vacations[index].endingMonth, vacations[index].endingDay)
+			const start_date = createDate(vacations[index].startingMonth, vacations[index].startingDay).getTime()
+			const end_date = createDate(vacations[index].endingMonth, vacations[index].endingDay).getTime()
+			console.log(start_date)
+			console.log(end_date)
 			const duration = vacations[index].day
 			const vacation = {id, username, start_date, end_date, duration}
-			const requestOptions = {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(vacation)
-			};
-			fetch('https://localhost:8000/vacations', requestOptions)
-				.then(response => response.json())
+			socket.emit('vacationAdded', vacation)
 		}
 	}
 

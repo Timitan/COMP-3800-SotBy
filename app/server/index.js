@@ -79,6 +79,17 @@ app.get('/vacations', (req, res) => {
   })
 })
 
+app.get('/vacationsNotApproved', (req, res) => {
+  instructorModel.getAllVacationsNotApproved(req)
+  .then(response => {
+    res.status(200).send(response);
+  })
+  .catch(error => {
+    console.log(error);
+    res.status(500).send(error);
+  })
+})
+
 app.post('/vacations', (req, res) => {
   instructorModel.postUser(req.body)
   .then(response => {
