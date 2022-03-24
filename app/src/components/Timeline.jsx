@@ -82,6 +82,9 @@ export default function Timeline({ socket, heightLimit, instructorArray }) {
                 <button className="vacation-form-btn">
                     <a href="/vacation">Submit Vacation form</a>
                 </button>
+                <button className="vacation-form-btn">
+                    <a href="/vacationApproval">Vacation Approval</a>
+                </button>
                 {
                     monthArray.map((item, i) => {
                         return (
