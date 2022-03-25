@@ -5,16 +5,17 @@ const pool = new Pool({
     user: "postgres",
     port: 5432,
     password: "password123",
-    database: "sotby-test"
+    database: "sotby"
 })
 
 pool.connect();
 
 const getUsers = () => {
     return new Promise(function(resolve, reject) {
-      pool.query(`SELECT u.username, u.first_name, u.last_name, u.row_num, ca.start_date, ca.end_date, c.course_num, c.title, c.colour from "user" u
+      pool.query(`SELECT u.username, u.first_name, u.last_name, u.row_num, ca.start_date, ca.end_date, c.course_num, c.title, c.colour, v.start_date as vacation_start, v.end_date as vacation_end, v.vacation_id from "user" u
                   LEFT JOIN course_assignment ca ON u.username = ca.username
                   LEFT JOIN course c ON ca.course_num = c.course_num
+                  LEFT JOIN vacation v ON v.username = u.username
                   ORDER BY u.date_joined`
                   //ORDER BY username ASC
       ,(error, results) => {
@@ -86,6 +87,24 @@ const putCourse = (username, id, start, end) =>{
   }) 
 }
 
+const getUser = (username) => {
+  return new Promise(function(resolve, reject) {
+    pool.query(`SELECT u.username from "user" u
+                WHERE u.username = '${username}'
+                `
+    ,(error, results) => {
+      if (error) {
+        reject(error)
+      }
+      if(results.rows == 0) {
+        reject("User doesn't exist");
+      } else {
+        resolve(results.rows);
+      }
+    })
+  }) 
+}
+
 const deleteUser = (id) => {
   return new Promise(function(resolve, reject) {
     pool.query(`
@@ -120,7 +139,7 @@ const deleteUser = (id) => {
                     )
                     ;
                   ELSE
-                      DELETE from "user" u
+                    DELETE from "user" u
                     WHERE u.username = '${id}';
                   END IF;
                 END
@@ -216,6 +235,7 @@ module.exports = {
   postCourse,
   putCourse,
   deleteCourse,
+  getUser,
   getVacationsApproved,
   getAllVacationsNotApproved,
   postVacation,
