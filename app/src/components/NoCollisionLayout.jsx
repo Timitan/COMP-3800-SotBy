@@ -48,6 +48,30 @@ export default class LocalStorageLayout extends React.PureComponent {
           })
         );
       }, []),
+      vacations: instructorArray.reduce(function(acc, element, index) {
+        if(element.vacations.length === 0 || weekInformation.length === 0){
+          return acc;
+        }
+        
+        return acc.concat(
+          element.vacations.map((info) => {
+            const start = findWeekIndex(weekInformation, info.vacationStart);
+            const end = findWeekIndex(weekInformation, info.vacationEnd) + 1;
+            return(
+              {
+                text: info.userId + "'s Vacation",
+                data: {
+                  i: info.userId + info.vacationId,
+                  x: start,
+                  y: (index + 1) * 2,
+                  w: end - start,
+                  h: 1,
+                }
+              }
+            )
+          })
+        );
+      }, []),
       heightLimit: heightLimit.get,
       weekInformation: weekInformation
     };
@@ -98,27 +122,6 @@ export default class LocalStorageLayout extends React.PureComponent {
     });
     console.log("layout changed");
   }
-  
-  /*
-  // Note: Websockets are used to send a query to update the database
-  updateCourse(id, start, end) {
-    const body = {start: start, end: end};
-    fetch('http://localhost:8000/instructors/' + id, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    })
-    .then(response => {
-      console.log("Response: " + JSON.stringify(response));
-        return response.text();
-    })
-    .then(data => {
-        console.log("Data from updating course: " + data);
-    });
-  }
-  */
 
   onItemChange = (layout, oldItem, newItem) => {
     // Update the dates on the postgresql database
@@ -226,7 +229,7 @@ export default class LocalStorageLayout extends React.PureComponent {
     this.instructorArray.push({key:user.username, name: user.firstname + " " + user.lastname, timeblocks: []});
   }
 
-  createElement(el) {
+  createElement(el, isVacation=false) {
     const removeStyle = {
       position: "absolute",
       right: "2px",
@@ -236,8 +239,12 @@ export default class LocalStorageLayout extends React.PureComponent {
     };
 
     return (
-      <div key={el.data.i} data-grid={el.data} name={el.text + " el"}>
+      <div key={el.data.i} data-grid={isVacation ? {...el.data, static: true} : el.data} name={el.text + " el"}  >
         <span className="text">{el.text}</span>
+        {isVacation 
+        ?
+        null
+        :
         <span
           className="remove"
           style={removeStyle}
@@ -245,6 +252,7 @@ export default class LocalStorageLayout extends React.PureComponent {
         >
           x
         </span>
+        }
       </div>
     );
   }
@@ -271,6 +279,7 @@ export default class LocalStorageLayout extends React.PureComponent {
           onDragStop = {this.onItemChange}
         >
           {this.state.items.map(el => this.createElement(el))}
+          {this.state.vacations.map(el => this.createElement(el, true))}
         </ReactGridLayout>
       </div>
       </React.Fragment>

@@ -43,7 +43,6 @@ export default function Timeline({ socket, heightLimit, instructorArray }) {
 
     return(
         <React.Fragment>
-
             <div className="grid-container-months">
                 <button className="vacation-form-btn">
                     <a href="/vacation">Submit Vacation form</a>
