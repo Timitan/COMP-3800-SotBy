@@ -181,6 +181,20 @@ const getAllVacationsNotApproved = () => {
     }) 
 }
 
+const approveVacation = (vacation) => {
+  return new Promise(function(resolve, reject) {
+    pool.query(`UPDATE "vacation"
+    SET approved = 1
+    WHERE id = ${vacation.id}`),
+    (error, results) => {
+      if (error) {
+        reject(error)
+      }
+      resolve(results)
+    }
+  })
+}
+
 const postVacation = (vacation) => {
   return new Promise(function(resolve, reject) {
       pool.query(`INSERT INTO "vacation" 
@@ -218,6 +232,7 @@ module.exports = {
   deleteCourse,
   getVacationsApproved,
   getAllVacationsNotApproved,
+  approveVacation,
   postVacation,
   deleteVacation,
 }
