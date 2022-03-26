@@ -63,7 +63,7 @@ export default class LocalStorageLayout extends React.PureComponent {
                 data: {
                   i: info.userId + info.vacationId,
                   x: start,
-                  y: (index + 1) * 2,
+                  y: (index * 2) + 1,
                   w: end - start,
                   h: 1,
                 }
