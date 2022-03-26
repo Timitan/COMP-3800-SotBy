@@ -78,7 +78,6 @@ const socketStart = async (server, pool, instructorModel) => {
             lock = true;
 
             // Update posgresql database
-            setTimeout(() => {
             instructorModel.getUser(key)
             // Check if the user exists
             .then(response => {
@@ -106,7 +105,6 @@ const socketStart = async (server, pool, instructorModel) => {
                 lock = false;
                 bus.emit('unlocked');
             })
-            }, 3000);
         });
 
         socket.on('courseAdded', (course) => {
@@ -151,14 +149,38 @@ const socketStart = async (server, pool, instructorModel) => {
         socket.on('vacationAdded', (vacation) => {
             console.log(vacation);
             instructorModel.postVacation(vacation)
-            .then(response => {
-                console.log("Vacation Post Success");
-                socket.broadcast.emit('vacationAdded', vacation);
-            })
-            .catch(error => {
-                console.log(error);
-            })
-        })
+                .then(response => {
+                    console.log("Vacation Post Success");
+                    socket.broadcast.emit('vacationAdded', vacation);
+                })
+                .catch(error => {
+                    console.log(error);
+                })
+        });
+
+        socket.on('vacationApproved', (vacation) => {
+            instructorModel.approveVacation(vacation)
+                .then(response => {
+                    console.log("Update Success");
+                    console.log(vacation);
+                    socket.broadcast.emit('vacationApproved', vacation);
+                })
+                .catch(error => {
+                    console.log(error);
+                })
+        });
+
+        socket.on('vacationDeleted', (id) => {
+            instructorModel.deleteVacation(id)
+                .then(response => {
+                    console.log("Delete Success");
+                    socket.broadcast.emit('vacationDeleted', id);
+                })
+                .catch(error => {
+                    console.log(error);
+                })
+        });
+
     });
 }
 
