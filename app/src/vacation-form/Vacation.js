@@ -14,20 +14,24 @@ const socket = io.connect('/');
 function Vacation() {
 	const [user, setUser] = useState('')
 	const [vacations, setVacations] = useState([])
+	const [vacationID, setVacationID] = useState(0)
+	const [vacationSubmitted, setVacationSubmitted] = useState(false)
 
 	const makeUsername = (first, last) => {
 		const username = first.toLowerCase() + '_' + last.toLowerCase()
 		return username
 	}
 
-	const changeUser = (instructor) => {
-		const username = makeUsername(instructor.first, instructor.last)
+	const changeUser = (first, last) => {
+		const username = makeUsername(first, last)
 		setUser(username)
+		postSubmission(username)
 	}
 
 	const addVacation = (vacation) => {
-		const id = Math.floor(Math.random() * 100000000) + 1    // TODO: set id to increment, not random
-		const newVacation = {id, user, ...vacation}				// change postgres id PK from int to serial
+		const id = vacationID
+		const newVacation = { id, user, ...vacation }
+		setVacationID(vacationID + 1)
 		setVacations([...vacations, newVacation])
 	}
 
@@ -41,54 +45,65 @@ function Vacation() {
 		return date
 	}
 
-	const postSubmission = () => {
+	const postSubmission = (username) => {
 		for (let index = 0; index < vacations.length; index++) {
 			const id = vacations[index].id
-			const username = user
 			const start_date = createDate(vacations[index].startingMonth, vacations[index].startingDay).getTime()
 			const end_date = createDate(vacations[index].endingMonth, vacations[index].endingDay).getTime()
+			console.log(username)
 			console.log(start_date)
 			console.log(end_date)
 			const duration = vacations[index].day
-			const vacation = {id, username, start_date, end_date, duration}
+			const vacation = { id, username, start_date, end_date, duration }
 			socket.emit('vacationAdded', vacation)
 		}
+		setVacationID(0)
+		setVacationSubmitted(true)
+		setVacations([])
 	}
 
 	return (
-		<div className="vacation-container">
-			<Header />
-			<UserInfo onAdd={changeUser} onSubmit={postSubmission}/>
+		<div className="vacation-submission-form">
+			<div className="vacation-container">
+				<Header />
+				<UserInfo onAdd={changeUser} />
 
-			{/* Vacation Inputs */}
-			<div className="vacation-grid">
-				{/* Labels */}
-				<div className="vacation-row">
-					<GridDoubleLabel topText="N-NEW" botText="C-CANCEL" />
-					<GridTripleLabel
-						topText="LEAVE DATES"
-						leftText="FROM"
-						rightText="TO (INCLUSIVE)"
-					/>
-					<GridTripleLabel
-						topText="TOTAL"
-						leftText="DAY(S)"
-						rightText="HOUR(S)"
-					/>
-					<GridDoubleLabel topText="VA-VACATION" botText="BT-BANKED TIME" />
-					<GridNotesLabel text="NOTES" />
+				{/* Vacation Inputs */}
+				<div className="vacation-grid">
+					{/* Labels */}
+					<div className="vacation-row">
+						<GridDoubleLabel topText="N-NEW" botText="C-CANCEL" />
+						<GridTripleLabel
+							topText="LEAVE DATES"
+							leftText="FROM"
+							rightText="TO (INCLUSIVE)"
+						/>
+						<GridTripleLabel
+							topText="TOTAL"
+							leftText="DAY(S)"
+							rightText="HOUR(S)"
+						/>
+						<GridDoubleLabel topText="VA-VACATION" botText="BT-BANKED TIME" />
+						<GridNotesLabel text="NOTES" />
+					</div>
+
+					{/* Inputs */}
+					<VacationInput onAdd={addVacation} />
 				</div>
 
-				{/* Inputs */}
-				<VacationInput onAdd={addVacation} />
+				<div>
+					{vacations.length > 0 ?
+						(<VacationList vacations={vacations} onDelete={deleteVacation} />)
+						: ('No vacations added')}
+				</div>
 			</div>
-			
 			<div>
-				{vacations.length > 0 ?
-					(<VacationList vacations={vacations} onDelete={deleteVacation} />) 
-					: ('No vacations added')}
+				{vacationSubmitted ? 
+					(<div className="vacation-submission-true">Request submitted successfully</div>) 
+					: ('')}
 			</div>
 		</div>
+
 	);
 }
 

@@ -5,7 +5,7 @@ const pool = new Pool({
     user: "postgres",
     port: 5432,
     password: "password123",
-    database: "sotby-test"
+    database: "test"
 })
 
 pool.connect();
@@ -170,7 +170,7 @@ const getVacationsApproved = (username) => {
 
 const getAllVacationsNotApproved = () => {
   return new Promise(function(resolve, reject) {
-      pool.query(`SELECT v.username, v.start_date, v.end_date, v.duration from "vacation" v
+      pool.query(`SELECT v.vacation_id, v.username, v.start_date, v.end_date, v.duration from "vacation" v
                   WHERE v.approved = 0`
       ,(error, results) => {
         if (error) {
@@ -198,9 +198,9 @@ const approveVacation = (vacation) => {
 const postVacation = (vacation) => {
   return new Promise(function(resolve, reject) {
       pool.query(`INSERT INTO "vacation" 
-                  (vacation_id, username, start_date, end_date, duration, approved)
+                  (username, start_date, end_date, duration, approved)
                   VALUES
-                  ('${vacation.id}', '${vacation.username}', to_timestamp(${vacation.start_date} / 1000),to_timestamp(${vacation.end_date} / 1000),'${vacation.duration}', 0)`
+                  ('${vacation.username}', to_timestamp(${vacation.start_date} / 1000),to_timestamp(${vacation.end_date} / 1000),'${vacation.duration}', 0)`
       ,(error, results) => {
         if (error) {
           reject(error)
