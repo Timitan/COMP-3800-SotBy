@@ -68,8 +68,6 @@
 
 
 /* Vacation Labels */
-
-
 .vacation-grid-box {
   border: 1px solid #242424;
   font-size: 16px;
@@ -165,6 +163,14 @@
   text-decoration: none;
   font-size: 15px;
   font-family: inherit;
+}
+
+/* Vacation submission msg */
+.vacation-submission-true {
+  border: 5px solid steelblue;
+  width: 70%;
+  margin: auto;
+  text-align: center;
 }
 
 .btn:focus {

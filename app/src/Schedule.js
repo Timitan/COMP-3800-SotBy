@@ -4,8 +4,6 @@ import './gridstyles.css';
 import "./timeline.css";
 import Timeline from './components/Timeline';
 import _ from "lodash";
-import io from "socket.io-client";
-const socket = io.connect('/');
 
 const END_POINT_ROOT = "http://localhost:8000/";
 const INSTRUCTORS_RESOURCE = "users";
@@ -27,13 +25,11 @@ export default class Schedule extends React.Component {
   }
 
   parseData = (data) => {
-    console.log(data);
     if (!data) {
       return null;
     }
 
     const parsedData = JSON.parse(data);
-    console.log(parsedData);
 
     let instructorArray = {};
     for (let i = 0; i < parsedData.length; i++) {
@@ -84,7 +80,7 @@ export default class Schedule extends React.Component {
   renderApp() {
     return (
       <div className="App">
-        <Timeline socket={socket} heightLimit={{ get: () => this.getHeightLimit(), set: (limit) => this.setHeightLimit(limit) }}
+        <Timeline socket={this.props.socket} heightLimit={{ get: () => this.getHeightLimit(), set: (limit) => this.setHeightLimit(limit) }}
           instructorArray={this.state.instructors} />
       </div>
     );
