@@ -43,8 +43,8 @@ const VacationEntry = ({ vacation, name, onApprove, onReject }) => {
         <div className="approval-entry-end">To:⠀⠀{createDate(vacation.end_date)}</div> {/* BLANK CHARACTER 48-50 */}
         <div className="approval-entry-duration">Duration: {vacation.duration} days</div>
       </div>
-      <button className="approval-entry-btn approve-btn">Approve</button>
-      <button className="approval-entry-btn reject-btn">Reject</button>
+      <button className="approval-entry-btn approve-btn" onClick={() => onApprove(vacation)}>Approve</button>
+      <button className="approval-entry-btn reject-btn" onClick={() => onReject(vacation)}>Reject</button>
     </div>
   )
 }

@@ -103,8 +103,7 @@ app.post('/vacations', (req, res) => {
 })
 
 app.put('/vacations/:id', (req, res) => {
-  const id = parseInt(req.params.id);
-  instructorModel.approveVacation(id, start, end)
+  instructorModel.approveVacation(req.body)
   .then(response => {
     console.log("Response: " + JSON.stringify(response));
     res.status(200).send(response);
@@ -129,7 +128,6 @@ app.put('/vacations/:id', (req, res) => {
 //   })
 // })
 
-app.put
 
 var server = app.listen(
   port,

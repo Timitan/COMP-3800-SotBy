@@ -2,9 +2,6 @@ import React from "react";
 import NotApprovedList from "./components/NotApprovedList"
 import NoVacations from "./components/NoVacations"
 import "./vacationApproval.css"
-import io from "socket.io-client";
-
-const socket = io.connect('/');
 
 const END_POINT_ROOT = "http://localhost:8000/"
 const VACATION_RESOURCE = "vacationsNotApproved"
@@ -16,7 +13,11 @@ export default class VacationApproval extends React.Component {
     }
 
     approveVacation = (vacation) => {
-        socket.emit()
+        this.props.socket.emit("vacationApproved", vacation)
+    }
+
+    rejectVacation = (vacation) => {
+        this.props.socket.emit("vacationDeleted", vacation)
     }
 
     parseData = (data) => {
@@ -49,7 +50,7 @@ export default class VacationApproval extends React.Component {
                     Back
                 </button>
                 {this.state.vacations.length > 0 ?
-                    (<NotApprovedList vacations={this.state.vacations} />)
+                    (<NotApprovedList vacations={this.state.vacations} onApprove={this.approveVacation} onReject={this.rejectVacation} />)
                     : (<NoVacations />)}
             </div>
         );

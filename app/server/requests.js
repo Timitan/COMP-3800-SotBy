@@ -155,10 +155,23 @@ const deleteCourse = (courseId, userId) => {
 }
 
 // Vacations
-const getVacationsApproved = (username) => {
+// const getVacationsApproved = (username) => {
+//   return new Promise(function(resolve, reject) {
+//       pool.query(`SELECT v.username, v.start_date, v.end_date, v.duration from "vacation" v
+//                   WHERE v.username = '${username}' AND v.approved = 1`
+//       ,(error, results) => {
+//         if (error) {
+//           reject(error)
+//         }
+//         resolve(results.rows);
+//       })
+//     }) 
+// }
+
+const getVacationsApproved = () => {
   return new Promise(function(resolve, reject) {
       pool.query(`SELECT v.username, v.start_date, v.end_date, v.duration from "vacation" v
-                  WHERE v.username = '${username}' AND v.approved = 1`
+                  WHERE v.approved = 1`
       ,(error, results) => {
         if (error) {
           reject(error)
@@ -185,7 +198,7 @@ const approveVacation = (vacation) => {
   return new Promise(function(resolve, reject) {
     pool.query(`UPDATE "vacation"
     SET approved = 1
-    WHERE id = ${vacation.id}`),
+    WHERE vacation_id = ${vacation.vacation_id}`),
     (error, results) => {
       if (error) {
         reject(error)
@@ -210,10 +223,10 @@ const postVacation = (vacation) => {
     }) 
 }
 
-const deleteVacation = (id) => {
+const deleteVacation = (vacation) => {
   return new Promise(function(resolve, reject) {
       pool.query(`DELETE FROM "vacation" v
-                  WHERE v.id = '${id}'`,
+                  WHERE v.vacation_id = '${vacation.vacation_id}'`,
       (error, results) => {
         if (error) {
           reject(error)

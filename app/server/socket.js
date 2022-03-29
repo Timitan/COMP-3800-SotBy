@@ -105,7 +105,7 @@ const socketStart = (server, pool, instructorModel) => {
         socket.on('vacationApproved', (vacation) => {
             instructorModel.approveVacation(vacation)
                 .then(response => {
-                    console.log("Update Success");
+                    console.log("Vacation Approval Success");
                     console.log(vacation);
                     socket.broadcast.emit('vacationApproved', vacation);
                 })
@@ -114,11 +114,11 @@ const socketStart = (server, pool, instructorModel) => {
                 })
         });
 
-        socket.on('vacationDeleted', (id) => {
-            instructorModel.deleteVacation(id)
+        socket.on('vacationDeleted', (vacation) => {
+            instructorModel.deleteVacation(vacation)
                 .then(response => {
-                    console.log("Delete Success");
-                    socket.broadcast.emit('vacationDeleted', id);
+                    console.log("Vacation Delete Success");
+                    socket.broadcast.emit('vacationDeleted', vacation);
                 })
                 .catch(error => {
                     console.log(error);

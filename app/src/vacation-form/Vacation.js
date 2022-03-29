@@ -5,11 +5,9 @@ import GridTripleLabel from "./components/GridTripleLabel";
 import GridNotesLabel from "./components/GridNotesLabel";
 import VacationInput from "./components/VacationInput";
 import VacationList from "./components/VacationList";
-import io from "socket.io-client";
 import './vacation.css'
 import React from "react";
 
-const socket = io.connect('/');
 
 const END_POINT_ROOT = "http://localhost:8000/"
 const VACATION_RESOURCE = "users"
@@ -25,7 +23,7 @@ export default class Vacation extends React.Component {
 	}
 
 	makeUsername = (first, last) => {
-		const username = first.toLowerCase() + '_' + last.toLowerCase()
+		const username = first.toLowerCase().trim() + '_' + last.toLowerCase().trim()
 		return username
 	}
 
@@ -42,7 +40,6 @@ export default class Vacation extends React.Component {
 			this.setState({ vacations: stateVacations })
 			this.postSubmission(user)
 		}
-
 	}
 
 	addVacation = (vacation) => {
@@ -69,7 +66,7 @@ export default class Vacation extends React.Component {
 			const end_date = this.createDate(this.state.vacations[index].endingMonth, this.state.vacations[index].endingDay).getTime()
 			const duration = this.state.vacations[index].day
 			const vacation = { id, username, start_date, end_date, duration }
-			socket.emit('vacationAdded', vacation)
+			this.props.socket.emit('vacationAdded', vacation)
 		}
 		this.setState({ vacationID: 0 })
 		this.setState({ vacationSubmitted: true })
