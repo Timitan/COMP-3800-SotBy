@@ -102,6 +102,18 @@ app.post('/vacations', (req, res) => {
   })
 })
 
+app.put('/vacations/:id', (req, res) => {
+  instructorModel.approveVacation(req.body)
+  .then(response => {
+    console.log("Response: " + JSON.stringify(response));
+    res.status(200).send(response);
+  })
+  .catch(error => {
+    console.log(error);
+    res.status(500).send(error);
+  })
+})
+
 // app.delete('/users/:id', (req, res) => {
 //   const id = req.params.id;
 //   //console.log("Id: " + id + "\nStart and Ends: " + start + " | " + end);
@@ -116,7 +128,6 @@ app.post('/vacations', (req, res) => {
 //   })
 // })
 
-app.put
 
 var server = app.listen(
   port,

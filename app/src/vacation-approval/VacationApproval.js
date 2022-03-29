@@ -3,7 +3,6 @@ import NotApprovedList from "./components/NotApprovedList"
 import NoVacations from "./components/NoVacations"
 import "./vacationApproval.css"
 
-const dateParser = require('postgres-date')
 const END_POINT_ROOT = "http://localhost:8000/"
 const VACATION_RESOURCE = "vacationsNotApproved"
 
@@ -13,13 +12,34 @@ export default class VacationApproval extends React.Component {
         loaded: false,
     }
 
+    constructor({socket}) {
+        super()
+        this.socket = socket
+        socket.on("vacationApproved", (vacation) => {
+            this.setState({vacations: this.state.vacations.filter((v) => v.vacation_id !== vacation.vacation_id)})
+        })
+        socket.on("vacationDeleted", (vacation) => {
+            this.setState({vacations: this.state.vacations.filter((v) => v.vacation_id !== vacation.vacation_id)})
+        })
+    }
+
+    approveVacation = (vacation) => {
+        this.setState({vacations: this.state.vacations.filter((v) => v.vacation_id !== vacation.vacation_id)})
+        this.socket.emit("vacationApproved", vacation)
+    }
+
+    rejectVacation = (vacation) => {
+        this.setState({vacations: this.state.vacations.filter((v) => v.vacation_id !== vacation.vacation_id)})
+        this.socket.emit("vacationDeleted", vacation)
+    }
+
     parseData = (data) => {
         if (!data) {
             return null;
         }
         const parsedData = JSON.parse(data)
-        this.setState({vacations: parsedData})
-        this.setState({loaded: true})
+        this.setState({ vacations: parsedData })
+        this.setState({ loaded: true })
     }
 
     getVacations = () => {
@@ -39,8 +59,11 @@ export default class VacationApproval extends React.Component {
     renderApp() {
         return (
             <div className="approval-app">
+                <button className="approval-back-btn" onClick={(e) => { window.location.href = "/" }}>
+                    Back
+                </button>
                 {this.state.vacations.length > 0 ?
-                    (<NotApprovedList vacations={this.state.vacations} />)
+                    (<NotApprovedList vacations={this.state.vacations} onApprove={this.approveVacation} onReject={this.rejectVacation} />)
                     : (<NoVacations />)}
             </div>
         );
