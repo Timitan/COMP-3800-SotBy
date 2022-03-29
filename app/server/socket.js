@@ -95,7 +95,6 @@ const socketStart = (server, pool, instructorModel) => {
             instructorModel.postVacation(vacation)
                 .then(response => {
                     console.log("Vacation Post Success");
-                    socket.broadcast.emit('vacationAdded', vacation);
                 })
                 .catch(error => {
                     console.log(error);
@@ -118,6 +117,7 @@ const socketStart = (server, pool, instructorModel) => {
             instructorModel.deleteVacation(vacation)
                 .then(response => {
                     console.log("Vacation Delete Success");
+                    console.log(vacation);
                     socket.broadcast.emit('vacationDeleted', vacation);
                 })
                 .catch(error => {

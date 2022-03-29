@@ -12,12 +12,25 @@ export default class VacationApproval extends React.Component {
         loaded: false,
     }
 
+    constructor({socket}) {
+        super()
+        this.socket = socket
+        socket.on("vacationApproved", (vacation) => {
+            this.setState({vacations: this.state.vacations.filter((v) => v.vacation_id !== vacation.vacation_id)})
+        })
+        socket.on("vacationDeleted", (vacation) => {
+            this.setState({vacations: this.state.vacations.filter((v) => v.vacation_id !== vacation.vacation_id)})
+        })
+    }
+
     approveVacation = (vacation) => {
-        this.props.socket.emit("vacationApproved", vacation)
+        this.setState({vacations: this.state.vacations.filter((v) => v.vacation_id !== vacation.vacation_id)})
+        this.socket.emit("vacationApproved", vacation)
     }
 
     rejectVacation = (vacation) => {
-        this.props.socket.emit("vacationDeleted", vacation)
+        this.setState({vacations: this.state.vacations.filter((v) => v.vacation_id !== vacation.vacation_id)})
+        this.socket.emit("vacationDeleted", vacation)
     }
 
     parseData = (data) => {
