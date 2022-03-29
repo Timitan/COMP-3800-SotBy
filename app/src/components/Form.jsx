@@ -4,7 +4,6 @@ export default function Form({title, textObject, callBack}) {
     const [input, setInput] = useState({}); // '' is the initial state value
     return (
       <div key={title + " div"} style={{display: "inline",position: "sticky", zIndex:99}}>
-        <label>{title}</label>
         {textObject.map((item, i) => {
           return(
             <React.Fragment key={item + " container"}>
