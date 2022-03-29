@@ -30,6 +30,7 @@ export default class Vacation extends React.Component {
 	changeUser = (first, last) => {
 		const user = this.makeUsername(first, last)
 		if (!this.state.users.includes(user)) {
+			console.log(user);
 			alert("User is not in database")
 		}
 		else {
@@ -84,6 +85,7 @@ export default class Vacation extends React.Component {
 		}
 		this.setState({ users: dataUsers })
 		this.setState({ loaded: true })
+		console.log(dataUsers);
 	}
 
 	getUsers = () => {

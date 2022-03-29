@@ -60,10 +60,12 @@ export default class LocalStorageLayout extends React.PureComponent {
             return(
               {
                 text: info.userId + "'s Vacation",
+                uid: info.userId,
+                vid: info.vacationId,
                 data: {
                   i: info.userId + info.vacationId,
                   x: start,
-                  y: (index + 1) * 2,
+                  y: (index * 2) + 1,
                   w: end - start,
                   h: 1,
                 }
@@ -75,12 +77,11 @@ export default class LocalStorageLayout extends React.PureComponent {
       heightLimit: heightLimit.get,
       weekInformation: weekInformation
     };
-
     this.socket = socket;
     this.instructorArray = instructorArray;
     this.heightLimit = heightLimit;
     this.totalWeeks = totalWeeks;
-
+    
     this.socket.on("itemChanged", (item) => {
       console.log("Item Received: " + JSON.stringify(item));
 
@@ -99,6 +100,18 @@ export default class LocalStorageLayout extends React.PureComponent {
 
       this.onRemoveItem(i, false);
     });
+
+    this.socket.once("vacationApproved", (vacation) => {
+      console.log("Item Received: " + JSON.stringify(vacation));
+
+      this.onAddVacation(vacation);
+    });
+
+    this.socket.on("vacationDeleted", (vacation) => {
+      console.log("Item Received: " + JSON.stringify(vacation));
+
+      this.onRemoveVacation(vacation.vacation_id, false);
+    })
   }
 
   replaceItem = (item) => {
@@ -141,6 +154,35 @@ export default class LocalStorageLayout extends React.PureComponent {
 
     const instructor = this.instructorArray[Math.floor(newItem.y / 2)];
     this.socket.emit('itemChanged', yAxisLockedItem, {username: instructor.key, courseNum: foundItem.courseNum, start: startDate.getTime(), end: endDate.getTime()});
+  }
+
+  onAddVacation = (info) => {
+    const start = findWeekIndex(this.state.weekInformation, new Date(info.start_date));
+    const end = findWeekIndex(this.state.weekInformation, new Date(info.end_date)) + 1;
+    const index = _.findIndex(this.instructorArray, (element) => {return element.key === info.username});
+
+    const newVacation = {
+        text: info.username + "'s Vacation",
+        uid: info.userId,
+        vid: info.vacationId,
+        data: {
+          i: info.username + info.vacation_id,
+          x: start,
+          y: (index * 2) + 1,
+          w: end - start,
+          h: 1,
+        }
+    }
+    console.log("New vacation added");
+    console.log(info);
+    console.log("Index: " + index)
+    console.log("start: " + start);
+    console.log("end: " + end);
+    this.setState({
+      vacations: this.state.vacations.concat(
+        newVacation
+      )
+    });
   }
 
   onAddCourse = (course, x=0, y=0, emit=true) => {
@@ -193,6 +235,19 @@ export default class LocalStorageLayout extends React.PureComponent {
     this.setState({ items: _.reject(this.state.items, (element) => {return element.data.i === i})});
   }
 
+  onRemoveVacation(vid, emit=true) {
+    console.log(vid);
+    const index = _.findIndex(this.state.vacations, (element) => {return element.vid === vid});
+    const foundItem = this.state.vacations[index];
+
+    if(emit) {
+      this.socket.emit("vacationDeleted", {vacation_id: vid});
+    }
+
+    // Remove the element from the state
+    this.setState({ vacations: _.reject(this.state.vacations, (element) => {return element.vid === vid})});
+  }
+
   onRemoveUser = (key, y) => {
     const initialLength = this.instructorArray.length;
     this.instructorArray = _.reject(this.instructorArray, (element) => {return element.key === key});
@@ -241,18 +296,13 @@ export default class LocalStorageLayout extends React.PureComponent {
     return (
       <div key={el.data.i} data-grid={isVacation ? {...el.data, static: true} : el.data} name={el.text + " el"}  >
         <span className="text">{el.text}</span>
-        {isVacation 
-        ?
-        null
-        :
         <span
           className="remove"
           style={removeStyle}
-          onClick={this.onRemoveItem.bind(this, el.data.i)}
+          onClick={isVacation ? this.onRemoveVacation.bind(this, el.vid) : this.onRemoveItem.bind(this, el.data.i)}
         >
           x
         </span>
-        }
       </div>
     );
   }

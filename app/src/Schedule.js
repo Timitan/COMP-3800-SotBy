@@ -59,7 +59,7 @@ export default class App extends React.Component {
         }
 
         // Check if there are any valid vacations associated with the instructor
-        if(parsedData[i].vacation_start != null && parsedData[i].vacation_end != null) {
+        if(parsedData[i].vacation_start != null && parsedData[i].vacation_end != null && parsedData[i].approved === 1) {
           instructor.vacations.push({
             vacationId: parsedData[i].vacation_id,
             userId: parsedData[i].username,

@@ -78,7 +78,6 @@ const socketStart = async (server, pool, instructorModel) => {
             lock = true;
 
             // Update posgresql database
-            setTimeout(() => {
             instructorModel.getUser(key)
             // Check if the user exists
             .then(response => {
@@ -106,7 +105,6 @@ const socketStart = async (server, pool, instructorModel) => {
                 lock = false;
                 bus.emit('unlocked');
             })
-            }, 3000);
         });
 
         socket.on('courseAdded', (course) => {
@@ -182,7 +180,6 @@ const socketStart = async (server, pool, instructorModel) => {
                     console.log(error);
                 })
         });
-
     });
 }
 
