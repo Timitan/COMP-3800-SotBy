@@ -2,8 +2,10 @@ import React from "react";
 import NotApprovedList from "./components/NotApprovedList"
 import NoVacations from "./components/NoVacations"
 import "./vacationApproval.css"
+import io from "socket.io-client";
 
-const dateParser = require('postgres-date')
+const socket = io.connect('/');
+
 const END_POINT_ROOT = "http://localhost:8000/"
 const VACATION_RESOURCE = "vacationsNotApproved"
 
@@ -13,13 +15,17 @@ export default class VacationApproval extends React.Component {
         loaded: false,
     }
 
+    approveVacation = (vacation) => {
+        socket.emit()
+    }
+
     parseData = (data) => {
         if (!data) {
             return null;
         }
         const parsedData = JSON.parse(data)
-        this.setState({vacations: parsedData})
-        this.setState({loaded: true})
+        this.setState({ vacations: parsedData })
+        this.setState({ loaded: true })
     }
 
     getVacations = () => {
@@ -39,6 +45,9 @@ export default class VacationApproval extends React.Component {
     renderApp() {
         return (
             <div className="approval-app">
+                <button className="approval-back-btn" onClick={(e) => { window.location.href = "/" }}>
+                    Back
+                </button>
                 {this.state.vacations.length > 0 ?
                     (<NotApprovedList vacations={this.state.vacations} />)
                     : (<NoVacations />)}
