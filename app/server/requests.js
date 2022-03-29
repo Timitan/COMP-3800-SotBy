@@ -268,5 +268,5 @@ module.exports = {
   getAllVacationsNotApproved,
   approveVacation,
   postVacation,
-  deleteVacation,
+  deleteVacation
 }

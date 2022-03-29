@@ -180,7 +180,6 @@ const socketStart = async (server, pool, instructorModel) => {
                     console.log(error);
                 })
         });
-
     });
 }
 
