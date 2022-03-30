@@ -163,8 +163,8 @@ export default class LocalStorageLayout extends React.PureComponent {
 
     const newVacation = {
         text: info.username + "'s Vacation",
-        uid: info.userId,
-        vid: info.vacationId,
+        uid: info.username,
+        vid: info.vacation_id,
         data: {
           i: info.username + info.vacation_id,
           x: start,
@@ -173,11 +173,7 @@ export default class LocalStorageLayout extends React.PureComponent {
           h: 1,
         }
     }
-    console.log("New vacation added");
-    console.log(info);
-    console.log("Index: " + index)
-    console.log("start: " + start);
-    console.log("end: " + end);
+
     this.setState({
       vacations: this.state.vacations.concat(
         newVacation
@@ -239,6 +235,8 @@ export default class LocalStorageLayout extends React.PureComponent {
     console.log(vid);
     const index = _.findIndex(this.state.vacations, (element) => {return element.vid === vid});
     const foundItem = this.state.vacations[index];
+    console.log(this.state.vacations);
+    console.log(foundItem);
 
     if(emit) {
       this.socket.emit("vacationDeleted", {vacation_id: vid});
