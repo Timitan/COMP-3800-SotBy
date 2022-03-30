@@ -1,13 +1,27 @@
 const socket = require("socket.io");
 const { createAdapter } = require("@socket.io/postgres-adapter");
+<<<<<<< HEAD
 const argon2 = require("argon2");
+=======
+const EventEmitter = require('events');
+>>>>>>> d4b93cf46b70164db2a2da84237e1d9d12e9d12a
 
 console.log("Socket Script started");
 
+async function lockUserDeletion(lock, bus) {
+    if (lock) {
+        console.log("Locked");
+        await new Promise(resolve => bus.once('unlocked', resolve));
+        console.log("Unlocked");
+    }
+}
+
 // Socket.io code
-const socketStart = (server, pool, instructorModel) => {
+const socketStart = async (server, pool, instructorModel) => {
     const io = socket(server);
     io.adapter(createAdapter(pool));
+    const bus = new EventEmitter();
+    let lock = false;
 
     io.on('connection', (socket) => {
         console.log('a user connected');
@@ -16,7 +30,7 @@ const socketStart = (server, pool, instructorModel) => {
             //console.log(itemInfo);
             instructorModel.putCourse(itemInfo.username, itemInfo.courseNum, itemInfo.start, itemInfo.end)
             .then(response => {
-            console.log("Update Success");
+                console.log("Update Success");
                 //console.log("Response: " + JSON.stringify(response));
                 // Broadcast to everyone except sender
                 console.log(itemInfo);
@@ -24,7 +38,8 @@ const socketStart = (server, pool, instructorModel) => {
                 socket.broadcast.emit('itemChanged', item);
             })
             .catch(error => {
-            console.log(error);
+                console.log(error);
+                socket.emit('error', error);
             })
         });
 
@@ -40,7 +55,8 @@ const socketStart = (server, pool, instructorModel) => {
                 socket.broadcast.emit('courseDeleted', i);
             })
             .catch(error => {
-            console.log(error);
+                console.log(error);
+                socket.emit('error', error);
             })
         });
 
@@ -59,22 +75,41 @@ const socketStart = (server, pool, instructorModel) => {
             })
             .catch(error => {
                 console.log(error);
+                socket.emit('error', error);
             })
         });
 
         socket.on('userDeleted', (key, x) => {
+            lockUserDeletion(lock, bus);
+            lock = true;
+
             // Update posgresql database
-            console.log(key);
-            instructorModel.deleteUser(key)
+            instructorModel.getUser(key)
+            // Check if the user exists
             .then(response => {
-                console.log("Delete Success");
-                //console.log("Response: " + JSON.stringify(response));
-                // Broadcast to everyone except sender
-                //console.log(item);
-                socket.broadcast.emit('userDeleted', key, x);
+                console.log("User exists");
+                instructorModel.deleteUser(key)
+                .then(response => {
+                    console.log("Delete Success");
+                    //console.log("Response: " + JSON.stringify(response));
+                    // Broadcast to everyone except sender
+                    //console.log(item);
+                    socket.broadcast.emit('userDeleted', key, x);
+                })
+                .catch(error => {
+                    console.log(error);
+                    socket.emit('error', error);
+                })
+                .finally(() => {
+                    lock = false;
+                    bus.emit('unlocked');
+                });
             })
-            .catch(error => {
-            console.log(error);
+            .catch((err) => {
+                console.log(err);
+                console.log("Error occured");
+                lock = false;
+                bus.emit('unlocked');
             })
         });
 
@@ -84,12 +119,71 @@ const socketStart = (server, pool, instructorModel) => {
             .then(response => {
                 console.log("Course Post Success");
                 //console.log("Response: " + JSON.stringify(response));
+                
                 // Broadcast to everyone except sender
+                //socket.broadcast.emit('courseAdded', course);
+
+                // Broadcast to everyone
+                socket.emit('courseAdded', course);
                 socket.broadcast.emit('courseAdded', course);
             })
             .catch(error => {
-            console.log(error);
+                console.log(error);
+                // console.log("error");
+
+                // Error code
+                let msg;
+                switch(error.code) {
+                    case('23505'):
+                        msg = "Course number already exists for another course! Please choose another.";
+                        break;
+                    case('23503'):
+                        msg = "The user you are creating a course for doesn't exist.";
+                        break;
+                    default:
+                        msg = "Error in inserting course. Please check your course input.";
+                        break;
+                }
+
+                console.log(msg);
+
+                socket.emit('error', msg);
             })
+        });
+
+        socket.on('vacationAdded', (vacation) => {
+            console.log(vacation);
+            instructorModel.postVacation(vacation)
+                .then(response => {
+                    console.log("Vacation Post Success");
+                })
+                .catch(error => {
+                    console.log(error);
+                })
+        });
+
+        socket.on('vacationApproved', (vacation) => {
+            instructorModel.approveVacation(vacation)
+                .then(response => {
+                    console.log("Vacation Approval Success");
+                    console.log(vacation);
+                    socket.broadcast.emit('vacationApproved', vacation);
+                })
+                .catch(error => {
+                    console.log(error);
+                })
+        });
+
+        socket.on('vacationDeleted', (vacation) => {
+            instructorModel.deleteVacation(vacation)
+                .then(response => {
+                    console.log("Vacation Delete Success");
+                    console.log(vacation);
+                    socket.broadcast.emit('vacationDeleted', vacation);
+                })
+                .catch(error => {
+                    console.log(error);
+                })
         });
     });
 }

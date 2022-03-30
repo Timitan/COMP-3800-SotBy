@@ -82,6 +82,17 @@ app.get('/vacations', (req, res) => {
   })
 })
 
+app.get('/vacationsNotApproved', (req, res) => {
+  instructorModel.getAllVacationsNotApproved(req)
+  .then(response => {
+    res.status(200).send(response);
+  })
+  .catch(error => {
+    console.log(error);
+    res.status(500).send(error);
+  })
+})
+
 app.post('/vacations', (req, res) => {
   instructorModel.postUser(req.body)
   .then(response => {
@@ -94,6 +105,7 @@ app.post('/vacations', (req, res) => {
   })
 })
 
+<<<<<<< HEAD
 // Login
 app.post('/login', (req, res) => {
   instructorModel.login(req.body)
@@ -136,6 +148,20 @@ app.post('/login', (req, res) => {
 // 	}
 // })
 
+=======
+app.put('/vacations/:id', (req, res) => {
+  instructorModel.approveVacation(req.body)
+  .then(response => {
+    console.log("Response: " + JSON.stringify(response));
+    res.status(200).send(response);
+  })
+  .catch(error => {
+    console.log(error);
+    res.status(500).send(error);
+  })
+})
+
+>>>>>>> d4b93cf46b70164db2a2da84237e1d9d12e9d12a
 // app.delete('/users/:id', (req, res) => {
 //   const id = req.params.id;
 //   //console.log("Id: " + id + "\nStart and Ends: " + start + " | " + end);
@@ -150,7 +176,10 @@ app.post('/login', (req, res) => {
 //   })
 // })
 
+<<<<<<< HEAD
 // app.put
+=======
+>>>>>>> d4b93cf46b70164db2a2da84237e1d9d12e9d12a
 
 var server = app.listen(
   port,
