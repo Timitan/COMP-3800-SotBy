@@ -94,17 +94,32 @@ const socketStart = (server, pool, instructorModel) => {
         // Sam 
 
         socket.on('changeDay', (rowInfo) => {
-            // instructorModel.getCourseDetail(ca_id)
-            // .then(response => {
-            //     console.log("Got Course Detail!");
-            //     socket.broadcast.emit('getCourseDetail', ca_id);
-            // })
-            // .catch(error => {
-            // console.log(error);
-            // })
-            socket.broadcast.emit('changeDay', rowInfo);
+            instructorModel.updateCourseDetailDay(rowInfo)
+            .then(response => {
+                console.log("Updated Course Detail Day");
+                socket.broadcast.emit('changeDay', rowInfo);
+            })
+            .catch(error => {
+            console.log(error);
+            })
         })
 
+        socket.on('bookResource', (bookingInfo) => {
+            instructorModel.bookResource(bookingInfo)
+            .then(response => {
+                console.log("Added to resource_allocation");
+                io.emit('bookResource', {
+                    model_num: bookingInfo.model_num,
+                    model_name: bookingInfo.model_name,
+                    quantity_total: bookingInfo.quantity_total,
+                    model_location: bookingInfo.model_location,
+                    q_left: bookingInfo.q_left
+                });
+            })
+            .catch(error => {
+            console.log(error);
+            })
+        })
     });
 }
 

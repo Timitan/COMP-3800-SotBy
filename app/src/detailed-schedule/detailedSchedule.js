@@ -35,7 +35,13 @@ class Day extends React.Component {
       editMode: !this.state.editMode,
     });
     if (this.state.editMode) {
-      this.socket.emit("changeDay", { id: this.id, resources: this.resources, instructor: this.state.instructor, description: this.state.description, date: this.date.getTime() });
+      this.socket.emit("changeDay", { 
+        ds_id: this.ds_id, 
+        resources: this.resources, 
+        username: this.state.instructor, 
+        description: this.state.description, 
+        date: this.date.getTime() 
+      });
     }
     return;
   }
@@ -104,7 +110,7 @@ class Week extends React.Component {
       let index;
 
       for (let i = 0; i < this.state.days.length; i++) {
-        if (this.state.days[i].id == rowInfo.id) {
+        if (this.state.days[i].ds_id == rowInfo.ds_id) {
           index = i;
           break;
         }
@@ -112,6 +118,7 @@ class Week extends React.Component {
 
       let copyDays = this.state.days.slice();
       copyDays[index] = rowInfo;
+      console.log(rowInfo);
 
       this.setState({
         days: _.reduce(copyDays, (acc, day) => {
@@ -125,7 +132,7 @@ class Week extends React.Component {
 
   renderDay(dayInfo) {
     return (
-      <Day key={dayInfo.id + dayInfo.instructor + dayInfo.description}
+      <Day key={dayInfo.ds_id + dayInfo.username + dayInfo.description} // <Day key={dayInfo.ds_id + dayInfo.instructor + dayInfo.description} PROBLEM -> new key -> new row?!
         info={dayInfo}
         socket={this.socket}
       />
@@ -139,7 +146,7 @@ class Week extends React.Component {
       );
     });
     return (
-      <table>
+      <table key={this.state.days[0].ds_id}>
         <caption>Schedule for week of {getStringDate(this.state.days[0].date)}</caption>
         <thead>
           <tr>
@@ -188,7 +195,7 @@ class Course extends React.Component {
     }
     const weeks = weeksData.map((week, index) => {
       return (
-        this.renderWeek(week)
+        this.renderWeek(week) 
       );
     });
     return (

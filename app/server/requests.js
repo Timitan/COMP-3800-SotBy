@@ -232,7 +232,7 @@ const getResources = (ds_id) => {
     pool.query(`SELECT resource.model_num, model_name, quantity_total, model_location, (quantity_total - quantity) AS q_left
                 FROM "resource"
                 LEFT JOIN
-                (SELECT * FROM "resource_allocation" WHERE ds_id = ${ds_id}) res_allocated_for_day 
+                (SELECT model_num, SUM(quantity) AS quantity FROM "resource_allocation" WHERE ds_id = ${ds_id} GROUP BY model_num) res_allocated_for_day 
                 ON (res_allocated_for_day.model_num = resource.model_num);`,
     (error, results) => {
       if (error) {
@@ -241,6 +241,35 @@ const getResources = (ds_id) => {
       resolve(results)
     })
   }) 
+}
+
+const updateCourseDetailDay = (rowInfo) => {
+  return new Promise(function(resolve, reject) {
+    pool.query(`UPDATE "daily_schedule"
+                SET description='${rowInfo.description}'
+                WHERE ds_id=${rowInfo.ds_id};`,
+    (error, results) => {
+      if (error) {
+        reject(error)
+      }
+      resolve(results)
+    })
+  })
+}
+
+const bookResource = (bookingInfo) => {
+  return new Promise(function(resolve, reject) {
+    pool.query(`INSERT INTO "resource_allocation"
+                (ds_id, model_num, quantity)
+                VALUES 
+                (${bookingInfo.ds_id}, '${bookingInfo.model_num}', ${bookingInfo.quantity_booked})`,
+    (error, results) => {
+      if (error) {
+        reject(error)
+      }
+      resolve(results)
+    })
+  })
 }
 
 module.exports = {
@@ -256,4 +285,6 @@ module.exports = {
   deleteVacation,
   getCourseDetail,
   getResources,
+  updateCourseDetailDay,
+  bookResource,
 }
