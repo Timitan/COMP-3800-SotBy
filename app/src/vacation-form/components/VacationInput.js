@@ -1,9 +1,4 @@
 import { useState } from 'react';
-<<<<<<< HEAD
-// import DatePicker from 'react-datepicker';
-// import "react-datepicker/dist/react-datepicker.css";
-=======
->>>>>>> d4b93cf46b70164db2a2da84237e1d9d12e9d12a
 
 const VacationInput = ({ onAdd }) => {
   const [NC, setNC] = useState('')

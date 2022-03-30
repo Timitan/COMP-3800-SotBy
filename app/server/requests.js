@@ -82,7 +82,7 @@ const postCourse = (course) => {
 //         resolve(results);
 //       })
 //   })
-// }
+}
 
 const putCourse = (username, id, start, end) => {
   return new Promise(function (resolve, reject) {
@@ -196,7 +196,7 @@ const deleteCourse = (courseId, userId) => {
 //         resolve(results.rows);
 //       })
 //     }) 
-}
+// }
 
 const getVacationsApproved = () => {
   return new Promise(function (resolve, reject) {

@@ -1,10 +1,7 @@
 const socket = require("socket.io");
 const { createAdapter } = require("@socket.io/postgres-adapter");
-<<<<<<< HEAD
 const argon2 = require("argon2");
-=======
 const EventEmitter = require('events');
->>>>>>> d4b93cf46b70164db2a2da84237e1d9d12e9d12a
 
 console.log("Socket Script started");
 

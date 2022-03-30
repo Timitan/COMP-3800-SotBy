@@ -105,7 +105,6 @@ app.post('/vacations', (req, res) => {
   })
 })
 
-<<<<<<< HEAD
 // Login
 app.post('/login', (req, res) => {
   instructorModel.login(req.body)
@@ -148,7 +147,6 @@ app.post('/login', (req, res) => {
 // 	}
 // })
 
-=======
 app.put('/vacations/:id', (req, res) => {
   instructorModel.approveVacation(req.body)
   .then(response => {
@@ -161,7 +159,6 @@ app.put('/vacations/:id', (req, res) => {
   })
 })
 
->>>>>>> d4b93cf46b70164db2a2da84237e1d9d12e9d12a
 // app.delete('/users/:id', (req, res) => {
 //   const id = req.params.id;
 //   //console.log("Id: " + id + "\nStart and Ends: " + start + " | " + end);
@@ -176,10 +173,6 @@ app.put('/vacations/:id', (req, res) => {
 //   })
 // })
 
-<<<<<<< HEAD
-// app.put
-=======
->>>>>>> d4b93cf46b70164db2a2da84237e1d9d12e9d12a
 
 var server = app.listen(
   port,
