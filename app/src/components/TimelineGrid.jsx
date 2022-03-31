@@ -47,6 +47,7 @@ export default function TimelineGrid({socket, heightLimit, instructorArray, crea
             heightLimit.set((rowHeaderArray.length - 1) * 2);
 
             // Call the add user function passed in from the interactive grid so that it could also be updated
+            console.log(x-1);
             onRemoveUser(key, x - 1);
 
             if(emit)
@@ -63,31 +64,31 @@ export default function TimelineGrid({socket, heightLimit, instructorArray, crea
                     createCourse={createCourse}/>
     }
 
-    socket.once("userAdded", (user) => {
-        console.log("Added: " + JSON.stringify(user));
-        addRowHeader(user, false);
-    });
+    // socket.once("userAdded", (user) => {
+    //     console.log("Added: " + JSON.stringify(user));
+    //     addRowHeader(user, false);
+    // });
 
-    socket.once("userDeleted", (id, x) => {
-        console.log(x);
-        console.log(id);
-        removeRowHeader(id, x, false);
-    });
+    // socket.once("userDeleted", (id, x) => {
+    //     console.log(x);
+    //     console.log(id);
+    //     removeRowHeader(id, x, false);
+    // });
 
-    // Use effect for attaching socket event listeners once the component mounts
-    // useEffect(() => {
-    //     socket.once("userAdded", (user) => {
-    //         console.log("Added: " + JSON.stringify(user));
-    //         addRowHeader(user, false);
-    //     });
+    //Use effect for attaching socket event listeners once the component mounts
+    useEffect(() => {
+        socket.once("userAdded", (user) => {
+            console.log("Added: " + JSON.stringify(user));
+            addRowHeader(user, false);
+        });
 
-    //     socket.once("userDeleted", (id, x) => {
-    //         console.log(x);
-    //         console.log(id);
-    //         removeRowHeader(id, x, false);
-    //     });
-    //     // eslint-disable-next-line react-hooks/exhaustive-deps
-    // }, []);
+        socket.once("userDeleted", (id, x) => {
+            console.log(x);
+            console.log(id);
+            removeRowHeader(id, x, false);
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return(
         <React.Fragment>

@@ -1,6 +1,6 @@
 import Vacation from "./vacation-form/Vacation"
-import Schedule from "./Schedule"
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
+import Schedule from "./Schedule.js"
+import { BrowserRouter as Router, Route, Routes} from 'react-router-dom'
 import VacationApproval from "./vacation-approval/VacationApproval";
 import io from "socket.io-client";
 
@@ -14,6 +14,7 @@ function App() {
                     <Route exact path="/" element={<Schedule socket={socket} />} />
                     <Route exact path="/vacation" element={<Vacation socket={socket} />} />
                     <Route exact path="/vacationApproval" element={<VacationApproval socket={socket} />} />
+                    <Route path="/:year" element={<Schedule socket={socket} />} />
                 </Routes>
             </div>
         </Router>

@@ -133,7 +133,6 @@ export default class LocalStorageLayout extends React.PureComponent {
     this.setState({
       layout: layout
     });
-    console.log("layout changed");
   }
 
   onItemChange = (layout, oldItem, newItem) => {
@@ -253,10 +252,12 @@ export default class LocalStorageLayout extends React.PureComponent {
     // No user/ instructor found to delete
     if(this.instructorArray.length !== initialLength) {
       // Remove elements on the same row
-      this.setState({ items: _.reject(this.state.items, (element) => {return element.data.y === y || element.data.y === y + 1}) });
+      console.log(y);
+      this.setState({ items: _.reject(this.state.items, (element) => {return element.data.y === y}) });
+      this.setState({ vacations: _.reject(this.state.vacations, (element) => {return element.data.y === y + 1}) });
 
       // Move course elements up if they are below the user that was deleted
-      this.setState({item: _.reduce(this.state.items, (acc, element) => {
+      this.setState({items: _.reduce(this.state.items, (acc, element) => {
         if (element.data.y > y) {
           console.log(acc);
           console.log(this.state.layout);
@@ -269,9 +270,21 @@ export default class LocalStorageLayout extends React.PureComponent {
         }
       }, [])});
 
+      this.setState({vacations: _.reduce(this.state.vacations, (acc, element) => {
+        if (element.data.y > y) {
+          const newElement = element;
+          newElement.data.y -= 2;
+          return [...acc, newElement];
+        } else {
+          return  [...acc, element];
+        }
+      }, [])});
 
+
+
+      const itemVacations = this.state.items.concat(this.state.vacations);
       // Reset layout so that the items are shifted up visually
-      this.setState({layout: _.reduce(this.state.items, (acc, element) => {
+      this.setState({layout: _.reduce(itemVacations, (acc, element) => {
         const itemData = element.data;
         return [...acc, itemData];
       }, [])});

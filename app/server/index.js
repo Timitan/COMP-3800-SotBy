@@ -40,6 +40,17 @@ app.get('/users', (req, res) => {
   })
 })
 
+app.get('/users/:years', (req, res) => {
+  instructorModel.getUsers()
+  .then(response => {
+    res.status(200).send(response);
+  })
+  .catch(error => {
+    console.log(error);
+    res.status(500).send(error);
+  })
+})
+
 app.post('/users', (req, res) => {
   instructorModel.postUser(req.body)
   .then(response => {
