@@ -2,6 +2,23 @@ import React from "react";
 import Month from './Month';
 import { useState } from "react";
 import NoCollisionLayout from './NoCollisionLayout';
+// import DragFromOutsideLayout from "./DragFromOutside";
+import { ReactSession } from 'react-client-session';
+import AdminNav from "./AdminNav";
+import UserNav from "./UserNav";
+import DefaultNav from "./DefaultNav";
+import '../navbar.css'
+
+function SelectNav(props) {
+    const userStatus = props.userStatus;
+    if (userStatus === 1) {
+        return <AdminNav />
+    } 
+    if (userStatus === 0) {
+        return <UserNav />
+    }
+    return <DefaultNav /> 
+}
 
 export default function Timeline({ socket, heightLimit, instructorArray }) {
 
@@ -43,6 +60,7 @@ export default function Timeline({ socket, heightLimit, instructorArray }) {
 
     return(
         <React.Fragment>
+        <SelectNav userStatus={ReactSession.get("admin")} />
             <div className="grid-container-months">
                 <button className="vacation-form-btn">
                     <a href="/vacation">Submit Vacation form</a>

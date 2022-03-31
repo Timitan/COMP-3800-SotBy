@@ -1,0 +1,98 @@
+// import React from 'react'
+// import { useState } from 'react'
+
+// // import './create_user.css'
+
+// function Admin() {
+//     socket = socket.socket;
+//     const [username, setUsername] = useState('');
+//     const [firstname, setFirstName] = useState('');
+//     const [lastname, setLastName] = useState('');
+//     const [datejoined, setDateJoined] = useState('');
+//     const [rownumber, setRowNumber] = useState('');
+//     const [admin, setAdmin] = useState('');
+//     const [email, setEmail] = useState('');
+//     const [password, setPassword] = useState('');
+
+//     const create_user = (e) => {
+//         e.preventDefault();
+
+//         const new_user = { username: username, 
+//                            firstname: firstname,
+//                            lastname: lastname,
+//                            datejoined: datejoined,
+//                            rownumber: rownumber,
+//                            admin: admin,
+//                            email: email,
+//                            password: password };
+//         socket.emit('userAdded', new_user, null);
+//     }
+
+//     return (
+//         <form className="form" onSubmit={create_user}>
+//             <div className="new-user-form">
+//                 <label>Username: </label>
+//                 <input 
+//                     className="new-user-input" 
+//                     type="text" 
+//                     placeholder="Username..." 
+//                     value={username} 
+//                     onChange={(e) => setUsername(e.target.value)} /><br></br>
+//                 <label>First name: </label>
+//                 <input 
+//                     className="new-user-input" 
+//                     type="text" 
+//                     placeholder="First name..." 
+//                     value={firstname} 
+//                     onChange={(e) => setFirstName(e.target.value)} /><br></br>
+//                 <label>Last name: </label>
+//                 <input 
+//                     className="new-user-input" 
+//                     type="text" 
+//                     placeholder="Last name..." 
+//                     value={lastname} 
+//                     onChange={(e) => setLastName(e.target.value)} /><br></br>
+//                 <label>Date joined: </label>
+//                 <input 
+//                     className="new-user-input" 
+//                     type="text" 
+//                     placeholder="Date joined..." 
+//                     value={datejoined} 
+//                     onChange={(e) => setDateJoined(e.target.value)} /><br></br>
+//                 <label>Row number: </label>
+//                 <input 
+//                     className="new-user-input" 
+//                     type="text" 
+//                     placeholder="Row number..." 
+//                     value={rownumber} 
+//                     onChange={(e) => setRowNumber(e.target.value)} /><br></br>
+//                 <label>Admin: </label>
+//                 <input 
+//                     className="new-user-input" 
+//                     type="text" 
+//                     placeholder="Admin..." 
+//                     value={admin} 
+//                     onChange={(e) => setAdmin(e.target.value)} /><br></br>
+//                 <label>Email: </label>
+//                 <input 
+//                     className="new-user-input" 
+//                     type="text" 
+//                     placeholder="Email..." 
+//                     value={email} 
+//                     onChange={(e) => setEmail(e.target.value)} /><br></br>
+//                 <label>Password: </label>
+//                 <input 
+//                     className="new-user-input" 
+//                     type="text" 
+//                     placeholder="Password..." 
+//                     value={password} 
+//                     onChange={(e) => setPassword (e.target.value)} />
+//             </div>
+
+//             <input type="submit" value="Create User" className='btn' />
+//             <p id="successMessage"></p>
+//         </form>
+//     )
+// }
+
+// export default Admin

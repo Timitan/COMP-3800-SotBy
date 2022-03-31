@@ -52,25 +52,36 @@ const postCourse = (course) => {
     //             (course_num, subject, course, title, divs, dept_num, sect_num, ptrm, camp, start_date, end_date, colour)
     //             VALUES 
     //             (123456, 'Math', 'MATH 3023', 'Discrete Mathematics', 1, 1, 1, 1, 1, current_timestamp, current_timestamp, '#FF1155')`
+    console.log(course);
+    console.log(course.course_num);
     pool.query(`INSERT INTO "course"
             (course_num, subject, course, title, start_date, end_date, colour)
             VALUES 
-            (${course.number}, '${course.subject}', '${course.course}', '${course.title}', 
-            current_timestamp, current_timestamp, 
-            '${course.color}');
-            INSERT INTO "course_assignment"
-            (username, course_num, start_date, end_date)
-            VALUES
-            ('${course.instructorKey}', ${course.number}, 
-            to_timestamp(${course.start} / 1000.0), to_timestamp(${course.end} / 1000.0))
-            `
-      , (error, results) => {
-        if (error) {
-          reject(error)
-        }
-        resolve(results);
-      })
-  })
+            (${parseInt(course.course_num)}, '${course.subject}', ${parseInt(course.course)}, '${course.title}', 
+            '${course.end_date}', '${course.start_date}', '${course.colour}')`
+    ,(error, results) => {
+      if (error) {
+        reject(error)
+      }
+      resolve(results);
+    })
+  }) 
+//             (${course.number}, '${course.subject}', '${course.course}', '${course.title}', 
+//             current_timestamp, current_timestamp, 
+//             '${course.color}');
+//             INSERT INTO "course_assignment"
+//             (username, course_num, start_date, end_date)
+//             VALUES
+//             ('${course.instructorKey}', ${course.number}, 
+//             to_timestamp(${course.start} / 1000.0), to_timestamp(${course.end} / 1000.0))
+//             `
+//       , (error, results) => {
+//         if (error) {
+//           reject(error)
+//         }
+//         resolve(results);
+//       })
+//   })
 }
 
 const putCourse = (username, id, start, end) => {
@@ -256,6 +267,19 @@ const deleteVacation = (vacation) => {
   })
 }
 
+// Login
+const login = (user) => {
+  return new Promise(function(resolve, reject) {
+      pool.query(`SELECT username, first_name, last_name, admin, password FROM "user" WHERE username = '${user.username}'`,
+      (error, results) => {
+        if (error) {
+          reject(error)
+        }
+        resolve(results);
+      })
+    }) 
+}
+
 module.exports = {
   getUsers,
   postUser,
@@ -268,5 +292,6 @@ module.exports = {
   getAllVacationsNotApproved,
   approveVacation,
   postVacation,
-  deleteVacation
+  deleteVacation,
+  login,
 }

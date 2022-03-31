@@ -1,5 +1,6 @@
 const socket = require("socket.io");
 const { createAdapter } = require("@socket.io/postgres-adapter");
+const argon2 = require("argon2");
 const EventEmitter = require('events');
 
 console.log("Socket Script started");
@@ -56,10 +57,12 @@ const socketStart = async (server, pool, instructorModel) => {
             })
         });
 
-        socket.on('userAdded', (user) => {
+        socket.on('userAdded', async (user, rownum) => {
             // Update posgresql database
             console.log(user);
-            instructorModel.postUser(user)
+            const password = user.password;
+            user.password = await argon2.hash(password, {type: argon2.argon2id});
+            instructorModel.postUser(user, rownum)
             .then(response => {
                 console.log("Add Success");
                 //console.log("Response: " + JSON.stringify(response));
@@ -109,7 +112,6 @@ const socketStart = async (server, pool, instructorModel) => {
 
         socket.on('courseAdded', (course) => {
             // Update posgresql database
-            console.log(course);
             instructorModel.postCourse(course)
             .then(response => {
                 console.log("Course Post Success");
