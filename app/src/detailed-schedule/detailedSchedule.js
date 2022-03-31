@@ -13,21 +13,22 @@ class Day extends React.Component {
     super(props);
     this.state = {
       editMode: false,
-      instructor: info.username,
       description: info.description,
+      model_num: info.model_num,
+      model_name: info.model_name,
+      quantity: info.quantity
     }
-    this.ds_id = info.ds_id;
-    // this.resources = info.resources;  RESSSSSSSS***************************************************************** Q: should users be able to change instructor from this page? (new course_assignment is required!)
+    this.ca_id = info.ca_id;
+    this.course = info.course;
     this.date = info.date;
+    this.ds_id = info.ds_id;
+    this.subject = info.subject;
+    this.instructor = info.username;
     this.socket = socket;
   }
 
   handleSave = ({ name, value, previousValue }) => {
-    if (name == "instructor") {
-      this.setState({ instructor: value });
-    } else {
-      this.setState({ description: value });
-    }
+    this.setState({ description: value });
   };
 
   handleEditSave() {
@@ -35,12 +36,17 @@ class Day extends React.Component {
       editMode: !this.state.editMode,
     });
     if (this.state.editMode) {
-      this.socket.emit("changeDay", { 
+      this.socket.emit("changeDay", {
+        ca_id: this.ca_id,
+        course: this.course,
+        date: this.date.getTime(),
+        description: this.state.description,
         ds_id: this.ds_id, 
-        resources: this.resources, 
-        username: this.state.instructor, 
-        description: this.state.description, 
-        date: this.date.getTime() 
+        model_name: this.state.model_name,
+        model_num: this.state.model_num,
+        quantity: this.state.quantity,
+        subject: this.subject,
+        username: this.instructor
       });
     }
     return;
@@ -48,6 +54,21 @@ class Day extends React.Component {
 
   render() {
     const descEditSave = this.state.editMode ? "Save" : "Edit";
+
+    // let resourcesInfo = [];
+    // for (let i = 0; this.state.model_name.length; i++) {
+    //   resourcesInfo.push({model_name: this.state.model_name[i], model_num: this.state.model_num[i], quantity: this.state})
+    // }
+    let resources = null;
+    if (this.state.model_num) {
+      resources = this.state.model_num.map((m_num, index) => {
+        return (
+          <li key={m_num}>
+            {`${this.state.model_name[index]} - ${this.state.quantity[index]}`}
+          </li>
+        )
+      });
+    }
 
     return (
       <tr>
@@ -61,9 +82,8 @@ class Day extends React.Component {
         <td>
           <EditText
             name="instructor"
-            defaultValue={this.state.instructor}
-            onSave={this.handleSave}
-            readonly={!this.state.editMode}
+            defaultValue={this.instructor}
+            readonly
           />
         </td>
         <td>
@@ -75,15 +95,7 @@ class Day extends React.Component {
           />
         </td>
         <td>
-          {/* <Router>
-          <Link to="/resources"> Book Resources </Link>
-        </Router> */}
-          <EditText
-            name="resources"
-            defaultValue={this.resources}
-            // onSave={this.handleSave}
-            readonly={!this.state.editMode}
-          />
+          <ul>{resources}</ul>
         </td>
         <td>
           {this.state.description ? (<button onClick={() => this.handleEditSave()}>{descEditSave}</button>) : null}
@@ -218,8 +230,39 @@ class Course extends React.Component {
       parsedData.rows[i].date = new Date(parsedData.rows[i].date); // Changing date from string-date to date object.
     }
 
+    let formattedData = [];
+    let formattedData_len = 0;
+    let prev_ds_id = null;
+    for (let i = 0; i < parsedData.rows.length; i++) {  // Merge same days together. Add resources info to a list instead.
+        if (parsedData.rows[i].model_name) {
+            if (prev_ds_id == parsedData.rows[i].ds_id) {
+                formattedData[formattedData_len - 1].model_name.push(parsedData.rows[i].model_name);
+                formattedData[formattedData_len - 1].model_num.push(parsedData.rows[i].model_num);
+                formattedData[formattedData_len - 1].quantity.push(parsedData.rows[i].quantity);
+            } else {
+                formattedData_len = formattedData.push({
+                  ca_id: parsedData.rows[i].ca_id,
+                  course: parsedData.rows[i].course,
+                  date: parsedData.rows[i].date,
+                  description: parsedData.rows[i].description,
+                  ds_id: parsedData.rows[i].ds_id,
+                  model_name: [parsedData.rows[i].model_name],  // put in a list - to be able to add to it later if needed.
+                  model_num: [parsedData.rows[i].model_num],    // put in a list - to be able to add to it later if needed.
+                  quantity: [parsedData.rows[i].quantity],      // put in a list - to be able to add to it later if needed.
+                  subject: parsedData.rows[i].subject,
+                  username: parsedData.rows[i].username
+                });
+            }
+        }
+        else {
+            formattedData_len = formattedData.push(parsedData.rows[i]);
+        }
+        prev_ds_id = parsedData.rows[i].ds_id;
+    }
 
-    this.setState({ data: parsedData.rows });
+    console.log(formattedData);
+
+    this.setState({ data: formattedData });
     this.setState({ dataLoaded: true });
   }
 

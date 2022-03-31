@@ -212,11 +212,14 @@ const deleteVacation = (id) => {
 // Sam
 const getCourseDetail = (course_num) => {
   return new Promise(function(resolve, reject) {
-    pool.query(`SELECT ds_id, daily_schedule.ca_id, date, description, course_assignment.username, subject, course
+    pool.query(`SELECT daily_schedule.ds_id, daily_schedule.ca_id, date, description, course_assignment.username, subject, course, resource.model_num, model_name, SUM(quantity) as quantity 
                 FROM daily_schedule
                 INNER JOIN course_assignment ON course_assignment.ca_id=daily_schedule.ca_id
                 INNER JOIN course ON course.course_num=course_assignment.course_num
+                LEFT JOIN resource_allocation ON resource_allocation.ds_id=daily_schedule.ds_id
+                LEFT JOIN resource ON resource_allocation.model_num=resource.model_num
                 WHERE course.course_num=${course_num}
+                GROUP BY (daily_schedule.ds_id, daily_schedule.ca_id, date, description, course_assignment.username, subject, course, resource.model_num, model_name)
                 ORDER BY date;`,
     (error, results) => {
       if (error) {
