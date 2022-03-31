@@ -58,7 +58,7 @@ export default function Timeline({ socket, heightLimit, instructorArray }) {
                     })
                 }
             </div>
-            <NoCollisionLayout socket={socket} heightLimit={heightLimit} instructorArray={instructorArray} weekInformation={weekInformation} totalWeeks={totalWeeks}/>
+            <NoCollisionLayout socket={socket} heightLimit={heightLimit} newInstructorArray={instructorArray} weekInformation={weekInformation} totalWeeks={totalWeeks}/>
         </React.Fragment>
     );
 }

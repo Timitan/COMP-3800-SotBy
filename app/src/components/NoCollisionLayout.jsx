@@ -16,18 +16,18 @@ export default class LocalStorageLayout extends React.PureComponent {
     autoSize: true
   };
 
-  constructor({props, socket, heightLimit, instructorArray, weekInformation, totalWeeks}) {
+  constructor({props, socket, heightLimit, newInstructorArray, weekInformation, totalWeeks}) {
     super(props);
 
     this.state = {
       // Loop through the instructor array to get all the courses associated with them
-      items: instructorArray.reduce(function(acc, element, index) {
-        if(element.timeblocks.length === 0 || weekInformation.length === 0){
+      items: newInstructorArray.reduce(function(acc, element, index) {
+        if((element.timeblocks.length === 0 && element.vacations.length === 0) || weekInformation.length === 0){
           return acc;
         }
         
         // Create a course element for every timeblock and concatenate them into one array
-        return acc.concat(
+        let arr = acc.concat(
           element.timeblocks.map((info) => {
             const start = findWeekIndex(weekInformation, info.start);
             const end = findWeekIndex(weekInformation, info.end) + 1;
@@ -47,13 +47,9 @@ export default class LocalStorageLayout extends React.PureComponent {
             )
           })
         );
-      }, []),
-      vacations: instructorArray.reduce(function(acc, element, index) {
-        if(element.vacations.length === 0 || weekInformation.length === 0){
-          return acc;
-        }
-        
-        return acc.concat(
+
+        console.log(element);
+        return arr.concat(
           element.vacations.map((info) => {
             const start = findWeekIndex(weekInformation, info.vacationStart);
             const end = findWeekIndex(weekInformation, info.vacationEnd) + 1;
@@ -75,10 +71,11 @@ export default class LocalStorageLayout extends React.PureComponent {
         );
       }, []),
       heightLimit: heightLimit.get,
-      weekInformation: weekInformation
+      weekInformation: weekInformation,
+      instructorArray: newInstructorArray
     };
     this.socket = socket;
-    this.instructorArray = instructorArray;
+    //this.instructorArray = instructorArray;
     this.heightLimit = heightLimit;
     this.totalWeeks = totalWeeks;
     
@@ -151,14 +148,14 @@ export default class LocalStorageLayout extends React.PureComponent {
     yAxisLockedItem.y = oldItem.y;
     this.replaceItem(yAxisLockedItem);
 
-    const instructor = this.instructorArray[Math.floor(newItem.y / 2)];
+    const instructor = this.state.instructorArray[Math.floor(newItem.y / 2)];
     this.socket.emit('itemChanged', yAxisLockedItem, {username: instructor.key, courseNum: foundItem.courseNum, start: startDate.getTime(), end: endDate.getTime()});
   }
 
   onAddVacation = (info) => {
     const start = findWeekIndex(this.state.weekInformation, new Date(info.start_date));
     const end = findWeekIndex(this.state.weekInformation, new Date(info.end_date)) + 1;
-    const index = _.findIndex(this.instructorArray, (element) => {return element.key === info.username});
+    const index = _.findIndex(this.state.instructorArray, (element) => {return element.key === info.username});
 
     const newVacation = {
         text: info.username + "'s Vacation",
@@ -174,7 +171,7 @@ export default class LocalStorageLayout extends React.PureComponent {
     }
 
     this.setState({
-      vacations: this.state.vacations.concat(
+      items: this.state.items.concat(
         newVacation
       )
     });
@@ -185,10 +182,10 @@ export default class LocalStorageLayout extends React.PureComponent {
 
     const startDate = findWeekDate(this.state.weekInformation, x);
     const endDate = findWeekDate(this.state.weekInformation, w + x - 1);
-    const instructor = this.instructorArray[Math.floor(y / 2)];
+    const instructor = this.state.instructorArray[Math.floor(y / 2)];
     // console.log("Index: " + Math.floor(y / 2));
-    // console.log(this.instructorArray);
-    // console.log(instructor);
+    console.log(this.state.instructorArray);
+    console.log(instructor);
 
     // User/ instructor was deleted, can't create a course
     if(instructor === undefined) {
@@ -217,6 +214,8 @@ export default class LocalStorageLayout extends React.PureComponent {
   }
 
   onRemoveItem(i, emit=true) {
+    console.log("Index received: " + i);
+    console.log(this.state.items);
     // Find the index of the course element in the state
     const index = _.findIndex(this.state.items, (element) => {return element.data.i === i});
     const foundItem = this.state.items[index];
@@ -232,67 +231,60 @@ export default class LocalStorageLayout extends React.PureComponent {
 
   onRemoveVacation(vid, emit=true) {
     console.log(vid);
-    const index = _.findIndex(this.state.vacations, (element) => {return element.vid === vid});
-    const foundItem = this.state.vacations[index];
-    console.log(this.state.vacations);
-    console.log(foundItem);
+    console.log(this.state.items);
+    // const index = _.findIndex(this.state.vacations, (element) => {return element.vid === vid});
+    // const foundItem = this.state.vacations[index];
+    // console.log(this.state.vacations);
+    // console.log(foundItem);
 
     if(emit) {
       this.socket.emit("vacationDeleted", {vacation_id: vid});
     }
 
     // Remove the element from the state
-    this.setState({ vacations: _.reject(this.state.vacations, (element) => {return element.vid === vid})});
+    //this.setState({ vacations: _.reject(this.state.vacations, (element) => {return element.vid === vid})});
+    this.setState({ items: _.reject(this.state.items, (element) => {return element.vid === vid})});
   }
 
   onRemoveUser = (key, y) => {
-    const initialLength = this.instructorArray.length;
-    this.instructorArray = _.reject(this.instructorArray, (element) => {return element.key === key});
+    const initialLength = this.state.instructorArray.length;
+    this.setState({instructorArray: _.reject(this.state.instructorArray, (element) => {return element.key === key})},
+    () => {
+      // No user/ instructor found to delete
+      if(this.state.instructorArray.length !== initialLength) {
+        // Remove elements on the same row
+        console.log("Removed items at: " + y);
+        this.setState({ items: _.reject(this.state.items, (element) => {return element.data.y === y})}
+        ,() => {
+          // Move course elements up if they are below the user that was deleted
+          this.setState({items: _.reduce(this.state.items, (acc, element) => {
+            if (element.data.y > y) {
+              const newElement = element;
+              newElement.data.y -= 2;
+              return [...acc, newElement];
+            } else {
+              return  [...acc, element];
+            }
+          }, [])}, 
+          () => {
+            this.setState({layout: _.reduce(this.state.items, (acc, element) => {
+              const itemData = element.data;
+              return [...acc, itemData];
+            }, [])});
+            console.log(this.state.layout);
+          });
+        });
 
-    // No user/ instructor found to delete
-    if(this.instructorArray.length !== initialLength) {
-      // Remove elements on the same row
-      console.log(y);
-      this.setState({ items: _.reject(this.state.items, (element) => {return element.data.y === y}) });
-      this.setState({ vacations: _.reject(this.state.vacations, (element) => {return element.data.y === y + 1}) });
-
-      // Move course elements up if they are below the user that was deleted
-      this.setState({items: _.reduce(this.state.items, (acc, element) => {
-        if (element.data.y > y) {
-          console.log(acc);
-          console.log(this.state.layout);
-          console.log(element);
-          const newElement = element;
-          newElement.data.y -= 2;
-          return [...acc, newElement];
-        } else {
-          return  [...acc, element];
-        }
-      }, [])});
-
-      this.setState({vacations: _.reduce(this.state.vacations, (acc, element) => {
-        if (element.data.y > y) {
-          const newElement = element;
-          newElement.data.y -= 2;
-          return [...acc, newElement];
-        } else {
-          return  [...acc, element];
-        }
-      }, [])});
-
-
-
-      const itemVacations = this.state.items.concat(this.state.vacations);
-      // Reset layout so that the items are shifted up visually
-      this.setState({layout: _.reduce(itemVacations, (acc, element) => {
-        const itemData = element.data;
-        return [...acc, itemData];
-      }, [])});
-    }
+        //const itemVacations = this.state.items.concat(this.state.vacations);
+        // Reset layout so that the items are shifted up visually
+      }
+    });
   }
 
   onAddUser = (user) => {
-    this.instructorArray.push({key:user.username, name: user.firstname + " " + user.lastname, timeblocks: []});
+    console.log("Added user");
+    this.setState({instructorArray: [...this.state.instructorArray, {key:user.username, name: user.firstname + " " + user.lastname, timeblocks: [], vacations: []}]});
+    console.log(this.state.instructorArray);
   }
 
   createElement(el, isVacation=false) {
@@ -324,7 +316,7 @@ export default class LocalStorageLayout extends React.PureComponent {
       <TimelineGrid 
       socket={this.socket} 
       heightLimit={this.heightLimit} 
-      instructorArray={this.instructorArray} 
+      instructorArray={this.state.instructorArray} 
       createCourse={this.onAddCourse} 
       totalWeeks={this.totalWeeks}
       onRemoveUser={this.onRemoveUser} 
@@ -339,8 +331,8 @@ export default class LocalStorageLayout extends React.PureComponent {
           onResizeStop = {this.onItemChange}
           onDragStop = {this.onItemChange}
         >
-          {this.state.items.map(el => this.createElement(el))}
-          {this.state.vacations.map(el => this.createElement(el, true))}
+          {this.state.items.map(el => this.createElement(el, el.vid !== undefined ? true : false))}
+          {/* {this.state.vacations.map(el => this.createElement(el, true))} */}
         </ReactGridLayout>
       </div>
       </React.Fragment>

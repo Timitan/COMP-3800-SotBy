@@ -56,16 +56,16 @@ const socketStart = async (server, pool, instructorModel) => {
             })
         });
 
-        socket.on('userAdded', (user, rownum) => {
+        socket.on('userAdded', (user) => {
             // Update posgresql database
             console.log(user);
-            instructorModel.postUser(user, rownum)
+            instructorModel.postUser(user)
             .then(response => {
                 console.log("Add Success");
                 //console.log("Response: " + JSON.stringify(response));
                 // Broadcast to everyone except sender
                 //console.log(item);
-                socket.broadcast.emit('userAdded', user);
+                io.emit('userAdded', user);
             })
             .catch(error => {
                 console.log(error);

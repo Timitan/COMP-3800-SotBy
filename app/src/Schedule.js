@@ -100,7 +100,7 @@ export default class App extends React.Component {
     return (
       <div className="App">
           {(this.state.error !== "") ?
-            <div className="error-modal">
+            <div className="error-modal" key={"errorModal"}>
               <h1>Error:</h1>
               <p>{this.state.error}</p>
               <button style={{position:"absolute", top:0, right:0}} onClick={() => {this.setState({error: ""})}}>
@@ -121,7 +121,15 @@ export default class App extends React.Component {
     // Remove this later on and add a real feedback message, this is just for development purposes
     this.socket.on('error', (err) => {
       console.log(err);
-      this.setState({error: err})
+      if(typeof(err) === String) {
+        this.setState({error: err});
+      } else {
+        if(err.detail === undefined) {
+          this.setState({error: "ERROR Code: " + err.code});
+        } else {
+          this.setState({error: err.detail});
+        }
+      }
     });
 
     return (

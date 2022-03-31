@@ -27,7 +27,7 @@ const getUsers = (year) => {
   })
 }
 
-const postUser = (user, rownum) => {
+const postUser = (user) => {
   return new Promise(function (resolve, reject) {
     // INSERT INTO public."public.user" (username, first_name, last_name, date_joined, email, password)
     // VALUES ('John Smith', 'John', 'Smith', current_date, 'johnsmith@notreal.com', 'johnsmithiscool')
