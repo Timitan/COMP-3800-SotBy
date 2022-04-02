@@ -16,7 +16,7 @@ table {
     font-size: 0.9em;
     font-family: sans-serif;
     min-width: 400px;
-    width: 40%;
+    width: 60%;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
 }
 
@@ -42,14 +42,6 @@ tbody tr:nth-of-type(even) {
 tbody tr:last-of-type {
     border-bottom: 2px solid #009879;
 }
-
-/* tbody tr:hover {
-    background-color: #dedede;
-}
-
-tr:hover td {
-    background-color: transparent;
-} */
 
 button {
   align-items: center;
