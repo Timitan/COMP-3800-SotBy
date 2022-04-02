@@ -7,6 +7,7 @@ const { createAdapter } = require("@socket.io/postgres-adapter");
 const { Pool } = require("pg");
 const socketConnect = require("./socket");
 const instructorModel = require('./requests')
+const argon2 = require("argon2");
 
 console.log("Script started");
 
@@ -21,6 +22,7 @@ const pool = new Pool({
 const port = 8000;
 
 app.use(express.json())
+
 app.use(function (req, res, next) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
@@ -30,7 +32,7 @@ app.use(function (req, res, next) {
 
 // Routes
 app.get('/users', (req, res) => {
-  instructorModel.getUsers()
+	instructorModel.getUsers()
   .then(response => {
     res.status(200).send(response);
   })
@@ -71,6 +73,18 @@ app.get('/users', (req, res) => {
 app.get('/vacations', (req, res) => {
   instructorModel.getVacationsApproved(req)
   .then(response => {
+    console.log("Response: " + response);
+    res.status(200).send(response);
+  })
+  .catch(error => {
+    console.log(error);
+    res.status(500).send(error);
+  })
+})
+
+app.get('/vacationsNotApproved', (req, res) => {
+  instructorModel.getAllVacationsNotApproved(req)
+  .then(response => {
     res.status(200).send(response);
   })
   .catch(error => {
@@ -83,6 +97,60 @@ app.post('/vacations', (req, res) => {
   instructorModel.postUser(req.body)
   .then(response => {
     console.log("Response: " + response);
+    res.status(200).send(response);
+  })
+  .catch(error => {
+    console.log(error);
+    res.status(500).send(error);
+  })
+})
+
+// Login
+app.post('/login', (req, res) => {
+  instructorModel.login(req.body)
+  .then(async response => {
+    // console.log("Response: " + response);
+    const body = req.body;
+    const password = body.password;
+    const verified = await argon2.verify(response.rows[0].password, password);
+    if (verified) {
+			// req.session.username = response.rows[0].username;
+			// req.session.firstName = response.rows[0].first_name;
+			// req.session.lastName = response.rows[0].last_name;
+			// req.session.admin = response.rows[0].admin;
+      let user = { status: 200,
+                   username: response.rows[0].username,
+                   first_name: response.rows[0].first_name,
+                   last_name: response.rows[0].last_name,
+                   admin: response.rows[0].admin }
+      // console.log(req.session);
+			// console.log(req.session.username);
+      res.status(200).send(user);
+      // console.log("success")
+    } else {
+      res.status(401).send({status: "401"});
+      console.log("fail")
+    }
+  })
+  .catch(error => {
+    console.log(error);
+    res.status(500).send({status: "500"});
+  })
+})
+
+// Admin
+// app.get('/admin', (req, res) => {
+//   if (req.session.admin == 1) {
+// 		res.status(200).send({message: "200"});
+//   } else {
+// 		res.status(401).send({message: "401"});
+// 	}
+// })
+
+app.put('/vacations/:id', (req, res) => {
+  instructorModel.approveVacation(req.body)
+  .then(response => {
+    console.log("Response: " + JSON.stringify(response));
     res.status(200).send(response);
   })
   .catch(error => {

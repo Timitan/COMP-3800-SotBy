@@ -1,25 +1,6 @@
 import React from "react";
 
 export default function Month({title, socket, position, weeks}){
-    // const week = () => {
-    //     const weeks = [];
-        
-    //     while(startDate.getMonth() == month) {
-    //         weeks.push(startDate.getDate());
-    //         startDate.setDate(startDate.getDate() + 7);
-    //     }
-    //     return weeks;
-    // }
-    // const weeks = week();
-    /*
-    const weeks = [
-        1,
-        7,
-        14,
-        21,
-        28
-    ];*/
-
     return(
         <React.Fragment>
             <div className="grid-month" style={{gridArea: position.x + " / " + position.y + " / span 1 / span " + weeks.length}}>
