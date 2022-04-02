@@ -10,7 +10,7 @@ const pool = new Pool({
 
 pool.connect();
 
-const getUsers = () => {
+const getUsers = (year) => {
     return new Promise(function(resolve, reject) {
       pool.query(`SELECT u.username, u.first_name, u.last_name, u.row_num, ca.start_date, ca.end_date, c.course_num, c.title, c.colour, v.start_date as vacation_start, v.end_date as vacation_end, v.vacation_id, v.approved from "user" u
                   LEFT JOIN course_assignment ca ON u.username = ca.username
@@ -19,7 +19,7 @@ const getUsers = () => {
                   ORDER BY u.date_joined`
       //ORDER BY username ASC
       , (error, results) => {
-        if (error) {
+        if (error || !results) {
           reject(error)
         }
         resolve(results.rows);
@@ -27,7 +27,7 @@ const getUsers = () => {
   })
 }
 
-const postUser = (user, rownum) => {
+const postUser = (user) => {
   return new Promise(function (resolve, reject) {
     // INSERT INTO public."public.user" (username, first_name, last_name, date_joined, email, password)
     // VALUES ('John Smith', 'John', 'Smith', current_date, 'johnsmith@notreal.com', 'johnsmithiscool')
