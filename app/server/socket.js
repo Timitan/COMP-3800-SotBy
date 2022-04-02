@@ -68,7 +68,7 @@ const socketStart = async (server, pool, instructorModel) => {
                 //console.log("Response: " + JSON.stringify(response));
                 // Broadcast to everyone except sender
                 //console.log(item);
-                socket.broadcast.emit('userAdded', user);
+                io.emit('userAdded', user);
             })
             .catch(error => {
                 console.log(error);
