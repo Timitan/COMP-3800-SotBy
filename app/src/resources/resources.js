@@ -12,9 +12,7 @@ class PopUp extends Component {
     constructor({props, socket, toggle, resInfo}) {
         super(props);
         this.state = {
-            inputValue: 0,
-            // message: ""
-            
+            inputValue: 0,            
         };        
         this.resInfo = resInfo;
         this.toggle = toggle;
@@ -32,19 +30,15 @@ class PopUp extends Component {
         this.props.toggle();
 
         if (isNaN(this.state.inputValue)) {
-            // this.setState({message: "Please enter a number"});
             alert("Please enter a number");
         }
         else if (this.state.inputValue > this.quantityAvailable) {
-            // this.setState({message: "Not enough items are available!"});
             alert("Not enough items are available!");
         }
         else if (this.state.inputValue <= 0) {
-            // this.setState({message: "Invalid number"});
             alert("Invalid number");
         }
         else {
-            // this.setState({message: `Succesfully booked ${this.state.inputValue} ${this.resInfo.model_name}`});
             alert(`Succesfully booked ${this.state.inputValue} ${this.resInfo.model_name}`);
             this.socket.emit("bookResource", {
                 ds_id: DS_ID,
@@ -77,7 +71,6 @@ class PopUp extends Component {
                             <input type="text" name="count" value={this.state.inputValue} onChange={evt => this.updateInputValue(evt)} />
                         </label>
                         <br />
-                        {/* <p>{this.state.message}</p> */}
                         <input type="submit" onClick={this.handleSubmit} />
                     </form>
                 </div>
@@ -97,12 +90,6 @@ class Item extends React.Component {
             quantityAvailable: this.resInfo.q_left != null ? this.resInfo.q_left : this.resInfo.quantity_total,
         }
         this.socket = socket;
-
-        // this.socket.on('bookResource', (resInfo) => {
-        //     this.setState({
-        //         quantityAvailable: resInfo.q_left
-        //     });
-        // });
     }
 
     togglePop = () => {
@@ -121,8 +108,7 @@ class Item extends React.Component {
                 <td>
                     <p>{this.resInfo.quantity_total}</p>
                 </td>
-                <td>    
-                    {/* If q_left is null it means that resource has not been booked. Therefore, quantity left = quantity total */}
+                <td>
                     <p>{this.state.quantityAvailable}</p> 
                 </td>
                 <td>

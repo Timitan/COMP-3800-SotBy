@@ -55,10 +55,6 @@ class Day extends React.Component {
   render() {
     const descEditSave = this.state.editMode ? "Save" : "Edit";
 
-    // let resourcesInfo = [];
-    // for (let i = 0; this.state.model_name.length; i++) {
-    //   resourcesInfo.push({model_name: this.state.model_name[i], model_num: this.state.model_num[i], quantity: this.state})
-    // }
     let resources = null;
     if (this.state.model_num) {
       resources = this.state.model_num.map((m_num, index) => {
@@ -144,7 +140,7 @@ class Week extends React.Component {
 
   renderDay(dayInfo) {
     return (
-      <Day key={dayInfo.ds_id + dayInfo.username + dayInfo.description} // <Day key={dayInfo.ds_id + dayInfo.instructor + dayInfo.description} PROBLEM -> new key -> new row?!
+      <Day key={dayInfo.ds_id + dayInfo.username + dayInfo.description}
         info={dayInfo}
         socket={this.socket}
       />
@@ -218,7 +214,6 @@ class Course extends React.Component {
     );
   }
 
-  //----
   parseData = (data) => {
     if (!data) {
       return null;
@@ -280,10 +275,9 @@ class Course extends React.Component {
   }
 
   componentDidMount() {
-    let courseNum = 12345;
+    let courseNum = 12345; // HARD CODED
     this.retrieveDailyScheduleDataFromDatabase(courseNum);
   }
-  //----
 
   render() {
     return (this.state.dataLoaded ? this.renderCourse() :
