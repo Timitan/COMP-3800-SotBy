@@ -110,6 +110,44 @@ const socketStart = async (server, pool, instructorModel) => {
             })
         });
 
+        socket.on('courseAdded1', (course) => {
+            // Update posgresql database
+            instructorModel.postCourse1(course)
+            .then(response => {
+                console.log("Course Post Success");
+                //console.log("Response: " + JSON.stringify(response));
+                
+                // Broadcast to everyone except sender
+                //socket.broadcast.emit('courseAdded', course);
+
+                // Broadcast to everyone
+                socket.emit('courseAdded1', course);
+                socket.broadcast.emit('courseAdded1', course);
+            })
+            .catch(error => {
+                console.log(error);
+                // console.log("error");
+
+                // Error code
+                let msg;
+                switch(error.code) {
+                    case('23505'):
+                        msg = "Course number already exists for another course! Please choose another.";
+                        break;
+                    case('23503'):
+                        msg = "The user you are creating a course for doesn't exist.";
+                        break;
+                    default:
+                        msg = "Error in inserting course. Please check your course input.";
+                        break;
+                }
+
+                console.log(msg);
+
+                socket.emit('error', msg);
+            })
+        });
+
         socket.on('courseAdded', (course) => {
             // Update posgresql database
             instructorModel.postCourse(course)

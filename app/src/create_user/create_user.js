@@ -11,14 +11,13 @@ function Create_User(socket) {
     const [firstname, setFirstName] = useState('');
     const [lastname, setLastName] = useState('');
     const [datejoined, setDateJoined] = useState('');
-    const [rownumber, setRowNumber] = useState('');
     const [admin, setAdmin] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
     const name = ReactSession.get("username");
     console.log(name);
-    
+
 
     const create_user = (e) => {
         e.preventDefault();
@@ -27,7 +26,6 @@ function Create_User(socket) {
                            firstname: firstname,
                            lastname: lastname,
                            datejoined: datejoined,
-                           rownumber: rownumber,
                            admin: admin,
                            email: email,
                            password: password };
@@ -36,7 +34,7 @@ function Create_User(socket) {
     }
 
     return (
-        <div className="vacation-container">
+        <div className="user-container">
 			<Header />
             <form className="form" onSubmit={create_user}>
                 <div className="new-user-form">
@@ -68,13 +66,6 @@ function Create_User(socket) {
                         placeholder="Date joined..." 
                         value={datejoined} 
                         onChange={(e) => setDateJoined(e.target.value)} /><br></br>
-                    <label>Row number: </label>
-                    <input 
-                        className="new-user-input" 
-                        type="text" 
-                        placeholder="Row number..." 
-                        value={rownumber} 
-                        onChange={(e) => setRowNumber(e.target.value)} /><br></br>
                     <label>Admin: </label>
                     <input 
                         className="new-user-input" 

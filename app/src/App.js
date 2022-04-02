@@ -3,8 +3,7 @@ import Schedule from "./Schedule"
 import Login from "./login/Login"
 import Create_user from "./create_user/create_user"
 import Create_course from "./course/create_course"
-// import Admin from "./admin/admin"
-// import Create_resource from "./create_resource/create_resource"
+import Create_resource from "./resources/create_resource"
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import { useState } from "react"
 import { ReactSession } from 'react-client-session';
@@ -14,7 +13,13 @@ const socket = io.connect('/');
 
 ReactSession.setStoreType("localStorage");
 
-
+function isAdmin() {
+    let userStatus = ReactSession.get("admin");
+    if (userStatus === 1) {
+        return true;
+    }
+    return false;
+}
 
 function App() {
     return (
@@ -27,7 +32,7 @@ function App() {
                     <Route exact path="/login" element={<Login />} />
                     <Route exact path="/create_user" element={<Create_user socket={socket}/>} />
                     <Route exact path="/create_course" element={<Create_course socket={socket}/>} />
-                    {/* <Route exact path="/create_resource" element={<Create_resource socket={socket}/>} /> */}
+                    <Route exact path="/create_resource" element={<Create_resource socket={socket}/>} />
                 </Routes>
             </div>
         </Router>
