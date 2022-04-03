@@ -25,7 +25,7 @@ const socketStart = async (server, pool, instructorModel) => {
         socket.on('itemChanged', (item, itemInfo) => {
             // Update posgresql database with the changed item
             //console.log(itemInfo);
-            instructorModel.putCourse(itemInfo.username, itemInfo.courseNum, itemInfo.start, itemInfo.end)
+            instructorModel.putCourse(itemInfo.username, itemInfo.caId, itemInfo.start, itemInfo.end)
             .then(response => {
                 console.log("Update Success");
                 //console.log("Response: " + JSON.stringify(response));
@@ -43,7 +43,7 @@ const socketStart = async (server, pool, instructorModel) => {
         socket.on('courseDeleted', (course, i) => {
             // Update posgresql database with the changed item
             //console.log(itemInfo);
-            instructorModel.deleteCourse(course.courseNum, course.userId)
+            instructorModel.deleteCourse(course.caId)
             .then(response => {
                 console.log("Update Success");
                 //console.log("Response: " + JSON.stringify(response));
@@ -150,8 +150,9 @@ const socketStart = async (server, pool, instructorModel) => {
 
         socket.on('courseAdded', (course) => {
             // Update posgresql database
-            instructorModel.postCourse(course)
+            instructorModel.postCourseAssignment(course)
             .then(response => {
+                console.log(response);
                 console.log("Course Post Success");
                 //console.log("Response: " + JSON.stringify(response));
                 
@@ -159,8 +160,8 @@ const socketStart = async (server, pool, instructorModel) => {
                 //socket.broadcast.emit('courseAdded', course);
 
                 // Broadcast to everyone
-                socket.emit('courseAdded', course);
-                socket.broadcast.emit('courseAdded', course);
+                socket.emit('courseAdded', {...course, caId: response});
+                socket.broadcast.emit('courseAdded', {...course, caId: response});
             })
             .catch(error => {
                 console.log(error);

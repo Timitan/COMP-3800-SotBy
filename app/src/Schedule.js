@@ -56,8 +56,9 @@ export default class App extends React.Component {
           instructor.timeblocks.push({
             start: new Date(parsedData[i].start_date), 
             end: new Date(parsedData[i].end_date), 
-            name: parsedData[i].title + " " + parsedData[i].course_num, 
+            name: parsedData[i].title, 
             courseNum: parsedData[i].course_num,
+            caId: parsedData[i].ca_id,
             userId: parsedData[i].username});  
         }
 

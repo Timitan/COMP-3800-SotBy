@@ -26,6 +26,7 @@
     "react-icons": "^4.3.1",
     "react-router-dom": "^6.2.2",
     "react-scripts": "5.0.0",
+    "react-select": "^5.2.2",
     "reactjs-popup": "^2.0.5",
     "selenium-webdriver": "^4.1.1",
     "socket.io": "^4.4.1",
