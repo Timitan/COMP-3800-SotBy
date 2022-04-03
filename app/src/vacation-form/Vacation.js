@@ -7,10 +7,19 @@ import VacationInput from "./components/VacationInput";
 import VacationList from "./components/VacationList";
 import './vacation.css'
 import React from "react";
+import { ReactSession } from 'react-client-session';
 
 
 const END_POINT_ROOT = "http://localhost:8000/"
 const VACATION_RESOURCE = "users"
+
+function isUser() {
+    let userStatus = ReactSession.get("admin");
+    if (userStatus !== undefined) {
+        return true;
+    }
+    return false;
+}
 
 export default class Vacation extends React.Component {
 	state = {
@@ -103,7 +112,7 @@ export default class Vacation extends React.Component {
 	}
 
 	renderApp() {
-		return (
+		return isUser() ? (
 			<div className="vacation-submission-form" >
 				<div className="vacation-container">
 					<Header />
@@ -145,7 +154,7 @@ export default class Vacation extends React.Component {
 				</div>
 			</div>
 
-		);
+		) : window.location.href="/"
 	}
 
 	render() {

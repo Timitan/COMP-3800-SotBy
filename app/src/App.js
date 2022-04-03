@@ -1,5 +1,7 @@
 import Vacation from "./vacation-form/Vacation"
 import Schedule from "./Schedule"
+import DetailedSchedule from "./detailed-schedule/detailedSchedule"
+import Resources from "./resources/resources"
 import Login from "./login/Login"
 import Create_user from "./create_user/create_user"
 import Create_course from "./course/create_course"
@@ -13,20 +15,14 @@ const socket = io.connect('/');
 
 ReactSession.setStoreType("localStorage");
 
-function isAdmin() {
-    let userStatus = ReactSession.get("admin");
-    if (userStatus === 1) {
-        return true;
-    }
-    return false;
-}
-
 function App() {
     return (
         <Router>
             <div className="app">
                 <Routes>
                     <Route exact path="/" element={<Schedule socket={socket} />} />
+                    <Route exact path="/detailed-schedule" element={<DetailedSchedule socket={socket}/>} />
+                    <Route exact path="/resources" element={<Resources socket={socket}/>} />
                     <Route exact path="/vacation" element={<Vacation socket={socket} />} />
                     <Route exact path="/vacationApproval" element={<VacationApproval socket={socket} />} />
                     <Route exact path="/login" element={<Login />} />

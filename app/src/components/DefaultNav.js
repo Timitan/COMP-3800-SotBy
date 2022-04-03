@@ -3,8 +3,8 @@ import '../navbar.css'
 
 const DefaultNav = ({ title }) => {
     return (
-        <ul>
-            <li id="login"><a href="/login">Login</a></li>
+        <ul className="nav-ul">
+            <li className='nav-li' id="login"><a href="/login">Login</a></li>
         </ul>
     );
 };

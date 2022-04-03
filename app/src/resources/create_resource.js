@@ -1,8 +1,16 @@
 import React from 'react'
 import { useState } from 'react'
+import { ReactSession } from 'react-client-session';
 import './create_resource.css'
 import Header from "./components/Header";
 
+function isAdmin() {
+    let userStatus = ReactSession.get("admin");
+    if (userStatus === 1) {
+        return true;
+    }
+    return false;
+}
 
 function Create_resource(socket) {
     socket = socket.socket;
@@ -15,14 +23,14 @@ function Create_resource(socket) {
         e.preventDefault();
 
         const new_resource = { model_num: model_num, 
-                           model_name: model_name,
-                           quantity_total: quantity_total,
-                           model_location: model_location };
+                               model_name: model_name,
+                               quantity_total: quantity_total,
+                               model_location: model_location };
         socket.emit('resourceAdded', new_resource, null);
         // if successful, need to redirect to main page
     }
 
-    return (
+    return isAdmin() ? (
         <div className="resource-container">
 			<Header />
             <form className="form" onSubmit={create_resource}>
@@ -61,7 +69,7 @@ function Create_resource(socket) {
                 <p id="successMessage"></p>
             </form>
         </div>
-    )
+    ) : window.location.href="/"
 }
 
 export default Create_resource
