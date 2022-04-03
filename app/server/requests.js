@@ -301,12 +301,16 @@ const getCourseDetail = (course_num) => {
   }) 
 }
 
-const getResources = (ds_id) => {
+const getResources = (date) => {
+  console.log(date);
   return new Promise(function(resolve, reject) {
     pool.query(`SELECT resource.model_num, model_name, quantity_total, model_location, (quantity_total - quantity) AS q_left
                 FROM "resource"
                 LEFT JOIN
-                (SELECT model_num, SUM(quantity) AS quantity FROM "resource_allocation" WHERE ds_id = ${ds_id} GROUP BY model_num) res_allocated_for_day 
+                (SELECT model_num, SUM(quantity) AS quantity FROM "resource_allocation"
+                INNER JOIN "daily_schedule" ON daily_schedule.ds_id=resource_allocation.ds_id
+                WHERE date='${date}'
+                GROUP BY model_num) res_allocated_for_day 
                 ON (res_allocated_for_day.model_num = resource.model_num);`,
     (error, results) => {
       if (error) {

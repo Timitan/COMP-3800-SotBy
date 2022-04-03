@@ -2,14 +2,13 @@ import React, { Component } from 'react';
 import 'react-edit-text/dist/index.css';
 import './index.css';
 import _ from "lodash";
+import { useSearchParams } from "react-router-dom";
 
 const END_POINT_ROOT = "http://localhost:8000/";
-const DS_ID = 2;     // Get this from detailedSchedule page.
-
 
 class PopUp extends Component {
 
-    constructor({props, socket, toggle, resInfo}) {
+    constructor({props, socket, toggle, resInfo, ds_id}) {
         super(props);
         this.state = {
             inputValue: 0,            
@@ -18,6 +17,7 @@ class PopUp extends Component {
         this.toggle = toggle;
         this.socket = socket;
         this.quantityAvailable = resInfo.q_left;
+        this.ds_id = ds_id;
 
     }
 
@@ -41,7 +41,7 @@ class PopUp extends Component {
         else {
             alert(`Succesfully booked ${this.state.inputValue} ${this.resInfo.model_name}`);
             this.socket.emit("bookResource", {
-                ds_id: DS_ID,
+                ds_id: this.ds_id,
                 model_num: this.resInfo.model_num,
                 model_name: this.resInfo.model_name,
                 quantity_total: this.resInfo.quantity_total,
@@ -81,15 +81,17 @@ class PopUp extends Component {
 
 class Item extends React.Component {
 
-    constructor({props, socket, resInfo}) {
+    constructor({props, socket, resInfo, ds_id}) {
         console.log(resInfo)
         super(props);
         this.resInfo = resInfo;
         this.state = {
-            seen: false,
-            quantityAvailable: this.resInfo.q_left != null ? this.resInfo.q_left : this.resInfo.quantity_total,
+            seen: false
         }
         this.socket = socket;
+        this.ds_id = ds_id;
+                                        //   Has a value  ?  yes, then keep it  :  No, then set it to quantity_total
+        this.resInfo.q_left = this.resInfo.q_left != null ? this.resInfo.q_left : this.resInfo.quantity_total 
     }
 
     togglePop = () => {
@@ -99,7 +101,6 @@ class Item extends React.Component {
     };
 
     render() {
-
         return (
             <tr>
                 <td>
@@ -109,14 +110,14 @@ class Item extends React.Component {
                     <p>{this.resInfo.quantity_total}</p>
                 </td>
                 <td>
-                    <p>{this.state.quantityAvailable}</p> 
+                    <p>{this.resInfo.q_left}</p> 
                 </td>
                 <td>
                     <p>{this.resInfo.model_location}</p>
                 </td>
                 <td id="popUpBookBtn">
                     {this.state.seen ? null : <button onClick={() => this.togglePop()}>Book</button>}
-                    {this.state.seen ? <PopUp toggle={this.togglePop} resInfo={this.resInfo} socket={this.socket}/> : null}
+                    {this.state.seen ? <PopUp toggle={this.togglePop} resInfo={this.resInfo} socket={this.socket} ds_id={this.ds_id}/> : null}
                 </td>
             </tr>
         );
@@ -125,7 +126,7 @@ class Item extends React.Component {
 
 class Resource extends React.Component {
 
-    constructor({ props, socket }) {
+    constructor({ props, socket, date, ds_id }) {
         super(props);
         this.socket = socket;
         this.state = {
@@ -133,6 +134,8 @@ class Resource extends React.Component {
             dataLoaded: false,
         }
 
+        this.date = date;
+        this.ds_id = ds_id;
         this.socket.on('bookResource', (resInfo) => {
       
             let index;
@@ -157,7 +160,7 @@ class Resource extends React.Component {
 
     renderItem(itemInfo) {
         return (
-            <Item resInfo={itemInfo} key={itemInfo.model_num + itemInfo.q_left} socket={this.socket} quantityAvailable={itemInfo.q_left}/>
+            <Item resInfo={itemInfo} key={itemInfo.model_num + itemInfo.q_left} socket={this.socket} ds_id={this.ds_id}/>
         );
     }
 
@@ -198,8 +201,8 @@ class Resource extends React.Component {
         this.setState({ dataLoaded: true });
     }
 
-    retrieveResourcesDataFromDatabase = (ds_id) => {
-        fetch(END_POINT_ROOT + `resources?ds_id=${ds_id}`, {
+    retrieveResourcesDataFromDatabase = (date) => {
+        fetch(END_POINT_ROOT + `resources?date=${date}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
         })
@@ -212,9 +215,8 @@ class Resource extends React.Component {
     }
 
     componentDidMount() {
-        this.retrieveResourcesDataFromDatabase(DS_ID);
+        this.retrieveResourcesDataFromDatabase(this.date);
     }
-    //----
 
     render() {
         return (this.state.dataLoaded ? this.renderResouce() :
@@ -224,8 +226,14 @@ class Resource extends React.Component {
 }
 
 const Resources = (socket) => {
+    const [searchParams, setSearchParams] = useSearchParams();
+    const ds_id = searchParams.get("ds_id");
+    const current_date = new Date(searchParams.get("date"));
+    const formattedDate = `${current_date.getFullYear()}-${current_date.getMonth()+1}-${current_date.getDate()}`;
+    console.log(formattedDate);
+    console.log(ds_id);
     return (
-        <Resource socket={socket.socket}></Resource>
+        <Resource socket={socket.socket} ds_id={ds_id} date={formattedDate}></Resource>
     );
 }
 

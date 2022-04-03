@@ -3,6 +3,7 @@ import { EditText, EditTextarea } from 'react-edit-text';
 import 'react-edit-text/dist/index.css';
 import './index.css';
 import _ from "lodash";
+import { Link, useSearchParams } from 'react-router-dom';
 
 const END_POINT_ROOT = "http://localhost:8000/";
 
@@ -91,7 +92,17 @@ class Day extends React.Component {
           />
         </td>
         <td>
-          <ul>{resources}</ul>
+          <ul>
+            {resources}
+            <li>
+            <Link
+              to={{
+                pathname: "/resources",
+                search: `?ds_id=${this.ds_id}&date=${this.date}`,
+              }}
+            >this is a link </Link>
+            </li>
+            </ul>
         </td>
         <td>
           {this.state.description ? (<button onClick={() => this.handleEditSave()}>{descEditSave}</button>) : null}
@@ -176,13 +187,14 @@ class Week extends React.Component {
 class Course extends React.Component {
 
 
-  constructor({ props, socket }) {
+  constructor({ props, socket, courseNum }) {
     super(props);
     this.socket = socket;
     this.state = {
       data: null,
       dataLoaded: false,
     }
+    this.courseNum = courseNum;
   }
 
   renderWeek(weekInfo) {
@@ -275,8 +287,7 @@ class Course extends React.Component {
   }
 
   componentDidMount() {
-    let courseNum = 12345; // HARD CODED
-    this.retrieveDailyScheduleDataFromDatabase(courseNum);
+    this.retrieveDailyScheduleDataFromDatabase(this.courseNum);
   }
 
   render() {
@@ -288,9 +299,10 @@ class Course extends React.Component {
 }
 
 const DetailedSchedule = (socket) => {
-  return (
-    <Course socket={socket.socket}></Course>
-  );
+    const [searchParams, setSearchParams] = useSearchParams();
+    return (
+      <Course socket={socket.socket} courseNum={searchParams.get("courseNum")}></Course>
+    );
 }
 
 export default DetailedSchedule;

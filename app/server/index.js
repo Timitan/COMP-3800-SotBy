@@ -187,7 +187,7 @@ app.get('/detailedSchedule', (req, res) => {
 })
 
 app.get('/resources', (req, res) => {
-  instructorModel.getResources(req.query.ds_id)
+  instructorModel.getResources(req.query.date)
   .then(response => {
     console.log("Response: " + response);
     res.status(200).send(response);
