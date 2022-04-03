@@ -186,6 +186,36 @@ const socketStart = async (server, pool, instructorModel) => {
             })
         });
 
+
+        // Sam 
+
+        socket.on('changeDay', (rowInfo) => {
+            instructorModel.updateCourseDetailDay(rowInfo)
+            .then(response => {
+                console.log("Updated Course Detail Day");
+                socket.broadcast.emit('changeDay', rowInfo);
+            })
+            .catch(error => {
+            console.log(error);
+            })
+        })
+
+        socket.on('bookResource', (bookingInfo) => {
+            instructorModel.bookResource(bookingInfo)
+            .then(response => {
+                console.log("Added to resource_allocation");
+                io.emit('bookResource', {
+                    model_num: bookingInfo.model_num,
+                    model_name: bookingInfo.model_name,
+                    quantity_total: bookingInfo.quantity_total,
+                    model_location: bookingInfo.model_location,
+                    q_left: bookingInfo.q_left
+                });
+            })
+            .catch(error => {
+            console.log(error);
+            })
+        })
         socket.on('vacationAdded', (vacation) => {
             console.log(vacation);
             instructorModel.postVacation(vacation)

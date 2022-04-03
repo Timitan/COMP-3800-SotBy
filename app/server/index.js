@@ -164,7 +164,7 @@ app.put('/vacations/:id', (req, res) => {
 //   //console.log("Id: " + id + "\nStart and Ends: " + start + " | " + end);
 //   instructorModel.deleteUser(id)
 //   .then(response => {
-//     console.log("Response: " + JSON.stringify(response));
+//     console.log("Response: " + JSON.stringify(response)); 
 //     res.status(200).send(response);
 //   })
 //   .catch(error => {
@@ -173,6 +173,30 @@ app.put('/vacations/:id', (req, res) => {
 //   })
 // })
 
+// Sam
+app.get('/detailedSchedule', (req, res) => {
+  instructorModel.getCourseDetail(req.query.courseNum)
+  .then(response => {
+    console.log("Response: " + response);
+    res.status(200).send(response);
+  })
+  .catch(error => {
+    console.log(error);
+    res.status(500).send(error);
+  })
+})
+
+app.get('/resources', (req, res) => {
+  instructorModel.getResources(req.query.date)
+  .then(response => {
+    console.log("Response: " + response);
+    res.status(200).send(response);
+  })
+  .catch(error => {
+    console.log(error);
+    res.status(500).send(error);
+  })
+})
 
 var server = app.listen(
   port,

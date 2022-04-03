@@ -7,9 +7,9 @@ function logout() {
 
 const UserNav = ({ title }) => {
     return (
-        <ul>
-            <li><a href="/vacation">Request Vacation</a></li>
-            <li id="logout" onMouseDown={logout}><a href="/">Logout</a></li>
+        <ul className="nav-ul">
+            <li className='nav-li'><a href="/vacation">Request Vacation</a></li>
+            <li className='nav-li' id="logout" onMouseDown={logout}><a href="/">Logout</a></li>
         </ul>
     );
 };
