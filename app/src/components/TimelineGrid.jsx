@@ -84,11 +84,13 @@ export default function TimelineGrid({socket, heightLimit, instructorArray, crea
                     })
                 }
             </div>
+            {/*
             <Popup trigger={<button id="addRowBtn" name="addRowBtn">Add Row</button>} modal>
                 <div className="add-row-modal-bg">
                     <Form text={"Add Row: "} title={"user"} textObject={["Username", "First Name", "Last Name", "Email", "Password"]}callBack={(user) => {addRowHeader(user)}}/>
                 </div>
             </Popup>
+            */}
         </React.Fragment>
     );
 }

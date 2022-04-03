@@ -37,7 +37,7 @@ export default class LocalStorageLayout extends React.PureComponent {
                 courseNum: info.courseNum,
                 userId: info.userId,
                 data: {
-                  i: info.name,
+                  i: info.courseNum,
                   x: start,
                   y: index * 2,
                   w: end - start,
@@ -140,8 +140,12 @@ export default class LocalStorageLayout extends React.PureComponent {
     // HTTP request instead of sockets
     //this.updateCourse(newItem.i, startDate.getTime(), endDate.getTime());
 
-    const index = _.findIndex(this.state.items, (element) => {return element.data.i === newItem.i});
+    const index = _.findIndex(this.state.items, (element) => {return element.data.i.toString() === newItem.i});
     const foundItem = this.state.items[index];
+    console.log(this.state.items);
+    console.log(newItem.i);
+    console.log(index);
+    console.log(foundItem);
 
     // Restrict movement of the course to one row only
     const yAxisLockedItem = newItem;
@@ -178,6 +182,7 @@ export default class LocalStorageLayout extends React.PureComponent {
   }
 
   onAddCourse = (course, x=0, y=0, emit=true) => {
+    console.log(course);
     const w = parseInt(course.weeklength);
 
     const startDate = findWeekDate(this.state.weekInformation, x);
@@ -198,11 +203,11 @@ export default class LocalStorageLayout extends React.PureComponent {
       this.setState({
         // Add a new item
         items: this.state.items.concat({
-          text: course.title + " " + course.number,
+          text: course.title,
           userId: instructor.key,
-          courseNum: course.number,
+          courseNum: course.caId,
           data:{
-            i: course.number,
+            i: course.caId,
             x: x,
             y: y, 
             w: w,
@@ -254,8 +259,9 @@ export default class LocalStorageLayout extends React.PureComponent {
       if(this.state.instructorArray.length !== initialLength) {
         // Remove elements on the same row
         console.log("Removed items at: " + y);
-        this.setState({ items: _.reject(this.state.items, (element) => {return element.data.y === y})}
+        this.setState({ items: _.reject(this.state.items, (element) => {return element.data.y === y || element.data.y === y + 1})}
         ,() => {
+          console.log(this.state.items);
           // Move course elements up if they are below the user that was deleted
           this.setState({items: _.reduce(this.state.items, (acc, element) => {
             if (element.data.y > y) {
@@ -268,8 +274,13 @@ export default class LocalStorageLayout extends React.PureComponent {
           }, [])}, 
           () => {
             this.setState({layout: _.reduce(this.state.items, (acc, element) => {
-              const itemData = element.data;
-              return [...acc, itemData];
+              if(element.vid !== undefined) {
+                const itemData = {...element.data, isDraggable: false, isResizable: false};
+                return [...acc, itemData];
+              } else {
+                const itemData = element.data;
+                return [...acc, itemData];
+              }
             }, [])});
             console.log(this.state.layout);
           });
@@ -297,7 +308,7 @@ export default class LocalStorageLayout extends React.PureComponent {
     };
 
     return (
-      <div key={el.data.i} data-grid={isVacation ? {...el.data, static: true} : el.data} name={el.text + " el"}  >
+      <div key={el.data.i} data-grid={isVacation ? {...el.data, isDraggable: false, isResizable: false } : el.data} name={el.text + " el"} >
         <span className="text">{el.text}</span>
         <span
           className="remove"

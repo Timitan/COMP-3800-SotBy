@@ -77,5 +77,5 @@
     background-color: rgba(255, 255, 255, 1);
     position: fixed;
     top: 25%;
-    z-index: 1000;
+    z-index: 9999;
 }

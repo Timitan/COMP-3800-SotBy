@@ -12,7 +12,7 @@ pool.connect();
 
 const getUsers = (year) => {
     return new Promise(function(resolve, reject) {
-      pool.query(`SELECT u.username, u.first_name, u.last_name, u.row_num, ca.start_date, ca.end_date, c.course_num, c.title, c.colour, v.start_date as vacation_start, v.end_date as vacation_end, v.vacation_id, v.approved from "user" u
+      pool.query(`SELECT u.username, u.first_name, u.last_name, u.row_num, ca.ca_id, ca.start_date, ca.end_date, c.title, c.colour, v.start_date as vacation_start, v.end_date as vacation_end, v.vacation_id, v.approved from "user" u
                   LEFT JOIN course_assignment ca ON u.username = ca.username
                   LEFT JOIN course c ON ca.course_num = c.course_num
                   LEFT JOIN vacation v ON v.username = u.username
@@ -25,6 +25,18 @@ const getUsers = (year) => {
         resolve(results.rows);
       })
   })
+}
+
+const getCourses = () => {
+  return new Promise(function (resolve, reject) {
+    pool.query(`SELECT c.course_num, c.title from "course" c`
+      , (error, results) => {
+      if (error || !results) {
+        reject(error)
+      }
+        resolve(results.rows);
+    })
+  });
 }
 
 const postUser = (user) => {
@@ -66,29 +78,21 @@ const postCourse1 = (course) => {
 
 // **PREVIOUS COURSE ASSIGNMENT**
 
-const postCourse = (course) => {
+const postCourseAssignment = (course) => {
   return new Promise(function (resolve, reject) {
-    // pool.query(`INSERT INTO public."public.course" 
-    //             (course_num, subject, course, title, divs, dept_num, sect_num, ptrm, camp, start_date, end_date, colour)
-    //             VALUES 
-    //             (123456, 'Math', 'MATH 3023', 'Discrete Mathematics', 1, 1, 1, 1, 1, current_timestamp, current_timestamp, '#FF1155')`
-    pool.query(`INSERT INTO "course"
-            (course_num, subject, course, title, start_date, end_date, colour)
-            VALUES 
-            (${course.number}, '${course.subject}', '${course.course}', '${course.title}', 
-            current_timestamp, current_timestamp, 
-            '${course.color}');
+    pool.query(`
             INSERT INTO "course_assignment"
             (username, course_num, start_date, end_date)
             VALUES
             ('${course.instructorKey}', ${course.number}, 
             to_timestamp(${course.start} / 1000.0), to_timestamp(${course.end} / 1000.0))
+            RETURNING ca_id;
             `
       , (error, results) => {
         if (error) {
           reject(error)
         }
-        resolve(results);
+        resolve(results.rows[0].ca_id);
       })
   })
 }
@@ -97,7 +101,7 @@ const putCourse = (username, id, start, end) => {
   return new Promise(function (resolve, reject) {
     pool.query(`UPDATE "course_assignment" 
     SET start_date = (to_timestamp(${start} / 1000.0)), end_date = (to_timestamp(${end} / 1000.0)) 
-    WHERE course_num = ${id} AND username = '${username}'`,
+    WHERE ca_id = ${id}`,
       (error, results) => {
         if (error) {
           reject(error)
@@ -128,42 +132,8 @@ const getUser = (username) => {
 const deleteUser = (id) => {
   return new Promise(function (resolve, reject) {
     pool.query(`
-                DO
-                $do$
-                BEGIN
-                  IF EXISTS (
-                    SELECT * FROM "course_assignment" ca
-                    WHERE ca.username = '${id}'
-                  ) THEN
-                      WITH deleted as 
-                    (
-                      DELETE FROM "course_assignment" ca
-                      WHERE ca.username = '${id}'
-                      RETURNING *
-                    ),
-                    deleted2 as
-                    (
-                      DELETE FROM "user" u
-                      WHERE EXISTS 
-                      (
-                        SELECT d.username FROM deleted d
-                        WHERE u.username = d.username
-                      )
-                      RETURNING *
-                    )
-                    DELETE from "course" c
-                    WHERE EXISTS 
-                    (
-                      SELECT d.course_num FROM deleted d
-                      WHERE c.course_num = d.course_num
-                    )
-                    ;
-                  ELSE
-                    DELETE from "user" u
-                    WHERE u.username = '${id}';
-                  END IF;
-                END
-                $do$
+                DELETE from "user" u
+                WHERE u.username = '${id}';
                 `,
       (error, results) => {
         if (error) {
@@ -174,15 +144,11 @@ const deleteUser = (id) => {
   })
 }
 
-const deleteCourse = (courseId, userId) => {
+const deleteCourse = (courseId) => {
   return new Promise(function (resolve, reject) {
     pool.query(`
                 DELETE FROM "course_assignment" ca
-                WHERE ca.course_num = ${courseId} 
-                AND ca.username = '${userId}';
-    
-                DELETE FROM "course" c
-                WHERE c.course_num = '${courseId}'
+                WHERE ca.ca_id = ${courseId} 
                 `,
       (error, results) => {
         if (error) {
@@ -293,7 +259,7 @@ module.exports = {
   getUsers,
   postUser,
   deleteUser,
-  postCourse,
+  postCourseAssignment,
   postCourse1,
   putCourse,
   deleteCourse,
@@ -304,4 +270,5 @@ module.exports = {
   postVacation,
   deleteVacation,
   login,
+  getCourses
 }

@@ -18,7 +18,8 @@ export default function Slot({name, position, createCourse}) {
                 <div className="add-row-modal-bg">
                     <Form text={"Add Row: "} 
                     title={"course"}
-                    textObject={["Number", "Subject", "Course", "Title", "Week Length", "Color"]}
+                    textObject={["Week Length", "Color"]}
+                    isCourse={true}
                     callBack={(course) => createCourse(course, position.y - 3, position.x - 1)}/> {/*Coordinates are based on CSS grid, needs to be offset*/}
                 </div>
             </Popup>
