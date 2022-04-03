@@ -13,9 +13,9 @@ import { ReactSession } from 'react-client-session';
 const END_POINT_ROOT = "http://localhost:8000/"
 const VACATION_RESOURCE = "users"
 
-function isAdmin() {
+function isUser() {
     let userStatus = ReactSession.get("admin");
-    if (userStatus === 1) {
+    if (userStatus !== undefined) {
         return true;
     }
     return false;
@@ -112,7 +112,7 @@ export default class Vacation extends React.Component {
 	}
 
 	renderApp() {
-		return isAdmin() ? (
+		return isUser() ? (
 			<div className="vacation-submission-form" >
 				<div className="vacation-container">
 					<Header />
