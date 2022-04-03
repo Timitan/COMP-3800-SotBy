@@ -305,6 +305,76 @@ const login = (user) => {
     }) 
 }
 
+// Sam
+const getCourseDetail = (course_num) => {
+  return new Promise(function(resolve, reject) {
+    pool.query(`SELECT daily_schedule.ds_id, daily_schedule.ca_id, date, description, course_assignment.username, subject, course, resource.model_num, model_name, SUM(quantity) as quantity 
+                FROM daily_schedule
+                INNER JOIN course_assignment ON course_assignment.ca_id=daily_schedule.ca_id
+                INNER JOIN course ON course.course_num=course_assignment.course_num
+                LEFT JOIN resource_allocation ON resource_allocation.ds_id=daily_schedule.ds_id
+                LEFT JOIN resource ON resource_allocation.model_num=resource.model_num
+                WHERE course.course_num=${course_num}
+                GROUP BY (daily_schedule.ds_id, daily_schedule.ca_id, date, description, course_assignment.username, subject, course, resource.model_num, model_name)
+                ORDER BY date;`,
+    (error, results) => {
+      if (error) {
+        reject(error)
+      }
+      resolve(results)
+    })
+  }) 
+}
+
+const getResources = (date) => {
+  console.log(date);
+  return new Promise(function(resolve, reject) {
+    pool.query(`SELECT resource.model_num, model_name, quantity_total, model_location, (quantity_total - quantity) AS q_left
+                FROM "resource"
+                LEFT JOIN
+                (SELECT model_num, SUM(quantity) AS quantity FROM "resource_allocation"
+                INNER JOIN "daily_schedule" ON daily_schedule.ds_id=resource_allocation.ds_id
+                WHERE date='${date}'
+                GROUP BY model_num) res_allocated_for_day 
+                ON (res_allocated_for_day.model_num = resource.model_num);`,
+    (error, results) => {
+      if (error) {
+        reject(error)
+      }
+      resolve(results)
+    })
+  }) 
+}
+
+const updateCourseDetailDay = (rowInfo) => {
+  return new Promise(function(resolve, reject) {
+    pool.query(`UPDATE "daily_schedule"
+                SET description='${rowInfo.description}'
+                WHERE ds_id=${rowInfo.ds_id};`,
+    (error, results) => {
+      if (error) {
+        reject(error)
+      }
+      resolve(results)
+    })
+  })
+}
+
+const bookResource = (bookingInfo) => {
+  return new Promise(function(resolve, reject) {
+    pool.query(`INSERT INTO "resource_allocation"
+                (ds_id, model_num, quantity)
+                VALUES 
+                (${bookingInfo.ds_id}, '${bookingInfo.model_num}', ${bookingInfo.quantity_booked})`,
+    (error, results) => {
+      if (error) {
+        reject(error)
+      }
+      resolve(results)
+    })
+  })
+}
+
 module.exports = {
   getUsers,
   postUser,
@@ -320,5 +390,9 @@ module.exports = {
   approveVacation,
   postVacation,
   deleteVacation,
+  getCourseDetail,
+  getResources,
+  updateCourseDetailDay,
+  bookResource,
   login,
 }
