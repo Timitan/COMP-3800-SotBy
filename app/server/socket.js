@@ -25,7 +25,7 @@ const socketStart = async (server, pool, instructorModel) => {
         socket.on('itemChanged', (item, itemInfo) => {
             // Update posgresql database with the changed item
             //console.log(itemInfo);
-            instructorModel.putCourse(itemInfo.username, itemInfo.courseNum, itemInfo.start, itemInfo.end)
+            instructorModel.putCourse(itemInfo.username, itemInfo.caId, itemInfo.start, itemInfo.end)
             .then(response => {
                 console.log("Update Success");
                 //console.log("Response: " + JSON.stringify(response));
@@ -43,7 +43,7 @@ const socketStart = async (server, pool, instructorModel) => {
         socket.on('courseDeleted', (course, i) => {
             // Update posgresql database with the changed item
             //console.log(itemInfo);
-            instructorModel.deleteCourse(course.courseNum)
+            instructorModel.deleteCourse(course.caId)
             .then(response => {
                 console.log("Update Success");
                 //console.log("Response: " + JSON.stringify(response));

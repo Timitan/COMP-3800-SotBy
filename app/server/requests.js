@@ -12,11 +12,11 @@ pool.connect();
 
 const getUsers = (year) => {
     return new Promise(function(resolve, reject) {
-      pool.query(`SELECT u.username, u.first_name, u.last_name, u.row_num, ca.ca_id, ca.start_date, ca.end_date, c.title, c.colour, v.start_date as vacation_start, v.end_date as vacation_end, v.vacation_id, v.approved from "user" u
+      pool.query(`SELECT u.username, u.first_name, u.last_name, u.row_num, c.course_num, ca.ca_id, ca.start_date, ca.end_date, c.title, c.colour, v.start_date as vacation_start, v.end_date as vacation_end, v.vacation_id, v.approved from "user" u
                   LEFT JOIN course_assignment ca ON u.username = ca.username
                   LEFT JOIN course c ON ca.course_num = c.course_num
                   LEFT JOIN vacation v ON v.username = u.username
-                  ORDER BY u.date_joined`
+                  ORDER BY u.row_num`
       //ORDER BY username ASC
       , (error, results) => {
         if (error || !results) {
@@ -48,6 +48,25 @@ const postUser = (user) => {
             VALUES 
             ('${user.username}', '${user.firstname}', '${user.lastname}', 
             to_timestamp(${user.datejoined} / 1000.0), '${0}', '${user.email}', 
+            '${user.password}')`
+      , (error, results) => {
+        if (error) {
+          reject(error)
+        }
+        resolve(results);
+      })
+  })
+}
+
+const postAdmin = (user) => {
+  return new Promise(function (resolve, reject) {
+    // INSERT INTO public."public.user" (username, first_name, last_name, date_joined, email, password)
+    // VALUES ('John Smith', 'John', 'Smith', current_date, 'johnsmith@notreal.com', 'johnsmithiscool')
+    pool.query(`INSERT INTO "user"
+            (username, first_name, last_name, date_joined, admin, email, password)
+            VALUES 
+            ('${user.username}', '${user.firstname}', '${user.lastname}', 
+            to_timestamp(${user.datejoined} / 1000.0), '${1}', '${user.email}', 
             '${user.password}')`
       , (error, results) => {
         if (error) {
@@ -361,5 +380,6 @@ module.exports = {
   updateCourseDetailDay,
   bookResource,
   login,
-  getCourses
+  getCourses,
+  postAdmin
 }

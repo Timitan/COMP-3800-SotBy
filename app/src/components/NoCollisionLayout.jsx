@@ -2,6 +2,8 @@ import React from "react";
 import RGL, { WidthProvider } from "react-grid-layout";
 import _ from "lodash";
 import TimelineGrid from "./TimelineGrid";
+import { Link } from 'react-router-dom';
+import { ReactSession } from 'react-client-session';
 const ReactGridLayout = WidthProvider(RGL);
 
 export default class LocalStorageLayout extends React.PureComponent {
@@ -34,10 +36,11 @@ export default class LocalStorageLayout extends React.PureComponent {
             return(
               {
                 text: info.name,
-                courseNum: info.courseNum,
+                caId: info.caId,
                 userId: info.userId,
+                courseNum: info.courseNum,
                 data: {
-                  i: info.courseNum,
+                  i: info.caId,
                   x: start,
                   y: index * 2,
                   w: end - start,
@@ -98,7 +101,7 @@ export default class LocalStorageLayout extends React.PureComponent {
       this.onRemoveItem(i, false);
     });
 
-    this.socket.once("vacationApproved", (vacation) => {
+    this.socket.on("vacationApproved", (vacation) => {
       console.log("Item Received: " + JSON.stringify(vacation));
 
       this.onAddVacation(vacation);
@@ -153,7 +156,7 @@ export default class LocalStorageLayout extends React.PureComponent {
     this.replaceItem(yAxisLockedItem);
 
     const instructor = this.state.instructorArray[Math.floor(newItem.y / 2)];
-    this.socket.emit('itemChanged', yAxisLockedItem, {username: instructor.key, courseNum: foundItem.courseNum, start: startDate.getTime(), end: endDate.getTime()});
+    this.socket.emit('itemChanged', yAxisLockedItem, {username: instructor.key, courseNum: foundItem.courseNum, caId: foundItem.caId, start: startDate.getTime(), end: endDate.getTime()});
   }
 
   onAddVacation = (info) => {
@@ -182,15 +185,12 @@ export default class LocalStorageLayout extends React.PureComponent {
   }
 
   onAddCourse = (course, x=0, y=0, emit=true) => {
-    console.log(course);
     const w = parseInt(course.weeklength);
 
     const startDate = findWeekDate(this.state.weekInformation, x);
     const endDate = findWeekDate(this.state.weekInformation, w + x - 1);
     const instructor = this.state.instructorArray[Math.floor(y / 2)];
     // console.log("Index: " + Math.floor(y / 2));
-    console.log(this.state.instructorArray);
-    console.log(instructor);
 
     // User/ instructor was deleted, can't create a course
     if(instructor === undefined) {
@@ -198,14 +198,15 @@ export default class LocalStorageLayout extends React.PureComponent {
     }
 
     if(emit){
-      this.socket.emit('courseAdded', {...course, x: x, y: y, instructorKey: instructor.key,  start: startDate.getTime(), end: endDate.getTime()});
+      this.socket.emit('courseAdded', {...course, x: x, y: y, instructorKey: instructor.key, courseNum: course.number, start: startDate.getTime(), end: endDate.getTime()});
     } else {
       this.setState({
         // Add a new item
         items: this.state.items.concat({
           text: course.title,
           userId: instructor.key,
-          courseNum: course.caId,
+          courseNum: course.number,
+          caId: course.caId,
           data:{
             i: course.caId,
             x: x,
@@ -224,6 +225,9 @@ export default class LocalStorageLayout extends React.PureComponent {
     // Find the index of the course element in the state
     const index = _.findIndex(this.state.items, (element) => {return element.data.i === i});
     const foundItem = this.state.items[index];
+    
+    console.log(index);
+    console.log(foundItem);
 
     // Emit a message to all other applications that a course has been edeleted
     if(emit) {
@@ -305,18 +309,49 @@ export default class LocalStorageLayout extends React.PureComponent {
       top: 0,
       cursor: "pointer",
       padding: "5px",
+      color: "black"
+    };
+    const dsStyle = {
+      position: "absolute",
+      left: "2px",
+      bottom: 0,
+      cursor: "pointer",
+      padding: "5px",
+      color: "black"
     };
 
     return (
       <div key={el.data.i} data-grid={isVacation ? {...el.data, isDraggable: false, isResizable: false } : el.data} name={el.text + " el"} >
         <span className="text">{el.text}</span>
-        <span
-          className="remove"
-          style={removeStyle}
-          onClick={isVacation ? this.onRemoveVacation.bind(this, el.vid) : this.onRemoveItem.bind(this, el.data.i)}
-        >
-          x
-        </span>
+        {
+          ReactSession.get("admin") !== undefined ? 
+          <span
+            className="remove"
+            style={removeStyle}
+            onClick={isVacation ? this.onRemoveVacation.bind(this, el.vid) : this.onRemoveItem.bind(this, el.data.i)}
+          >
+            x
+          </span>
+          :
+          undefined
+        }
+        {!isVacation && ReactSession.get("admin") !== undefined ?
+        <Link
+          to={{
+              pathname: "/detailed-schedule",
+              search: "?courseNum=" + el.courseNum,
+          }}
+         >
+          <span
+            className="remove"
+            style={dsStyle}
+          >
+            Detailed
+          </span>
+        </Link>
+        : 
+        undefined
+        }
       </div>
     );
   }
@@ -341,6 +376,8 @@ export default class LocalStorageLayout extends React.PureComponent {
           onLayoutChange={this.onLayoutChange}
           onResizeStop = {this.onItemChange}
           onDragStop = {this.onItemChange}
+          isDraggable = {ReactSession.get("admin") !== undefined ? true : false}
+          isResizable = {ReactSession.get("admin") !== undefined ? true : false}
         >
           {this.state.items.map(el => this.createElement(el, el.vid !== undefined ? true : false))}
           {/* {this.state.vacations.map(el => this.createElement(el, true))} */}

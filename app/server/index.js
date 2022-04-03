@@ -112,7 +112,7 @@ app.post('/create/user', async (req, res) => {
   body.datejoined = new Date(body.datejoined).getTime();
   console.log(body);
 
-  instructorModel.postUser(body)
+  instructorModel.postAdmin(body)
   .then(response => {
     console.log("Response: " + response);
     res.status(200).send(response);

@@ -57,7 +57,8 @@ export default class App extends React.Component {
             start: new Date(parsedData[i].start_date), 
             end: new Date(parsedData[i].end_date), 
             name: parsedData[i].title, 
-            courseNum: parsedData[i].ca_id,
+            courseNum: parsedData[i].course_num,
+            caId: parsedData[i].ca_id,
             userId: parsedData[i].username});  
         }
 
