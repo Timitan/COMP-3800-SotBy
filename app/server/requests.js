@@ -40,6 +40,7 @@ const getCourses = () => {
 }
 
 const postUser = (user) => {
+  console.log(user.datejoined);
   return new Promise(function (resolve, reject) {
     // INSERT INTO public."public.user" (username, first_name, last_name, date_joined, email, password)
     // VALUES ('John Smith', 'John', 'Smith', current_date, 'johnsmith@notreal.com', 'johnsmithiscool')
@@ -47,7 +48,7 @@ const postUser = (user) => {
             (username, first_name, last_name, date_joined, admin, email, password)
             VALUES 
             ('${user.username}', '${user.firstname}', '${user.lastname}', 
-            to_timestamp(${user.datejoined} / 1000.0), '${0}', '${user.email}', 
+            TO_DATE('${user.datejoined}', 'YYYY-MM-DD'), '${0}', '${user.email}', 
             '${user.password}')`
       , (error, results) => {
         if (error) {

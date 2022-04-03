@@ -66,11 +66,11 @@ function Create_User(socket) {
                         placeholder="Last name..." 
                         value={lastname} 
                         onChange={(e) => setLastName(e.target.value)} /><br></br>
-                    <label>Date joined: </label>
+                    <label>Date joined : </label>
                     <input 
                         className="new-user-input" 
                         type="text" 
-                        placeholder="Date joined..." 
+                        placeholder="YYYY-MM-DD" 
                         value={datejoined} 
                         onChange={(e) => setDateJoined(e.target.value)} /><br></br>
                     <label>Admin: </label>
