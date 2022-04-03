@@ -1,7 +1,16 @@
 import React from 'react'
 import { useState } from 'react'
+import { ReactSession } from 'react-client-session';
 import './create_course.css'
 import Header from "./components/Header";
+
+function isAdmin() {
+    let userStatus = ReactSession.get("admin");
+    if (userStatus === 1) {
+        return true;
+    }
+    return false;
+}
 
 function Create_Course(socket) {
     socket = socket.socket;
@@ -26,7 +35,7 @@ function Create_Course(socket) {
         socket.emit('courseAdded1', new_course);
     }
 
-    return (
+    return isAdmin() ? (
         <div className="resource-container">
 			<Header />
             <form className="form" onSubmit={create_course}>
@@ -85,7 +94,7 @@ function Create_Course(socket) {
                 <p id="successMessage"></p>
             </form>
         </div>
-    )
+    ) : window.location.href="/"
 }
 
 export default Create_Course

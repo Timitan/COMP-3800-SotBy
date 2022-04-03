@@ -46,6 +46,22 @@ const postUser = (user) => {
   })
 }
 
+const postResource = (resource) => {
+  return new Promise(function (resolve, reject) {
+    pool.query(`INSERT INTO "resource"
+            (model_num, model_name, quantity_total, quantity_left, model_location)
+            VALUES 
+            (${resource.model_num}, '${resource.model_name}', '${parseInt(resource.quantity_total)}', 
+            '${parseInt(resource.quantity_total)}', '${resource.model_location}')`
+    ,(error, results) => {
+      if (error) {
+        reject(error)
+      }
+      resolve(results);
+    })
+  }) 
+}
+
 const postCourse1 = (course) => {
   return new Promise(function (resolve, reject) {
     console.log(course);
@@ -293,6 +309,7 @@ module.exports = {
   getUsers,
   postUser,
   deleteUser,
+  postResource,
   postCourse,
   postCourse1,
   putCourse,

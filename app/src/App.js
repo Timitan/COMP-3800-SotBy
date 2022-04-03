@@ -13,14 +13,6 @@ const socket = io.connect('/');
 
 ReactSession.setStoreType("localStorage");
 
-function isAdmin() {
-    let userStatus = ReactSession.get("admin");
-    if (userStatus === 1) {
-        return true;
-    }
-    return false;
-}
-
 function App() {
     return (
         <Router>

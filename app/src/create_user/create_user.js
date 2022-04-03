@@ -4,6 +4,13 @@ import { ReactSession } from 'react-client-session';
 import './create_user.css'
 import Header from "./components/Header";
 
+function isAdmin() {
+    let userStatus = ReactSession.get("admin");
+    if (userStatus === 1) {
+        return true;
+    }
+    return false;
+}
 
 function Create_User(socket) {
     socket = socket.socket;
@@ -33,9 +40,9 @@ function Create_User(socket) {
         // if successful, need to redirect to main page
     }
 
-    return (
+    return isAdmin() ? (
         <div className="user-container">
-			<Header />
+            <Header />
             <form className="form" onSubmit={create_user}>
                 <div className="new-user-form">
                     <label>Username: </label>
@@ -93,7 +100,8 @@ function Create_User(socket) {
                 <p id="successMessage"></p>
             </form>
         </div>
-    )
+    ) : window.location.href="/"
+
 }
 
 export default Create_User

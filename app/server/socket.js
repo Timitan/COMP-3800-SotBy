@@ -186,6 +186,22 @@ const socketStart = async (server, pool, instructorModel) => {
             })
         });
 
+        socket.on('resourceAdded', async (resource) => {
+            // Update posgresql database
+            instructorModel.postResource(resource)
+            .then(response => {
+                console.log("Add Success");
+                //console.log("Response: " + JSON.stringify(response));
+                // Broadcast to everyone except sender
+                //console.log(item);
+                io.emit('resourceAdded', resource);
+            })
+            .catch(error => {
+                console.log(error);
+                socket.emit('error', error);
+            })
+        });
+
         socket.on('vacationAdded', (vacation) => {
             console.log(vacation);
             instructorModel.postVacation(vacation)
