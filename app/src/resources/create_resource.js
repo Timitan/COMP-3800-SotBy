@@ -27,7 +27,17 @@ function Create_resource(socket) {
                                quantity_total: quantity_total,
                                model_location: model_location };
         socket.emit('resourceAdded', new_resource, null);
-        // if successful, need to redirect to main page
+        
+        // feedback upon successful creation
+        socket.on('resourceAdded', (user) => {
+            document.getElementById("successMessage").innerText = "Resource successfully created."
+        });
+
+        // displays error msg upon failure 
+        socket.on('error', (error) => {
+            document.getElementById("successMessage").innerText = "An error has occured! Please check your inputs.";
+            
+        });
     }
 
     return isAdmin() ? (

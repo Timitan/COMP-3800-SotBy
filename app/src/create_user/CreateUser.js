@@ -22,10 +22,6 @@ function Create_User(socket) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    const name = ReactSession.get("username");
-    console.log(name);
-
-
     const create_user = (e) => {
         e.preventDefault();
 
@@ -37,13 +33,23 @@ function Create_User(socket) {
                            email: email,
                            password: password };
         socket.emit('userAdded', new_user, null);
-        // if successful, need to redirect to main page
+
+        // feedback upon successful creation
+        socket.on('userAdded', (user) => {
+            document.getElementById("successMessage").innerText = "User successfully created."
+        });
+
+        // displays error msg upon failure 
+        socket.on('error', (error) => {
+            document.getElementById("successMessage").innerText = "An error has occured! Please check your inputs.";
+            
+        });
     }
 
     return isAdmin() ? (
         <div className="user-container">
             <Header />
-            <form className="form" onSubmit={create_user}>
+            <form id="form1" className="form" onSubmit={create_user}>
                 <div className="new-user-form">
                     <label>Username: </label>
                     <input 

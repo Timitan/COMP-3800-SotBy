@@ -102,7 +102,7 @@ const postCourse1 = (course) => {
             (course_num, subject, course, title, start_date, end_date, colour)
             VALUES 
             (${parseInt(course.course_num)}, '${course.subject}', ${parseInt(course.course)}, '${course.title}', 
-            '${course.end_date}', '${course.start_date}', '${course.colour}')`
+            '${course.start_date}', '${course.end_date}', '${course.colour}')`
     ,(error, results) => {
       if (error) {
         reject(error)

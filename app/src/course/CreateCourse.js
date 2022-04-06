@@ -33,6 +33,17 @@ function Create_Course(socket) {
                              end_date: end_date,
                              colour: colour };
         socket.emit('courseAdded1', new_course);
+
+        // feedback upon successful creation
+        socket.on('courseAdded1', (user) => {
+            document.getElementById("successMessage").innerText = "Course successfully created."
+        });
+
+        // displays error msg upon failure 
+        socket.on('error', (error) => {
+            document.getElementById("successMessage").innerText = "An error has occured! Please check your inputs.";
+            
+        });
     }
 
     return isAdmin() ? (
