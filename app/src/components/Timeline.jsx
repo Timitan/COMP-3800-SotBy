@@ -62,12 +62,12 @@ export default function Timeline({ socket, heightLimit, instructorArray }) {
         <React.Fragment>
         <SelectNav userStatus={ReactSession.get("admin")} />
             <div className="grid-container-months">
-                <button className="vacation-form-btn">
+                {/* <button className="vacation-form-btn">
                     <a href="/vacation">Submit Vacation form</a>
                 </button>
                 <button className="vacation-form-btn">
                     <a href="/vacationApproval">Vacation Approval</a>
-                </button>
+                </button> */}
                 {
                     monthArray.map((item, i) => {
                         return (
@@ -76,7 +76,7 @@ export default function Timeline({ socket, heightLimit, instructorArray }) {
                     })
                 }
             </div>
-            <NoCollisionLayout socket={socket} heightLimit={heightLimit} instructorArray={instructorArray} weekInformation={weekInformation} totalWeeks={totalWeeks}/>
+            <NoCollisionLayout socket={socket} heightLimit={heightLimit} newInstructorArray={instructorArray} weekInformation={weekInformation} totalWeeks={totalWeeks}/>
         </React.Fragment>
     );
 }

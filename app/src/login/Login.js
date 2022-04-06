@@ -33,11 +33,6 @@ function Login() {
             ReactSession.set("admin", res_data.admin);
             window.location.href="/";
         } else {
-            if (ReactSession.get("username") == undefined) {
-                console.log("success");
-            }
-            // localStorage.clear();
-            // document.getElementById("successMessage").innerHTML = "Incorrent username or password"
             document.getElementById("successMessage").innerText = "Incorrect username or password!"
         }
 

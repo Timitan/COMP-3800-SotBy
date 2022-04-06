@@ -1,6 +1,6 @@
 .grid-item-container {
     position: absolute;
-    top: 150px;
+    top: 210px;
     left: 200px;
     /*width: 2550px; Equal to item x-padding + number of columns * column width*/
     /*height: 2000px;*/ /*Equal to number of rows * row height*/
@@ -77,5 +77,5 @@
     background-color: rgba(255, 255, 255, 1);
     position: fixed;
     top: 25%;
-    z-index: 1000;
+    z-index: 9999;
 }

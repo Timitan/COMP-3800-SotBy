@@ -25,7 +25,7 @@ const socketStart = async (server, pool, instructorModel) => {
         socket.on('itemChanged', (item, itemInfo) => {
             // Update posgresql database with the changed item
             //console.log(itemInfo);
-            instructorModel.putCourse(itemInfo.username, itemInfo.courseNum, itemInfo.start, itemInfo.end)
+            instructorModel.putCourse(itemInfo.username, itemInfo.caId, itemInfo.start, itemInfo.end)
             .then(response => {
                 console.log("Update Success");
                 //console.log("Response: " + JSON.stringify(response));
@@ -43,7 +43,7 @@ const socketStart = async (server, pool, instructorModel) => {
         socket.on('courseDeleted', (course, i) => {
             // Update posgresql database with the changed item
             //console.log(itemInfo);
-            instructorModel.deleteCourse(course.courseNum, course.userId)
+            instructorModel.deleteCourse(course.caId)
             .then(response => {
                 console.log("Update Success");
                 //console.log("Response: " + JSON.stringify(response));
@@ -68,7 +68,7 @@ const socketStart = async (server, pool, instructorModel) => {
                 //console.log("Response: " + JSON.stringify(response));
                 // Broadcast to everyone except sender
                 //console.log(item);
-                socket.broadcast.emit('userAdded', user);
+                io.emit('userAdded', user);
             })
             .catch(error => {
                 console.log(error);
@@ -110,9 +110,9 @@ const socketStart = async (server, pool, instructorModel) => {
             })
         });
 
-        socket.on('courseAdded', (course) => {
+        socket.on('courseAdded1', (course) => {
             // Update posgresql database
-            instructorModel.postCourse(course)
+            instructorModel.postCourse1(course)
             .then(response => {
                 console.log("Course Post Success");
                 //console.log("Response: " + JSON.stringify(response));
@@ -121,8 +121,8 @@ const socketStart = async (server, pool, instructorModel) => {
                 //socket.broadcast.emit('courseAdded', course);
 
                 // Broadcast to everyone
-                socket.emit('courseAdded', course);
-                socket.broadcast.emit('courseAdded', course);
+                socket.emit('courseAdded1', course);
+                socket.broadcast.emit('courseAdded1', course);
             })
             .catch(error => {
                 console.log(error);
@@ -148,6 +148,91 @@ const socketStart = async (server, pool, instructorModel) => {
             })
         });
 
+        socket.on('courseAdded', (course) => {
+            // Update posgresql database
+            instructorModel.postCourseAssignment(course)
+            .then(response => {
+                console.log(response);
+                console.log("Course Post Success");
+                //console.log("Response: " + JSON.stringify(response));
+                
+                // Broadcast to everyone except sender
+                //socket.broadcast.emit('courseAdded', course);
+
+                // Broadcast to everyone
+                socket.emit('courseAdded', {...course, caId: response});
+                socket.broadcast.emit('courseAdded', {...course, caId: response});
+            })
+            .catch(error => {
+                console.log(error);
+                // console.log("error");
+
+                // Error code
+                let msg;
+                switch(error.code) {
+                    case('23505'):
+                        msg = "Course number already exists for another course! Please choose another.";
+                        break;
+                    case('23503'):
+                        msg = "The user you are creating a course for doesn't exist.";
+                        break;
+                    default:
+                        msg = "Error in inserting course. Please check your course input.";
+                        break;
+                }
+
+                console.log(msg);
+
+                socket.emit('error', msg);
+            })
+        });
+
+        socket.on('resourceAdded', async (resource) => {
+            // Update posgresql database
+            instructorModel.postResource(resource)
+            .then(response => {
+                console.log("Add Success");
+                //console.log("Response: " + JSON.stringify(response));
+                // Broadcast to everyone except sender
+                //console.log(item);
+                io.emit('resourceAdded', resource);
+            })
+            .catch(error => {
+                console.log(error);
+                socket.emit('error', error);
+            })
+        });
+
+
+        // Sam 
+
+        socket.on('changeDay', (rowInfo) => {
+            instructorModel.updateCourseDetailDay(rowInfo)
+            .then(response => {
+                console.log("Updated Course Detail Day");
+                socket.broadcast.emit('changeDay', rowInfo);
+            })
+            .catch(error => {
+            console.log(error);
+            })
+        })
+
+        socket.on('bookResource', (bookingInfo) => {
+            instructorModel.bookResource(bookingInfo)
+            .then(response => {
+                console.log("Added to resource_allocation");
+                io.emit('bookResource', {
+                    model_num: bookingInfo.model_num,
+                    model_name: bookingInfo.model_name,
+                    quantity_total: bookingInfo.quantity_total,
+                    model_location: bookingInfo.model_location,
+                    q_left: bookingInfo.q_left
+                });
+            })
+            .catch(error => {
+            console.log(error);
+            })
+        })
         socket.on('vacationAdded', (vacation) => {
             console.log(vacation);
             instructorModel.postVacation(vacation)

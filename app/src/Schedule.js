@@ -3,8 +3,6 @@ import "./style.css";
 import './gridstyles.css';
 import "./timeline.css";
 import Timeline from './components/Timeline';
-import io from "socket.io-client";
-const socket = io.connect('/');
 
 const END_POINT_ROOT = "http://localhost:8000/";
 const INSTRUCTORS_RESOURCE = "users";
@@ -16,6 +14,11 @@ export default class App extends React.Component {
     loaded: false,
     error: ""
   };
+
+  constructor({socket}) {
+    super();
+    this.socket = socket;
+  }
 
   getHeightLimit() {
     return this.state.heightLimit;
@@ -53,8 +56,9 @@ export default class App extends React.Component {
           instructor.timeblocks.push({
             start: new Date(parsedData[i].start_date), 
             end: new Date(parsedData[i].end_date), 
-            name: parsedData[i].title + " " + parsedData[i].course_num, 
+            name: parsedData[i].title, 
             courseNum: parsedData[i].course_num,
+            caId: parsedData[i].ca_id,
             userId: parsedData[i].username});  
         }
 
@@ -97,7 +101,7 @@ export default class App extends React.Component {
     return (
       <div className="App">
           {(this.state.error !== "") ?
-            <div className="error-modal">
+            <div className="error-modal" key={"errorModal"}>
               <h1>Error:</h1>
               <p>{this.state.error}</p>
               <button style={{position:"absolute", top:0, right:0}} onClick={() => {this.setState({error: ""})}}>
@@ -108,7 +112,7 @@ export default class App extends React.Component {
             undefined
           }
 
-          <Timeline socket={socket} heightLimit={{get: () => this.getHeightLimit(), set: (limit) => this.setHeightLimit(limit)}}
+          <Timeline socket={this.socket} heightLimit={{get: () => this.getHeightLimit(), set: (limit) => this.setHeightLimit(limit)}}
           instructorArray={this.state.instructors} />
       </div>
     );
@@ -116,9 +120,17 @@ export default class App extends React.Component {
 
   render() {
     // Remove this later on and add a real feedback message, this is just for development purposes
-    socket.on('error', (err) => {
+    this.socket.on('error', (err) => {
       console.log(err);
-      this.setState({error: err})
+      if(typeof(err) === String) {
+        this.setState({error: err});
+      } else {
+        if(err.detail === undefined) {
+          this.setState({error: "ERROR Code: " + err.code});
+        } else {
+          this.setState({error: err.detail});
+        }
+      }
     });
 
     return (

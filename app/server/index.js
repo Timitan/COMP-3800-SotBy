@@ -27,12 +27,24 @@ app.use(function (req, res, next) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Access-Control-Allow-Headers');
+  res.setHeader('Content-Type', 'application/json');
   next();
 });
 
 // Routes
 app.get('/users', (req, res) => {
 	instructorModel.getUsers()
+  .then(response => {
+    res.status(200).send(response);
+  })
+  .catch(error => {
+    console.log(error);
+    res.status(500).send(error);
+  })
+})
+
+app.get('/courses', (req, res) => {
+	instructorModel.getCourses()
   .then(response => {
     res.status(200).send(response);
   })
@@ -85,6 +97,24 @@ app.get('/vacations', (req, res) => {
 app.get('/vacationsNotApproved', (req, res) => {
   instructorModel.getAllVacationsNotApproved(req)
   .then(response => {
+    res.status(200).send(response);
+  })
+  .catch(error => {
+    console.log(error);
+    res.status(500).send(error);
+  })
+})
+
+app.post('/create/user', async (req, res) => {
+  const body = req.body;
+
+  body.password = await argon2.hash(body.password, {type: argon2.argon2id});
+  body.datejoined = new Date(body.datejoined).getTime();
+  console.log(body);
+
+  instructorModel.postAdmin(body)
+  .then(response => {
+    console.log("Response: " + response);
     res.status(200).send(response);
   })
   .catch(error => {
@@ -164,7 +194,7 @@ app.put('/vacations/:id', (req, res) => {
 //   //console.log("Id: " + id + "\nStart and Ends: " + start + " | " + end);
 //   instructorModel.deleteUser(id)
 //   .then(response => {
-//     console.log("Response: " + JSON.stringify(response));
+//     console.log("Response: " + JSON.stringify(response)); 
 //     res.status(200).send(response);
 //   })
 //   .catch(error => {
@@ -173,6 +203,30 @@ app.put('/vacations/:id', (req, res) => {
 //   })
 // })
 
+// Sam
+app.get('/detailedSchedule', (req, res) => {
+  instructorModel.getCourseDetail(req.query.courseNum)
+  .then(response => {
+    console.log("Response: " + response);
+    res.status(200).send(response);
+  })
+  .catch(error => {
+    console.log(error);
+    res.status(500).send(error);
+  })
+})
+
+app.get('/resources', (req, res) => {
+  instructorModel.getResources(req.query.date)
+  .then(response => {
+    console.log("Response: " + response);
+    res.status(200).send(response);
+  })
+  .catch(error => {
+    console.log(error);
+    res.status(500).send(error);
+  })
+})
 
 var server = app.listen(
   port,

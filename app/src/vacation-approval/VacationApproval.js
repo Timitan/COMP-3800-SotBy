@@ -2,9 +2,18 @@ import React from "react";
 import NotApprovedList from "./components/NotApprovedList"
 import NoVacations from "./components/NoVacations"
 import "./vacationApproval.css"
+import { ReactSession } from 'react-client-session';
 
 const END_POINT_ROOT = "http://localhost:8000/"
 const VACATION_RESOURCE = "vacationsNotApproved"
+
+function isAdmin() {
+    let userStatus = ReactSession.get("admin");
+    if (userStatus === 1) {
+        return true;
+    }
+    return false;
+}
 
 export default class VacationApproval extends React.Component {
     state = {
@@ -57,7 +66,7 @@ export default class VacationApproval extends React.Component {
     }
 
     renderApp() {
-        return (
+        return isAdmin() ? (
             <div className="approval-app">
                 <button className="approval-back-btn" onClick={(e) => { window.location.href = "/" }}>
                     Back
@@ -66,7 +75,7 @@ export default class VacationApproval extends React.Component {
                     (<NotApprovedList vacations={this.state.vacations} onApprove={this.approveVacation} onReject={this.rejectVacation} />)
                     : (<NoVacations />)}
             </div>
-        );
+        ) : window.location.href="/"
     }
 
     render() {

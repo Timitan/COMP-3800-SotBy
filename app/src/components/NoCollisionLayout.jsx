@@ -2,6 +2,8 @@ import React from "react";
 import RGL, { WidthProvider } from "react-grid-layout";
 import _ from "lodash";
 import TimelineGrid from "./TimelineGrid";
+import { Link } from 'react-router-dom';
+import { ReactSession } from 'react-client-session';
 const ReactGridLayout = WidthProvider(RGL);
 
 export default class LocalStorageLayout extends React.PureComponent {
@@ -16,28 +18,29 @@ export default class LocalStorageLayout extends React.PureComponent {
     autoSize: true
   };
 
-  constructor({props, socket, heightLimit, instructorArray, weekInformation, totalWeeks}) {
+  constructor({props, socket, heightLimit, newInstructorArray, weekInformation, totalWeeks}) {
     super(props);
 
     this.state = {
       // Loop through the instructor array to get all the courses associated with them
-      items: instructorArray.reduce(function(acc, element, index) {
-        if(element.timeblocks.length === 0 || weekInformation.length === 0){
+      items: newInstructorArray.reduce(function(acc, element, index) {
+        if((element.timeblocks.length === 0 && element.vacations.length === 0) || weekInformation.length === 0){
           return acc;
         }
         
         // Create a course element for every timeblock and concatenate them into one array
-        return acc.concat(
+        let arr = acc.concat(
           element.timeblocks.map((info) => {
             const start = findWeekIndex(weekInformation, info.start);
             const end = findWeekIndex(weekInformation, info.end) + 1;
             return(
               {
                 text: info.name,
-                courseNum: info.courseNum,
+                caId: info.caId,
                 userId: info.userId,
+                courseNum: info.courseNum,
                 data: {
-                  i: info.name,
+                  i: info.caId,
                   x: start,
                   y: index * 2,
                   w: end - start,
@@ -47,13 +50,9 @@ export default class LocalStorageLayout extends React.PureComponent {
             )
           })
         );
-      }, []),
-      vacations: instructorArray.reduce(function(acc, element, index) {
-        if(element.vacations.length === 0 || weekInformation.length === 0){
-          return acc;
-        }
-        
-        return acc.concat(
+
+        console.log(element);
+        return arr.concat(
           element.vacations.map((info) => {
             const start = findWeekIndex(weekInformation, info.vacationStart);
             const end = findWeekIndex(weekInformation, info.vacationEnd) + 1;
@@ -75,10 +74,11 @@ export default class LocalStorageLayout extends React.PureComponent {
         );
       }, []),
       heightLimit: heightLimit.get,
-      weekInformation: weekInformation
+      weekInformation: weekInformation,
+      instructorArray: newInstructorArray
     };
     this.socket = socket;
-    this.instructorArray = instructorArray;
+    //this.instructorArray = instructorArray;
     this.heightLimit = heightLimit;
     this.totalWeeks = totalWeeks;
     
@@ -101,7 +101,7 @@ export default class LocalStorageLayout extends React.PureComponent {
       this.onRemoveItem(i, false);
     });
 
-    this.socket.once("vacationApproved", (vacation) => {
+    this.socket.on("vacationApproved", (vacation) => {
       console.log("Item Received: " + JSON.stringify(vacation));
 
       this.onAddVacation(vacation);
@@ -133,7 +133,6 @@ export default class LocalStorageLayout extends React.PureComponent {
     this.setState({
       layout: layout
     });
-    console.log("layout changed");
   }
 
   onItemChange = (layout, oldItem, newItem) => {
@@ -144,27 +143,31 @@ export default class LocalStorageLayout extends React.PureComponent {
     // HTTP request instead of sockets
     //this.updateCourse(newItem.i, startDate.getTime(), endDate.getTime());
 
-    const index = _.findIndex(this.state.items, (element) => {return element.data.i === newItem.i});
+    const index = _.findIndex(this.state.items, (element) => {return element.data.i.toString() === newItem.i});
     const foundItem = this.state.items[index];
+    console.log(this.state.items);
+    console.log(newItem.i);
+    console.log(index);
+    console.log(foundItem);
 
     // Restrict movement of the course to one row only
     const yAxisLockedItem = newItem;
     yAxisLockedItem.y = oldItem.y;
     this.replaceItem(yAxisLockedItem);
 
-    const instructor = this.instructorArray[Math.floor(newItem.y / 2)];
-    this.socket.emit('itemChanged', yAxisLockedItem, {username: instructor.key, courseNum: foundItem.courseNum, start: startDate.getTime(), end: endDate.getTime()});
+    const instructor = this.state.instructorArray[Math.floor(newItem.y / 2)];
+    this.socket.emit('itemChanged', yAxisLockedItem, {username: instructor.key, courseNum: foundItem.courseNum, caId: foundItem.caId, start: startDate.getTime(), end: endDate.getTime()});
   }
 
   onAddVacation = (info) => {
     const start = findWeekIndex(this.state.weekInformation, new Date(info.start_date));
     const end = findWeekIndex(this.state.weekInformation, new Date(info.end_date)) + 1;
-    const index = _.findIndex(this.instructorArray, (element) => {return element.key === info.username});
+    const index = _.findIndex(this.state.instructorArray, (element) => {return element.key === info.username});
 
     const newVacation = {
         text: info.username + "'s Vacation",
-        uid: info.userId,
-        vid: info.vacationId,
+        uid: info.username,
+        vid: info.vacation_id,
         data: {
           i: info.username + info.vacation_id,
           x: start,
@@ -173,13 +176,9 @@ export default class LocalStorageLayout extends React.PureComponent {
           h: 1,
         }
     }
-    console.log("New vacation added");
-    console.log(info);
-    console.log("Index: " + index)
-    console.log("start: " + start);
-    console.log("end: " + end);
+
     this.setState({
-      vacations: this.state.vacations.concat(
+      items: this.state.items.concat(
         newVacation
       )
     });
@@ -190,10 +189,8 @@ export default class LocalStorageLayout extends React.PureComponent {
 
     const startDate = findWeekDate(this.state.weekInformation, x);
     const endDate = findWeekDate(this.state.weekInformation, w + x - 1);
-    const instructor = this.instructorArray[Math.floor(y / 2)];
+    const instructor = this.state.instructorArray[Math.floor(y / 2)];
     // console.log("Index: " + Math.floor(y / 2));
-    // console.log(this.instructorArray);
-    // console.log(instructor);
 
     // User/ instructor was deleted, can't create a course
     if(instructor === undefined) {
@@ -201,16 +198,17 @@ export default class LocalStorageLayout extends React.PureComponent {
     }
 
     if(emit){
-      this.socket.emit('courseAdded', {...course, x: x, y: y, instructorKey: instructor.key,  start: startDate.getTime(), end: endDate.getTime()});
+      this.socket.emit('courseAdded', {...course, x: x, y: y, instructorKey: instructor.key, courseNum: course.number, start: startDate.getTime(), end: endDate.getTime()});
     } else {
       this.setState({
         // Add a new item
         items: this.state.items.concat({
-          text: course.title + " " + course.number,
+          text: course.title,
           userId: instructor.key,
           courseNum: course.number,
+          caId: course.caId,
           data:{
-            i: course.number,
+            i: course.caId,
             x: x,
             y: y, 
             w: w,
@@ -222,9 +220,14 @@ export default class LocalStorageLayout extends React.PureComponent {
   }
 
   onRemoveItem(i, emit=true) {
+    console.log("Index received: " + i);
+    console.log(this.state.items);
     // Find the index of the course element in the state
     const index = _.findIndex(this.state.items, (element) => {return element.data.i === i});
     const foundItem = this.state.items[index];
+    
+    console.log(index);
+    console.log(foundItem);
 
     // Emit a message to all other applications that a course has been edeleted
     if(emit) {
@@ -237,51 +240,66 @@ export default class LocalStorageLayout extends React.PureComponent {
 
   onRemoveVacation(vid, emit=true) {
     console.log(vid);
-    const index = _.findIndex(this.state.vacations, (element) => {return element.vid === vid});
-    const foundItem = this.state.vacations[index];
+    console.log(this.state.items);
+    // const index = _.findIndex(this.state.vacations, (element) => {return element.vid === vid});
+    // const foundItem = this.state.vacations[index];
+    // console.log(this.state.vacations);
+    // console.log(foundItem);
 
     if(emit) {
       this.socket.emit("vacationDeleted", {vacation_id: vid});
     }
 
     // Remove the element from the state
-    this.setState({ vacations: _.reject(this.state.vacations, (element) => {return element.vid === vid})});
+    //this.setState({ vacations: _.reject(this.state.vacations, (element) => {return element.vid === vid})});
+    this.setState({ items: _.reject(this.state.items, (element) => {return element.vid === vid})});
   }
 
   onRemoveUser = (key, y) => {
-    const initialLength = this.instructorArray.length;
-    this.instructorArray = _.reject(this.instructorArray, (element) => {return element.key === key});
+    const initialLength = this.state.instructorArray.length;
+    this.setState({instructorArray: _.reject(this.state.instructorArray, (element) => {return element.key === key})},
+    () => {
+      // No user/ instructor found to delete
+      if(this.state.instructorArray.length !== initialLength) {
+        // Remove elements on the same row
+        console.log("Removed items at: " + y);
+        this.setState({ items: _.reject(this.state.items, (element) => {return element.data.y === y || element.data.y === y + 1})}
+        ,() => {
+          console.log(this.state.items);
+          // Move course elements up if they are below the user that was deleted
+          this.setState({items: _.reduce(this.state.items, (acc, element) => {
+            if (element.data.y > y) {
+              const newElement = element;
+              newElement.data.y -= 2;
+              return [...acc, newElement];
+            } else {
+              return  [...acc, element];
+            }
+          }, [])}, 
+          () => {
+            this.setState({layout: _.reduce(this.state.items, (acc, element) => {
+              if(element.vid !== undefined) {
+                const itemData = {...element.data, isDraggable: false, isResizable: false};
+                return [...acc, itemData];
+              } else {
+                const itemData = element.data;
+                return [...acc, itemData];
+              }
+            }, [])});
+            console.log(this.state.layout);
+          });
+        });
 
-    // No user/ instructor found to delete
-    if(this.instructorArray.length !== initialLength) {
-      // Remove elements on the same row
-      this.setState({ items: _.reject(this.state.items, (element) => {return element.data.y === y || element.data.y === y + 1}) });
-
-      // Move course elements up if they are below the user that was deleted
-      this.setState({item: _.reduce(this.state.items, (acc, element) => {
-        if (element.data.y > y) {
-          console.log(acc);
-          console.log(this.state.layout);
-          console.log(element);
-          const newElement = element;
-          newElement.data.y -= 2;
-          return [...acc, newElement];
-        } else {
-          return  [...acc, element];
-        }
-      }, [])});
-
-
-      // Reset layout so that the items are shifted up visually
-      this.setState({layout: _.reduce(this.state.items, (acc, element) => {
-        const itemData = element.data;
-        return [...acc, itemData];
-      }, [])});
-    }
+        //const itemVacations = this.state.items.concat(this.state.vacations);
+        // Reset layout so that the items are shifted up visually
+      }
+    });
   }
 
   onAddUser = (user) => {
-    this.instructorArray.push({key:user.username, name: user.firstname + " " + user.lastname, timeblocks: []});
+    console.log("Added user");
+    this.setState({instructorArray: [...this.state.instructorArray, {key:user.username, name: user.firstname + " " + user.lastname, timeblocks: [], vacations: []}]});
+    console.log(this.state.instructorArray);
   }
 
   createElement(el, isVacation=false) {
@@ -291,18 +309,49 @@ export default class LocalStorageLayout extends React.PureComponent {
       top: 0,
       cursor: "pointer",
       padding: "5px",
+      color: "black"
+    };
+    const dsStyle = {
+      position: "absolute",
+      left: "2px",
+      bottom: 0,
+      cursor: "pointer",
+      padding: "5px",
+      color: "black"
     };
 
     return (
-      <div key={el.data.i} data-grid={isVacation ? {...el.data, static: true} : el.data} name={el.text + " el"}  >
+      <div key={el.data.i} data-grid={isVacation ? {...el.data, isDraggable: false, isResizable: false } : el.data} name={el.text + " el"} >
         <span className="text">{el.text}</span>
-        <span
-          className="remove"
-          style={removeStyle}
-          onClick={isVacation ? this.onRemoveVacation.bind(this, el.vid) : this.onRemoveItem.bind(this, el.data.i)}
-        >
-          x
-        </span>
+        {
+          ReactSession.get("admin") !== undefined ? 
+          <span
+            className="remove"
+            style={removeStyle}
+            onClick={isVacation ? this.onRemoveVacation.bind(this, el.vid) : this.onRemoveItem.bind(this, el.data.i)}
+          >
+            x
+          </span>
+          :
+          undefined
+        }
+        {!isVacation && ReactSession.get("admin") !== undefined ?
+        <Link
+          to={{
+              pathname: "/detailed-schedule",
+              search: "?courseNum=" + el.courseNum,
+          }}
+         >
+          <span
+            className="remove"
+            style={dsStyle}
+          >
+            Detailed
+          </span>
+        </Link>
+        : 
+        undefined
+        }
       </div>
     );
   }
@@ -313,7 +362,7 @@ export default class LocalStorageLayout extends React.PureComponent {
       <TimelineGrid 
       socket={this.socket} 
       heightLimit={this.heightLimit} 
-      instructorArray={this.instructorArray} 
+      instructorArray={this.state.instructorArray} 
       createCourse={this.onAddCourse} 
       totalWeeks={this.totalWeeks}
       onRemoveUser={this.onRemoveUser} 
@@ -327,9 +376,11 @@ export default class LocalStorageLayout extends React.PureComponent {
           onLayoutChange={this.onLayoutChange}
           onResizeStop = {this.onItemChange}
           onDragStop = {this.onItemChange}
+          isDraggable = {ReactSession.get("admin") !== undefined ? true : false}
+          isResizable = {ReactSession.get("admin") !== undefined ? true : false}
         >
-          {this.state.items.map(el => this.createElement(el))}
-          {this.state.vacations.map(el => this.createElement(el, true))}
+          {this.state.items.map(el => this.createElement(el, el.vid !== undefined ? true : false))}
+          {/* {this.state.vacations.map(el => this.createElement(el, true))} */}
         </ReactGridLayout>
       </div>
       </React.Fragment>

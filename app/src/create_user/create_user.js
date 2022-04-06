@@ -4,6 +4,13 @@ import { ReactSession } from 'react-client-session';
 import './create_user.css'
 import Header from "./components/Header";
 
+function isAdmin() {
+    let userStatus = ReactSession.get("admin");
+    if (userStatus === 1) {
+        return true;
+    }
+    return false;
+}
 
 function Create_User(socket) {
     socket = socket.socket;
@@ -11,14 +18,13 @@ function Create_User(socket) {
     const [firstname, setFirstName] = useState('');
     const [lastname, setLastName] = useState('');
     const [datejoined, setDateJoined] = useState('');
-    const [rownumber, setRowNumber] = useState('');
     const [admin, setAdmin] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
     const name = ReactSession.get("username");
     console.log(name);
-    
+
 
     const create_user = (e) => {
         e.preventDefault();
@@ -27,7 +33,6 @@ function Create_User(socket) {
                            firstname: firstname,
                            lastname: lastname,
                            datejoined: datejoined,
-                           rownumber: rownumber,
                            admin: admin,
                            email: email,
                            password: password };
@@ -35,9 +40,9 @@ function Create_User(socket) {
         // if successful, need to redirect to main page
     }
 
-    return (
-        <div className="vacation-container">
-			<Header />
+    return isAdmin() ? (
+        <div className="user-container">
+            <Header />
             <form className="form" onSubmit={create_user}>
                 <div className="new-user-form">
                     <label>Username: </label>
@@ -61,20 +66,13 @@ function Create_User(socket) {
                         placeholder="Last name..." 
                         value={lastname} 
                         onChange={(e) => setLastName(e.target.value)} /><br></br>
-                    <label>Date joined: </label>
+                    <label>Date joined : </label>
                     <input 
                         className="new-user-input" 
                         type="text" 
-                        placeholder="Date joined..." 
+                        placeholder="YYYY-MM-DD" 
                         value={datejoined} 
                         onChange={(e) => setDateJoined(e.target.value)} /><br></br>
-                    <label>Row number: </label>
-                    <input 
-                        className="new-user-input" 
-                        type="text" 
-                        placeholder="Row number..." 
-                        value={rownumber} 
-                        onChange={(e) => setRowNumber(e.target.value)} /><br></br>
                     <label>Admin: </label>
                     <input 
                         className="new-user-input" 
@@ -102,7 +100,8 @@ function Create_User(socket) {
                 <p id="successMessage"></p>
             </form>
         </div>
-    )
+    ) : window.location.href="/"
+
 }
 
 export default Create_User

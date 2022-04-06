@@ -1,6 +1,7 @@
 import React from "react";
 import Slot from "./Slot";
 import { useState } from "react";
+import { ReactSession } from 'react-client-session';
 
 export default function RowHeader({position, text, width, height, removeFunction, createCourse}) {
     //const item = null;
@@ -32,9 +33,14 @@ export default function RowHeader({position, text, width, height, removeFunction
     return(
         <React.Fragment>
             <div className="grid-row-header" style={{gridArea: position.x + " / " + position.y + " / span 2 / span 2"}}>
-                <button name={text + " remove"} className="grid-row-header-close" onClick={removeFunction}>
-                    <p>Remove</p>
-                </button>
+                {
+                    ReactSession.get("admin") === 1 ? 
+                    <button name={text + " remove"} className="grid-row-header-close" onClick={removeFunction}>
+                        <p>Remove</p>
+                    </button>
+                    :
+                    undefined
+                }
                 <p>{text}</p>
             </div>
             {slotArray.map((item, i) => {

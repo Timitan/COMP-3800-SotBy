@@ -10,16 +10,16 @@ const pool = new Pool({
 
 pool.connect();
 
-const getUsers = () => {
+const getUsers = (year) => {
     return new Promise(function(resolve, reject) {
-      pool.query(`SELECT u.username, u.first_name, u.last_name, u.row_num, ca.start_date, ca.end_date, c.course_num, c.title, c.colour, v.start_date as vacation_start, v.end_date as vacation_end, v.vacation_id, v.approved from "user" u
+      pool.query(`SELECT u.username, u.first_name, u.last_name, u.row_num, c.course_num, ca.ca_id, ca.start_date, ca.end_date, c.title, c.colour, v.start_date as vacation_start, v.end_date as vacation_end, v.vacation_id, v.approved from "user" u
                   LEFT JOIN course_assignment ca ON u.username = ca.username
                   LEFT JOIN course c ON ca.course_num = c.course_num
                   LEFT JOIN vacation v ON v.username = u.username
-                  ORDER BY u.date_joined`
+                  ORDER BY u.row_num`
       //ORDER BY username ASC
       , (error, results) => {
-        if (error) {
+        if (error || !results) {
           reject(error)
         }
         resolve(results.rows);
@@ -27,7 +27,20 @@ const getUsers = () => {
   })
 }
 
-const postUser = (user, rownum) => {
+const getCourses = () => {
+  return new Promise(function (resolve, reject) {
+    pool.query(`SELECT c.course_num, c.title from "course" c`
+      , (error, results) => {
+      if (error || !results) {
+        reject(error)
+      }
+        resolve(results.rows);
+    })
+  });
+}
+
+const postUser = (user) => {
+  console.log(user.datejoined);
   return new Promise(function (resolve, reject) {
     // INSERT INTO public."public.user" (username, first_name, last_name, date_joined, email, password)
     // VALUES ('John Smith', 'John', 'Smith', current_date, 'johnsmith@notreal.com', 'johnsmithiscool')
@@ -35,7 +48,7 @@ const postUser = (user, rownum) => {
             (username, first_name, last_name, date_joined, admin, email, password)
             VALUES 
             ('${user.username}', '${user.firstname}', '${user.lastname}', 
-            to_timestamp(${user.datejoined} / 1000.0), '${0}', '${user.email}', 
+            TO_DATE('${user.datejoined}', 'YYYY-MM-DD'), '${0}', '${user.email}', 
             '${user.password}')`
       , (error, results) => {
         if (error) {
@@ -46,12 +59,43 @@ const postUser = (user, rownum) => {
   })
 }
 
-const postCourse = (course) => {
+const postAdmin = (user) => {
   return new Promise(function (resolve, reject) {
-    // pool.query(`INSERT INTO public."public.course" 
-    //             (course_num, subject, course, title, divs, dept_num, sect_num, ptrm, camp, start_date, end_date, colour)
-    //             VALUES 
-    //             (123456, 'Math', 'MATH 3023', 'Discrete Mathematics', 1, 1, 1, 1, 1, current_timestamp, current_timestamp, '#FF1155')`
+    // INSERT INTO public."public.user" (username, first_name, last_name, date_joined, email, password)
+    // VALUES ('John Smith', 'John', 'Smith', current_date, 'johnsmith@notreal.com', 'johnsmithiscool')
+    pool.query(`INSERT INTO "user"
+            (username, first_name, last_name, date_joined, admin, email, password)
+            VALUES 
+            ('${user.username}', '${user.firstname}', '${user.lastname}', 
+            to_timestamp(${user.datejoined} / 1000.0), '${1}', '${user.email}', 
+            '${user.password}')`
+      , (error, results) => {
+        if (error) {
+          reject(error)
+        }
+        resolve(results);
+      })
+  })
+}
+
+const postResource = (resource) => {
+  return new Promise(function (resolve, reject) {
+    pool.query(`INSERT INTO "resource"
+            (model_num, model_name, quantity_total, quantity_left, model_location)
+            VALUES 
+            (${resource.model_num}, '${resource.model_name}', '${parseInt(resource.quantity_total)}', 
+            '${parseInt(resource.quantity_total)}', '${resource.model_location}')`
+    ,(error, results) => {
+      if (error) {
+        reject(error)
+      }
+      resolve(results);
+    })
+  }) 
+}
+
+const postCourse1 = (course) => {
+  return new Promise(function (resolve, reject) {
     console.log(course);
     console.log(course.course_num);
     pool.query(`INSERT INTO "course"
@@ -66,29 +110,34 @@ const postCourse = (course) => {
       resolve(results);
     })
   }) 
-//             (${course.number}, '${course.subject}', '${course.course}', '${course.title}', 
-//             current_timestamp, current_timestamp, 
-//             '${course.color}');
-//             INSERT INTO "course_assignment"
-//             (username, course_num, start_date, end_date)
-//             VALUES
-//             ('${course.instructorKey}', ${course.number}, 
-//             to_timestamp(${course.start} / 1000.0), to_timestamp(${course.end} / 1000.0))
-//             `
-//       , (error, results) => {
-//         if (error) {
-//           reject(error)
-//         }
-//         resolve(results);
-//       })
-//   })
+}
+
+// **PREVIOUS COURSE ASSIGNMENT**
+
+const postCourseAssignment = (course) => {
+  return new Promise(function (resolve, reject) {
+    pool.query(`
+            INSERT INTO "course_assignment"
+            (username, course_num, start_date, end_date)
+            VALUES
+            ('${course.instructorKey}', ${course.number}, 
+            to_timestamp(${course.start} / 1000.0), to_timestamp(${course.end} / 1000.0))
+            RETURNING ca_id;
+            `
+      , (error, results) => {
+        if (error) {
+          reject(error)
+        }
+        resolve(results.rows[0].ca_id);
+      })
+  })
 }
 
 const putCourse = (username, id, start, end) => {
   return new Promise(function (resolve, reject) {
     pool.query(`UPDATE "course_assignment" 
     SET start_date = (to_timestamp(${start} / 1000.0)), end_date = (to_timestamp(${end} / 1000.0)) 
-    WHERE course_num = ${id} AND username = '${username}'`,
+    WHERE ca_id = ${id}`,
       (error, results) => {
         if (error) {
           reject(error)
@@ -119,42 +168,8 @@ const getUser = (username) => {
 const deleteUser = (id) => {
   return new Promise(function (resolve, reject) {
     pool.query(`
-                DO
-                $do$
-                BEGIN
-                  IF EXISTS (
-                    SELECT * FROM "course_assignment" ca
-                    WHERE ca.username = '${id}'
-                  ) THEN
-                      WITH deleted as 
-                    (
-                      DELETE FROM "course_assignment" ca
-                      WHERE ca.username = '${id}'
-                      RETURNING *
-                    ),
-                    deleted2 as
-                    (
-                      DELETE FROM "user" u
-                      WHERE EXISTS 
-                      (
-                        SELECT d.username FROM deleted d
-                        WHERE u.username = d.username
-                      )
-                      RETURNING *
-                    )
-                    DELETE from "course" c
-                    WHERE EXISTS 
-                    (
-                      SELECT d.course_num FROM deleted d
-                      WHERE c.course_num = d.course_num
-                    )
-                    ;
-                  ELSE
-                    DELETE from "user" u
-                    WHERE u.username = '${id}';
-                  END IF;
-                END
-                $do$
+                DELETE from "user" u
+                WHERE u.username = '${id}';
                 `,
       (error, results) => {
         if (error) {
@@ -165,15 +180,11 @@ const deleteUser = (id) => {
   })
 }
 
-const deleteCourse = (courseId, userId) => {
+const deleteCourse = (courseId) => {
   return new Promise(function (resolve, reject) {
     pool.query(`
                 DELETE FROM "course_assignment" ca
-                WHERE ca.course_num = ${courseId} 
-                AND ca.username = '${userId}';
-    
-                DELETE FROM "course" c
-                WHERE c.course_num = '${courseId}'
+                WHERE ca.ca_id = ${courseId} 
                 `,
       (error, results) => {
         if (error) {
@@ -280,11 +291,83 @@ const login = (user) => {
     }) 
 }
 
+// Sam
+const getCourseDetail = (course_num) => {
+  return new Promise(function(resolve, reject) {
+    pool.query(`SELECT daily_schedule.ds_id, daily_schedule.ca_id, date, description, course_assignment.username, subject, course, resource.model_num, model_name, SUM(quantity) as quantity 
+                FROM daily_schedule
+                INNER JOIN course_assignment ON course_assignment.ca_id=daily_schedule.ca_id
+                INNER JOIN course ON course.course_num=course_assignment.course_num
+                LEFT JOIN resource_allocation ON resource_allocation.ds_id=daily_schedule.ds_id
+                LEFT JOIN resource ON resource_allocation.model_num=resource.model_num
+                WHERE course.course_num=${course_num}
+                GROUP BY (daily_schedule.ds_id, daily_schedule.ca_id, date, description, course_assignment.username, subject, course, resource.model_num, model_name)
+                ORDER BY date;`,
+    (error, results) => {
+      if (error) {
+        reject(error)
+      }
+      resolve(results)
+    })
+  }) 
+}
+
+const getResources = (date) => {
+  console.log(date);
+  return new Promise(function(resolve, reject) {
+    pool.query(`SELECT resource.model_num, model_name, quantity_total, model_location, (quantity_total - quantity) AS q_left
+                FROM "resource"
+                LEFT JOIN
+                (SELECT model_num, SUM(quantity) AS quantity FROM "resource_allocation"
+                INNER JOIN "daily_schedule" ON daily_schedule.ds_id=resource_allocation.ds_id
+                WHERE date='${date}'
+                GROUP BY model_num) res_allocated_for_day 
+                ON (res_allocated_for_day.model_num = resource.model_num);`,
+    (error, results) => {
+      if (error) {
+        reject(error)
+      }
+      resolve(results)
+    })
+  }) 
+}
+
+const updateCourseDetailDay = (rowInfo) => {
+  return new Promise(function(resolve, reject) {
+    pool.query(`UPDATE "daily_schedule"
+                SET description='${rowInfo.description}'
+                WHERE ds_id=${rowInfo.ds_id};`,
+    (error, results) => {
+      if (error) {
+        reject(error)
+      }
+      resolve(results)
+    })
+  })
+}
+
+const bookResource = (bookingInfo) => {
+  return new Promise(function(resolve, reject) {
+    pool.query(`INSERT INTO "resource_allocation"
+                (ds_id, model_num, quantity)
+                VALUES 
+                (${bookingInfo.ds_id}, '${bookingInfo.model_num}', ${bookingInfo.quantity_booked})`,
+    (error, results) => {
+      if (error) {
+        reject(error)
+      }
+      resolve(results)
+    })
+  })
+}
+
 module.exports = {
   getUsers,
   postUser,
   deleteUser,
-  postCourse,
+  postCourseAssignment,
+  postResource,
+  postCourse1,
   putCourse,
   deleteCourse,
   getUser,
@@ -293,5 +376,11 @@ module.exports = {
   approveVacation,
   postVacation,
   deleteVacation,
+  getCourseDetail,
+  getResources,
+  updateCourseDetailDay,
+  bookResource,
   login,
+  getCourses,
+  postAdmin
 }

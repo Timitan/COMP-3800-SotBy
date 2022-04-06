@@ -19,39 +19,34 @@ export default function TimelineGrid({socket, heightLimit, instructorArray, crea
 
     // Add a user to the timeline
     const addRowHeader = (user, emit=true) => {
-        const length = rowHeaderArray.length;
-        setRowHeaderArray(rowHeaderArray => [...rowHeaderArray, {key: user.username, name: user.firstname + " " + user.lastname}]);
+        if(emit) {
+            socket.emit('userAdded', user);
+        } else {
+            setRowHeaderArray(rowHeaderArray => [...rowHeaderArray, {key: user.username, name: user.firstname + " " + user.lastname, timeblocks: [], vacations: []}]);
 
-        // Set the height limit to the number of users * 2 since each user takes up 2 rows
-        heightLimit.set((rowHeaderArray.length + 1) * 2);
-        setHeight(height => height + rowHeight);
-
-        // Call the add user function passed in from the interactive grid so that it could also be updated
-        onAddUser(user);
-        
-        if(emit)
-            socket.emit('userAdded', user, length);
+            // Set the height limit to the number of users * 2 since each user takes up 2 rows
+            heightLimit.set((rowHeaderArray.length + 1) * 2);
+            setHeight(height => height + rowHeight);
+    
+            // Call the add user function passed in from the interactive grid so that it could also be updated
+            onAddUser(user);
+        }
     }
 
     const removeRowHeader = (key, x, emit=true) => {
-        let modifiedArray = rowHeaderArray;
-        const initialLength = modifiedArray.length;
-        modifiedArray = _.reject(rowHeaderArray, (element) => {return element.key === key})
-
         // Check that an element has been found and removed before adjusting the row heights
-        if(modifiedArray.length !== initialLength) {
-            setRowHeaderArray(modifiedArray);
-            setHeight(height => height - rowHeight);
+        setRowHeaderArray(rowHeaderArray => _.reject(rowHeaderArray, (element) => {return element.key === key}));
+        setHeight(height => height - rowHeight);
 
-            // Set the height limit to the number of users * 2 since each user takes up 2 rows
-            heightLimit.set((rowHeaderArray.length - 1) * 2);
+        // Height limit not used, elements are locked to their rows
+        heightLimit.set((rowHeaderArray.length - 1) * 2);
 
-            // Call the add user function passed in from the interactive grid so that it could also be updated
-            onRemoveUser(key, x - 1);
+        // Call the add user function passed in from the interactive grid so that it could also be updated
+        console.log(x-1);
+        onRemoveUser(key, x - 1);
 
-            if(emit)
-                socket.emit('userDeleted', key, x); 
-        }
+        if(emit)
+            socket.emit('userDeleted', key, x); 
     }
     
     const createRowHeader = (item, i) => {
@@ -63,31 +58,20 @@ export default function TimelineGrid({socket, heightLimit, instructorArray, crea
                     createCourse={createCourse}/>
     }
 
-    socket.once("userAdded", (user) => {
-        console.log("Added: " + JSON.stringify(user));
-        addRowHeader(user, false);
-    });
+    //Use effect for attaching socket event listeners once the component mounts
+    useEffect(() => {
+        socket.on("userAdded", (user, state) => {
+            console.log("Added: " + JSON.stringify(user));
+            addRowHeader(user, false, state);
+        });
 
-    socket.once("userDeleted", (id, x) => {
-        console.log(x);
-        console.log(id);
-        removeRowHeader(id, x, false);
-    });
-
-    // Use effect for attaching socket event listeners once the component mounts
-    // useEffect(() => {
-    //     socket.once("userAdded", (user) => {
-    //         console.log("Added: " + JSON.stringify(user));
-    //         addRowHeader(user, false);
-    //     });
-
-    //     socket.once("userDeleted", (id, x) => {
-    //         console.log(x);
-    //         console.log(id);
-    //         removeRowHeader(id, x, false);
-    //     });
-    //     // eslint-disable-next-line react-hooks/exhaustive-deps
-    // }, []);
+        socket.on("userDeleted", (id, x) => {
+            console.log(x);
+            console.log(id);
+            removeRowHeader(id, x, false);
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return(
         <React.Fragment>
@@ -100,11 +84,13 @@ export default function TimelineGrid({socket, heightLimit, instructorArray, crea
                     })
                 }
             </div>
+            {/*
             <Popup trigger={<button id="addRowBtn" name="addRowBtn">Add Row</button>} modal>
                 <div className="add-row-modal-bg">
                     <Form text={"Add Row: "} title={"user"} textObject={["Username", "First Name", "Last Name", "Email", "Password"]}callBack={(user) => {addRowHeader(user)}}/>
                 </div>
             </Popup>
+            */}
         </React.Fragment>
     );
 }
