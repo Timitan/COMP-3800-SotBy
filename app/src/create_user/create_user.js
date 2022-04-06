@@ -49,7 +49,7 @@ function Create_User(socket) {
                     <input 
                         className="new-user-input" 
                         type="text" 
-                        placeholder="Username..." 
+                        placeholder="FirstName_LastName" 
                         value={username} 
                         onChange={(e) => setUsername(e.target.value)} /><br></br>
                     <label>First name: </label>
@@ -77,7 +77,7 @@ function Create_User(socket) {
                     <input 
                         className="new-user-input" 
                         type="text" 
-                        placeholder="Admin..." 
+                        placeholder="1 for 'Yes', 0 for 'No'" 
                         value={admin} 
                         onChange={(e) => setAdmin(e.target.value)} /><br></br>
                     <label>Email: </label>

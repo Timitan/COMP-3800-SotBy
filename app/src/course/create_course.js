@@ -72,14 +72,14 @@ function Create_Course(socket) {
                     <input 
                         className="new-course-input" 
                         type="text" 
-                        placeholder="Start Date..." 
+                        placeholder="YYYY-MM-DD" 
                         value={start_date} 
                         onChange={(e) => setStartDate(e.target.value)} /><br></br>
                     <label>End Date: </label>
                     <input 
                         className="new-course-input" 
                         type="text" 
-                        placeholder="End Date..." 
+                        placeholder="YYYY-MM-DD" 
                         value={end_date} 
                         onChange={(e) => setEndDate(e.target.value)} /><br></br>
                     <label>Colour: </label>

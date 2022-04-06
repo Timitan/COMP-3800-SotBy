@@ -48,7 +48,7 @@ const postUser = (user) => {
             (username, first_name, last_name, date_joined, admin, email, password)
             VALUES 
             ('${user.username}', '${user.firstname}', '${user.lastname}', 
-            TO_DATE('${user.datejoined}', 'YYYY-MM-DD'), '${0}', '${user.email}', 
+            TO_DATE('${user.datejoined}', 'YYYY-MM-DD'), '${user.admin}', '${user.email}', 
             '${user.password}')`
       , (error, results) => {
         if (error) {
