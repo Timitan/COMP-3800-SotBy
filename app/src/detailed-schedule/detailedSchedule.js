@@ -86,7 +86,7 @@ class Day extends React.Component {
         <td>
           <EditText
             name="description"
-            defaultValue={this.state.description ? this.state.description : "Weekend!"}
+            defaultValue={this.state.description ? this.state.description : "Holiday!"}
             onSave={this.handleSave}
             readonly={!this.state.editMode}
           />
@@ -94,15 +94,17 @@ class Day extends React.Component {
         <td>
           <ul>
             {resources}
-            <li>
-            <Link
-              to={{
-                pathname: "/resources",
-                search: `?ds_id=${this.ds_id}&date=${this.date}`,
-              }}
-            >this is a link </Link>
-            </li>
-            </ul>
+            {this.state.description ? (
+              <li className='li-link-to-res'>
+              <Link
+                to={{
+                  pathname: "/resources",
+                  search: `?ds_id=${this.ds_id}&date=${this.date}`,
+                }}
+              >Book</Link>
+              </li>)
+                      : null}
+          </ul>
         </td>
         <td>
           {this.state.description ? (<button onClick={() => this.handleEditSave()}>{descEditSave}</button>) : null}
