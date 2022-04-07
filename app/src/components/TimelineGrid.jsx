@@ -42,7 +42,6 @@ export default function TimelineGrid({socket, heightLimit, instructorArray, crea
         heightLimit.set((rowHeaderArray.length - 1) * 2);
 
         // Call the add user function passed in from the interactive grid so that it could also be updated
-        console.log(x-1);
         onRemoveUser(key, x - 1);
 
         if(emit)
@@ -84,7 +83,7 @@ export default function TimelineGrid({socket, heightLimit, instructorArray, crea
                     })
                 }
             </div>
-            {/*
+            {/* Old Button to add a user
             <Popup trigger={<button id="addRowBtn" name="addRowBtn">Add Row</button>} modal>
                 <div className="add-row-modal-bg">
                     <Form text={"Add Row: "} title={"user"} textObject={["Username", "First Name", "Last Name", "Email", "Password"]}callBack={(user) => {addRowHeader(user)}}/>
