@@ -5,7 +5,7 @@ const pool = new Pool({
     user: "postgres",
     port: 5432,
     password: "password123",
-    database: "sotby"
+    database: "test"
 })
 
 pool.connect();
@@ -81,10 +81,9 @@ const postAdmin = (user) => {
 const postResource = (resource) => {
   return new Promise(function (resolve, reject) {
     pool.query(`INSERT INTO "resource"
-            (model_num, model_name, quantity_total, quantity_left, model_location)
+            (model_num, model_name, quantity_total, model_location)
             VALUES 
-            (${resource.model_num}, '${resource.model_name}', '${parseInt(resource.quantity_total)}', 
-            '${parseInt(resource.quantity_total)}', '${resource.model_location}')`
+            (${resource.model_num}, '${resource.model_name}', '${parseInt(resource.quantity_total)}', '${resource.model_location}')`
     ,(error, results) => {
       if (error) {
         reject(error)
@@ -294,14 +293,14 @@ const login = (user) => {
 // Sam
 const getCourseDetail = (course_num) => {
   return new Promise(function(resolve, reject) {
-    pool.query(`SELECT daily_schedule.ds_id, daily_schedule.ca_id, date, description, course_assignment.username, subject, course, resource.model_num, model_name, SUM(quantity) as quantity 
+    pool.query(`SELECT daily_schedule.ds_id, course_assignment.ca_id, date, description, course_assignment.username, subject, course, resource.model_num, model_name, SUM(quantity) as quantity 
                 FROM daily_schedule
-                INNER JOIN course_assignment ON course_assignment.ca_id=daily_schedule.ca_id
-                INNER JOIN course ON course.course_num=course_assignment.course_num
+                INNER JOIN course ON course.course_num=daily_schedule.course_num
+                LEFT JOIN course_assignment ON course_assignment.course_num=course.course_num AND daily_schedule.date BETWEEN course_assignment.start_date AND course_assignment.end_date
                 LEFT JOIN resource_allocation ON resource_allocation.ds_id=daily_schedule.ds_id
                 LEFT JOIN resource ON resource_allocation.model_num=resource.model_num
                 WHERE course.course_num=${course_num}
-                GROUP BY (daily_schedule.ds_id, daily_schedule.ca_id, date, description, course_assignment.username, subject, course, resource.model_num, model_name)
+                GROUP BY (daily_schedule.ds_id, course_assignment.ca_id, date, description, course_assignment.username, subject, course, resource.model_num, model_name)
                 ORDER BY date;`,
     (error, results) => {
       if (error) {

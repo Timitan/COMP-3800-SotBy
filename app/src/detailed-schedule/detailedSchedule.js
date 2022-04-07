@@ -4,6 +4,7 @@ import 'react-edit-text/dist/index.css';
 import './index.css';
 import _ from "lodash";
 import { Link, useSearchParams } from 'react-router-dom';
+import { ReactSession } from 'react-client-session';
 
 const END_POINT_ROOT = "http://localhost:8000/";
 
@@ -79,14 +80,14 @@ class Day extends React.Component {
         <td>
           <EditText
             name="instructor"
-            defaultValue={this.instructor}
+            defaultValue={this.instructor ? this.instructor : "No instructor assigned"}
             readonly
           />
         </td>
         <td>
           <EditText
             name="description"
-            defaultValue={this.state.description ? this.state.description : "Holiday!"}
+            defaultValue={this.state.description ? this.state.description : "No Classes"}
             onSave={this.handleSave}
             readonly={!this.state.editMode}
           />
@@ -107,7 +108,7 @@ class Day extends React.Component {
           </ul>
         </td>
         <td>
-          {this.state.description ? (<button onClick={() => this.handleEditSave()}>{descEditSave}</button>) : null}
+          {<button onClick={() => this.handleEditSave()}>{descEditSave}</button>}
         </td>
       </tr>
     );
@@ -293,7 +294,7 @@ class Course extends React.Component {
   }
 
   render() {
-    return (this.state.dataLoaded ? this.renderCourse() :
+    return (this.state.dataLoaded && (ReactSession.get("admin") >= 0) ? this.renderCourse() :
       <span>Loading data...</span>
     );
   }
