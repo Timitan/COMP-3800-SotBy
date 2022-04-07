@@ -1,11 +1,11 @@
 import Vacation from "./vacation-form/Vacation"
 import Schedule from "./Schedule"
 import DetailedSchedule from "./detailed-schedule/detailedSchedule"
-import Resources from "./resources/resources"
+import Resources from "./resources/Resources"
 import Login from "./login/Login"
-import Create_user from "./create_user/create_user"
-import Create_course from "./course/create_course"
-import Create_resource from "./resources/create_resource"
+import CreateUser from "./create_user/CreateUser"
+import CreateCourse from "./course/CreateCourse"
+import CreateResource from "./resources/create_resource"
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import { useState } from "react"
 import { ReactSession } from 'react-client-session';
@@ -26,9 +26,9 @@ function App() {
                     <Route exact path="/vacation" element={<Vacation socket={socket} />} />
                     <Route exact path="/vacationApproval" element={<VacationApproval socket={socket} />} />
                     <Route exact path="/login" element={<Login />} />
-                    <Route exact path="/create_user" element={<Create_user socket={socket}/>} />
-                    <Route exact path="/create_course" element={<Create_course socket={socket}/>} />
-                    <Route exact path="/create_resource" element={<Create_resource socket={socket}/>} />
+                    <Route exact path="/create_user" element={<CreateUser socket={socket}/>} />
+                    <Route exact path="/create_course" element={<CreateCourse socket={socket}/>} />
+                    <Route exact path="/create_resource" element={<CreateResource socket={socket}/>} />
                 </Routes>
             </div>
         </Router>

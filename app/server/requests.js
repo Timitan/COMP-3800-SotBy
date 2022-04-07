@@ -48,7 +48,7 @@ const postUser = (user) => {
             (username, first_name, last_name, date_joined, admin, email, password)
             VALUES 
             ('${user.username}', '${user.firstname}', '${user.lastname}', 
-            TO_DATE('${user.datejoined}', 'YYYY-MM-DD'), '${0}', '${user.email}', 
+            TO_DATE('${user.datejoined}', 'YYYY-MM-DD'), '${user.admin}', '${user.email}', 
             '${user.password}')`
       , (error, results) => {
         if (error) {
@@ -101,7 +101,7 @@ const postCourse1 = (course) => {
             (course_num, subject, course, title, start_date, end_date, colour)
             VALUES 
             (${parseInt(course.course_num)}, '${course.subject}', ${parseInt(course.course)}, '${course.title}', 
-            '${course.end_date}', '${course.start_date}', '${course.colour}')`
+            '${course.start_date}', '${course.end_date}', '${course.colour}')`
     ,(error, results) => {
       if (error) {
         reject(error)

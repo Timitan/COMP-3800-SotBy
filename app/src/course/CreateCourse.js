@@ -33,6 +33,17 @@ function Create_Course(socket) {
                              end_date: end_date,
                              colour: colour };
         socket.emit('courseAdded1', new_course);
+
+        // feedback upon successful creation
+        socket.on('courseAdded1', (user) => {
+            document.getElementById("successMessage").innerText = "Course successfully created."
+        });
+
+        // displays error msg upon failure 
+        socket.on('error', (error) => {
+            document.getElementById("successMessage").innerText = "An error has occured! Please check your inputs.";
+            
+        });
     }
 
     return isAdmin() ? (
@@ -72,14 +83,14 @@ function Create_Course(socket) {
                     <input 
                         className="new-course-input" 
                         type="text" 
-                        placeholder="Start Date..." 
+                        placeholder="YYYY-MM-DD" 
                         value={start_date} 
                         onChange={(e) => setStartDate(e.target.value)} /><br></br>
                     <label>End Date: </label>
                     <input 
                         className="new-course-input" 
                         type="text" 
-                        placeholder="End Date..." 
+                        placeholder="YYYY-MM-DD" 
                         value={end_date} 
                         onChange={(e) => setEndDate(e.target.value)} /><br></br>
                     <label>Colour: </label>
