@@ -4,8 +4,6 @@ import { useState } from "react";
 import { ReactSession } from 'react-client-session';
 
 export default function RowHeader({position, text, width, height, removeFunction, createCourse}) {
-    //const item = null;
-
     const createRowSlots = () => {
         let slots = [];
         for(let y = 0; y < width; y++) {

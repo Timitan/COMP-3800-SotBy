@@ -28,10 +28,8 @@ const socketStart = async (server, pool, instructorModel) => {
             instructorModel.putCourse(itemInfo.username, itemInfo.caId, itemInfo.start, itemInfo.end)
             .then(response => {
                 console.log("Update Success");
-                //console.log("Response: " + JSON.stringify(response));
+
                 // Broadcast to everyone except sender
-                console.log(itemInfo);
-                console.log(item);
                 socket.broadcast.emit('itemChanged', item);
             })
             .catch(error => {
@@ -42,13 +40,12 @@ const socketStart = async (server, pool, instructorModel) => {
 
         socket.on('courseDeleted', (course, i) => {
             // Update posgresql database with the changed item
-            //console.log(itemInfo);
+
             instructorModel.deleteCourse(course.caId)
             .then(response => {
                 console.log("Update Success");
-                //console.log("Response: " + JSON.stringify(response));
+
                 // Broadcast to everyone except sender
-                console.log(course);
                 socket.broadcast.emit('courseDeleted', i);
             })
             .catch(error => {
@@ -59,15 +56,12 @@ const socketStart = async (server, pool, instructorModel) => {
 
         socket.on('userAdded', async (user, rownum) => {
             // Update posgresql database
-            console.log(user);
             const password = user.password;
             user.password = await argon2.hash(password, {type: argon2.argon2id});
             instructorModel.postUser(user, rownum)
             .then(response => {
                 console.log("Add Success");
-                //console.log("Response: " + JSON.stringify(response));
-                // Broadcast to everyone except sender
-                //console.log(item);
+
                 socket.emit('userAdded', user);
             })
             .catch(error => {
@@ -104,7 +98,6 @@ const socketStart = async (server, pool, instructorModel) => {
             })
             .catch((err) => {
                 console.log(err);
-                console.log("Error occured");
                 lock = false;
                 bus.emit('unlocked');
             })
@@ -115,7 +108,6 @@ const socketStart = async (server, pool, instructorModel) => {
             instructorModel.postCourse1(course)
             .then(response => {
                 console.log("Course Post Success");
-                //console.log("Response: " + JSON.stringify(response));
                 
                 // Broadcast to everyone except sender
                 //socket.broadcast.emit('courseAdded', course);
@@ -126,7 +118,6 @@ const socketStart = async (server, pool, instructorModel) => {
             })
             .catch(error => {
                 console.log(error);
-                // console.log("error");
 
                 // Error code
                 let msg;
@@ -152,12 +143,6 @@ const socketStart = async (server, pool, instructorModel) => {
             // Update posgresql database
             instructorModel.postCourseAssignment(course)
             .then(response => {
-                console.log(response);
-                console.log("Course Post Success");
-                //console.log("Response: " + JSON.stringify(response));
-                
-                // Broadcast to everyone except sender
-                //socket.broadcast.emit('courseAdded', course);
 
                 // Broadcast to everyone
                 socket.emit('courseAdded', {...course, caId: response});
@@ -191,10 +176,6 @@ const socketStart = async (server, pool, instructorModel) => {
             // Update posgresql database
             instructorModel.postResource(resource)
             .then(response => {
-                console.log("Add Success");
-                //console.log("Response: " + JSON.stringify(response));
-                // Broadcast to everyone except sender
-                //console.log(item);
                 socket.emit('resourceAdded', resource);
             })
             .catch(error => {
