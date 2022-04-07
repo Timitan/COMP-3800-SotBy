@@ -3,6 +3,7 @@ import 'react-edit-text/dist/index.css';
 import './index.css';
 import _ from "lodash";
 import { useSearchParams } from "react-router-dom";
+import { ReactSession } from 'react-client-session';
 
 const END_POINT_ROOT = "http://localhost:8000/";
 
@@ -219,8 +220,12 @@ class Resource extends React.Component {
     }
 
     render() {
-        return (this.state.dataLoaded ? this.renderResouce() :
-            <span>Loading data...</span>
+        return (
+            ReactSession.get("admin") >= 0 ? (
+                this.state.dataLoaded ? this.renderResouce() :
+                <span>Loading data...</span>
+            ) :
+            window.location.href="/"
         );
     }
 }

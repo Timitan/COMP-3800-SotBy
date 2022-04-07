@@ -294,8 +294,13 @@ class Course extends React.Component {
   }
 
   render() {
-    return (this.state.dataLoaded && (ReactSession.get("admin") >= 0) ? this.renderCourse() :
-      <span>Loading data...</span>
+
+    return (
+      ReactSession.get("admin") >= 0 ? (
+          this.state.dataLoaded ? this.renderCourse() :
+          <span>Loading data...</span>
+      ) :
+      window.location.href="/"
     );
   }
 
