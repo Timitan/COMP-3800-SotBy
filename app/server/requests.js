@@ -83,7 +83,7 @@ const postResource = (resource) => {
     pool.query(`INSERT INTO "resource"
             (model_num, model_name, quantity_total, model_location)
             VALUES 
-            (${resource.model_num}, '${resource.model_name}', '${parseInt(resource.quantity_total)}', '${resource.model_location}')`
+            ('${resource.model_num}', '${resource.model_name}', '${parseInt(resource.quantity_total)}', '${resource.model_location}')`
     ,(error, results) => {
       if (error) {
         reject(error)
