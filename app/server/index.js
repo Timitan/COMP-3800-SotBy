@@ -1,9 +1,5 @@
 const express = require("express");
 const app = express(); 
-const path = require("path");
-const http = require('http');
-const socket = require("socket.io");
-const { createAdapter } = require("@socket.io/postgres-adapter");
 const { Pool } = require("pg");
 const socketConnect = require("./socket");
 const instructorModel = require('./requests')
@@ -16,7 +12,7 @@ const pool = new Pool({
   user: "postgres",
   port: 5432,
   password: "password123",
-  database: "test"
+  database: "sotby"
 })
 
 const port = 8000;
